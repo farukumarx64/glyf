@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.vitest/
+package-lock.json
+# Preserve the supplied reference material byte for byte.
+docs/reference/
+examples/mosaic-demo.mosa

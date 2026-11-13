@@ -1,0 +1,540 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mosaic document 0.1.0",
+  "description": "Provisional schema for Mosaic .mosa documents, version 0.1.0; semantic validation is additionally required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["mosaic", "id", "meta", "root"],
+  "properties": {
+    "mosaic": {
+      "const": "0.1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+      "maxLength": 64
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "locale": {
+          "type": "string",
+          "maxLength": 32
+        }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": ["system", "light", "dark"]
+        },
+        "accent": {
+          "enum": ["blue", "teal", "amber"]
+        },
+        "density": {
+          "enum": ["comfortable", "compact"]
+        }
+      }
+    },
+    "datasets": {
+      "type": "object",
+      "maxProperties": 20,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/dataset"
+      }
+    },
+    "state": {
+      "type": "object",
+      "maxProperties": 100,
+      "propertyNames": {
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+      },
+      "additionalProperties": {
+        "type": ["string", "number", "boolean", "null"]
+      }
+    },
+    "root": {
+      "$ref": "#/$defs/node"
+    }
+  },
+  "$defs": {
+    "node": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/column"
+        },
+        {
+          "$ref": "#/$defs/row"
+        },
+        {
+          "$ref": "#/$defs/grid"
+        },
+        {
+          "$ref": "#/$defs/card"
+        },
+        {
+          "$ref": "#/$defs/when"
+        },
+        {
+          "$ref": "#/$defs/heading"
+        },
+        {
+          "$ref": "#/$defs/markdown"
+        },
+        {
+          "$ref": "#/$defs/text"
+        },
+        {
+          "$ref": "#/$defs/divider"
+        },
+        {
+          "$ref": "#/$defs/chart"
+        },
+        {
+          "$ref": "#/$defs/table"
+        },
+        {
+          "$ref": "#/$defs/toggle"
+        },
+        {
+          "$ref": "#/$defs/input"
+        },
+        {
+          "$ref": "#/$defs/stateValue"
+        }
+      ]
+    },
+    "columnDef": {
+      "type": "object",
+      "required": ["key", "label", "kind"],
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64,
+          "not": {
+            "const": "id"
+          }
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "kind": {
+          "enum": ["string", "number", "boolean"]
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      }
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns", "rows"],
+      "properties": {
+        "columns": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "items": {
+            "$ref": "#/$defs/columnDef"
+          }
+        },
+        "rows": {
+          "type": "array",
+          "maxItems": 1000,
+          "items": {
+            "type": "object",
+            "required": ["id"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+                "maxLength": 64
+              }
+            },
+            "additionalProperties": {
+              "type": ["string", "number", "boolean", "null"]
+            }
+          }
+        }
+      }
+    },
+    "column": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "column"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "maxItems": 2000
+        },
+        "gap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      },
+      "required": ["id", "type", "children"],
+      "additionalProperties": false
+    },
+    "row": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "row"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "maxItems": 2000
+        },
+        "gap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      },
+      "required": ["id", "type", "children"],
+      "additionalProperties": false
+    },
+    "grid": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "grid"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "maxItems": 2000
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "gap": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      },
+      "required": ["id", "type", "children", "columns"],
+      "additionalProperties": false
+    },
+    "card": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "card"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "maxItems": 2000
+        }
+      },
+      "required": ["id", "type", "children"],
+      "additionalProperties": false
+    },
+    "when": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "when"
+        },
+        "bind": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "equals": {
+          "type": ["string", "number", "boolean", "null"]
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "maxItems": 2000
+        }
+      },
+      "required": ["id", "type", "bind", "equals", "children"],
+      "additionalProperties": false
+    },
+    "heading": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "heading"
+        },
+        "level": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": ["id", "type", "level", "text"],
+      "additionalProperties": false
+    },
+    "markdown": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "markdown"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "required": ["id", "type", "text"],
+      "additionalProperties": false
+    },
+    "text": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "text"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 10000
+        }
+      },
+      "required": ["id", "type", "text"],
+      "additionalProperties": false
+    },
+    "divider": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "divider"
+        }
+      },
+      "required": ["id", "type"],
+      "additionalProperties": false
+    },
+    "chart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "chart"
+        },
+        "kind": {
+          "enum": ["bar", "line"]
+        },
+        "dataset": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "x": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "y": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 120
+        }
+      },
+      "required": ["id", "type", "kind", "dataset", "x", "y"],
+      "additionalProperties": false
+    },
+    "table": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "table"
+        },
+        "dataset": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      },
+      "required": ["id", "type", "dataset"],
+      "additionalProperties": false
+    },
+    "toggle": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "toggle"
+        },
+        "bind": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 120
+        }
+      },
+      "required": ["id", "type", "bind", "label"],
+      "additionalProperties": false
+    },
+    "input": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "input"
+        },
+        "bind": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "label": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "kind": {
+          "enum": ["text", "number"]
+        }
+      },
+      "required": ["id", "type", "bind", "label", "kind"],
+      "additionalProperties": false
+    },
+    "stateValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,63}$",
+          "maxLength": 64
+        },
+        "type": {
+          "const": "stateValue"
+        },
+        "bind": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$",
+          "maxLength": 64
+        },
+        "prefix": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "suffix": {
+          "type": "string",
+          "maxLength": 120
+        }
+      },
+      "required": ["id", "type", "bind"],
+      "additionalProperties": false
+    }
+  }
+}
