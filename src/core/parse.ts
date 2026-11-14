@@ -11,6 +11,32 @@ function failure(code: MosaicError['code'], path: JsonPointer, message: string):
   return { ok: false, errors: [{ code, path, message }] };
 }
 
+// Use the same header diagnostics for source text and in-memory input.
+export function checkMosaicHeader(value: unknown): MosaicError | undefined {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return {
+      code: 'SCHEMA_ERROR',
+      path: ROOT_POINTER,
+      message: 'A Mosaic file must contain one JSON object.',
+    };
+  }
+  const version: unknown = Object.getOwnPropertyDescriptor(value, 'mosaic')?.value;
+  if (typeof version !== 'string') {
+    return {
+      code: 'SCHEMA_ERROR',
+      path: jsonPointer('mosaic'),
+      message: 'The document must declare its version in the mosaic string field.',
+    };
+  }
+  if (version !== '0.1.0') {
+    return {
+      code: 'UNSUPPORTED_VERSION',
+      path: jsonPointer('mosaic'),
+      message: 'Unsupported Mosaic version. This reader supports version 0.1.0.',
+    };
+  }
+}
+
 function parseSource(text: string): SourceResult {
   const source = text.startsWith('\uFEFF') ? text.slice(1) : text;
   let value: unknown;
@@ -28,25 +54,8 @@ function parseSource(text: string): SourceResult {
     );
   }
 
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    return failure('SCHEMA_ERROR', ROOT_POINTER, 'A Mosaic file must contain one JSON object.');
-  }
-  const version: unknown = Object.getOwnPropertyDescriptor(value, 'mosaic')?.value;
-  if (typeof version !== 'string') {
-    return failure(
-      'SCHEMA_ERROR',
-      jsonPointer('mosaic'),
-      'The document must declare its version in the mosaic string field.',
-    );
-  }
-  if (version !== '0.1.0') {
-    return failure(
-      'UNSUPPORTED_VERSION',
-      jsonPointer('mosaic'),
-      'Unsupported Mosaic version. This reader supports version 0.1.0.',
-    );
-  }
-  return { ok: true, value };
+  const headerError = checkMosaicHeader(value);
+  return headerError ? { ok: false, errors: [headerError] } : { ok: true, value };
 }
 
 // Measure supplied JS strings without allocating an encoded copy. UTF-16 length

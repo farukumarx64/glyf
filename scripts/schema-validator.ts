@@ -1,19 +1,24 @@
-import { Ajv2020 } from 'ajv/dist/2020.js';
-import schema from '../schema/mosaic-v0.1.schema.json' with { type: 'json' };
+import type { ErrorObject } from 'ajv';
+import { checkStructure } from '../src/core/schema.ts';
 
-// Tooling only: this checks structure, not full Mosaic validity. Phase 1 adds
-// resource preflight and semantic validation before untrusted documents reach UI.
-const ajv = new Ajv2020({
-  strict: true,
-  allowUnionTypes: true, // The contract explicitly permits scalar type unions.
-  strictNumbers: true,
-  coerceTypes: false,
-  useDefaults: false,
-  removeAdditional: false,
-  allErrors: false,
-  ownProperties: true,
-});
-
-// Compile the trusted local schema once per module instance. Do not load schemas
-// from a document or give this structural check a semantic type predicate.
-export const validateSchema = ajv.compile<unknown>(schema);
+// Keep the boolean and Ajv diagnostic interface used by the conformance tools.
+export function validateSchema(value: unknown): boolean {
+  const problem = checkStructure(value);
+  if (!problem) {
+    validateSchema.errors = null;
+    return true;
+  }
+  validateSchema.errors = Array.isArray(problem)
+    ? problem
+    : [
+        {
+          keyword: 'preflight',
+          instancePath: problem.path,
+          schemaPath: '',
+          params: { code: problem.code },
+          message: problem.message,
+        },
+      ];
+  return false;
+}
+validateSchema.errors = null as ErrorObject[] | null;
