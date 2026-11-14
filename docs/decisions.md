@@ -3,7 +3,7 @@
 ## Status and scope
 
 - **Accepted:** 2026-11-13, by the project owner in the design-review conversation.
-- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Later-phase work remains pending.
+- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1, step 1 (errors and resource limits) completed and verified on 2026-11-14; remaining steps are pending.
 - **Format version:** `0.1.0`.
 - **Scope:** Clarify and harden the existing v0.1 contract without introducing later-version features.
 
@@ -15,7 +15,7 @@ Reference documents supplied for the review:
 - `mosaic-v0.1.schema.json`
 - `mosaic-demo.mosa`
 
-The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 on 2026-11-13. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Later phases remain pending a separate instruction.
+The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 on 2026-11-13 and only the error/resource definitions step of Phase 1 on 2026-11-14. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
 
 ## D001 — Reject duplicate JSON property names
 
@@ -207,6 +207,17 @@ Implementation requirements:
 - Recorded a development-only dependency audit limitation instead of forcing an unsupported transitive major-version override. Runtime dependency audit reports zero vulnerabilities; details and the upstream advisory are in the Phase 0 report.
 
 D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D008 remain implementation requirements. Documentation and schema checks are not substitutes for those future runtime checks.
+
+## Phase 1, step 1 implementation choices — 2026-11-14
+
+- Retain the ten suggested error codes as a fixed typed catalog. Duplicate JSON property names use `INVALID_JSON`; duplicate node/row IDs use `DUPLICATE_ID`; duplicate column keys use `INVALID_DATASET`. No additional code is introduced.
+- Use plain readonly `MosaicError` records and a discriminated `ParseResult` with a non-empty failure list. Keep validator-library internals out of the public contract.
+- Use RFC 6901 string-form pointers: empty string means the whole document, indices are zero-based, and raw property tokens are escaped. A branded string type adds compile-time checking without runtime wrappers.
+- Put the ten resource ceilings and root-depth constant in one dependency-free core module. Freeze shared values and check agreement with schema constraints in tests.
+- Supply a small helper to classify already measured limit violations. File-size breaches use `FILE_TOO_LARGE`; other published safety budgets use `RESOURCE_LIMIT`. Do not implement document counting or traversal in this step.
+- Follow schema Unicode code-point semantics for Markdown length, independently of UTF-8 byte size. D004's hidden-node, null-cell, row-ID exclusion, per-chart, and inclusive-boundary rules remain normative.
+- Document error classifications, path conventions, budgets, and implementation boundaries in [core-contracts.md](core-contracts.md). The source schema and reference files do not change in this step.
+- Verified with `npm run check`: 112 tests across four files, strict typecheck, lint, formatting, demo schema validation, and production build all pass. This adds 74 tests to the 38 Phase 0 tests. No runtime enforcement beyond the measured-count helper is claimed.
 
 ## Supporting references
 

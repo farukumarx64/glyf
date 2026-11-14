@@ -4,7 +4,7 @@
 > **Intended audience:** Codex / an implementing developer  
 > **Priority order:** Correctness and safety → small, portable files → fast loading/rendering → low memory usage → visual quality → extensibility.
 
-> **Repository edition (2026-11-13):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Only Phase 0 is currently authorized; subsequent phases require a new instruction. Embedded example prompts below are reference material, not authorization to begin work.
+> **Repository edition (2026-11-14):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 is complete; only Phase 1's shared error/resource definitions step is now authorized. Remaining implementation steps require a new instruction. Embedded example prompts below are reference material, not authorization to begin work.
 
 ## 0. Instructions to Codex
 
@@ -285,8 +285,8 @@ The following are **v0.1 safety and resource limits** (not long-term limits):
 | Limit                                   |                    Value | Enforcement                                                |
 | --------------------------------------- | -----------------------: | ---------------------------------------------------------- |
 | Raw `.mosa` bytes                       |                    5 MiB | Reject before JSON parsing                                 |
-| Total document nodes                    |                    2,000 | Semantic tree traversal                                    |
-| Max tree depth                          |                       20 | Semantic tree traversal                                    |
+| Total document nodes                    |                    2,000 | Iterative resource preflight                               |
+| Max tree depth                          |                       20 | Iterative resource preflight                               |
 | Named datasets                          |                       20 | Schema and semantic validation                             |
 | Columns per dataset                     |                       30 | Schema                                                     |
 | Rows per dataset                        |                    1,000 | Schema                                                     |
@@ -303,19 +303,23 @@ Validator API:
 
 ```ts
 type MosaicError = {
-  code: string;
-  path: string; // JSON Pointer, e.g. /root/children/2
-  message: string; // clear and human-readable
+  readonly code: MosaicErrorCode;
+  readonly path: JsonPointer; // RFC 6901 string form; empty string means whole document
+  readonly message: string; // clear and human-readable
 };
 
-type ParseResult = { ok: true; document: MosaicDocument } | { ok: false; errors: MosaicError[] };
+type ParseResult =
+  | { readonly ok: true; readonly document: MosaicDocument }
+  | { readonly ok: false; readonly errors: readonly [MosaicError, ...MosaicError[]] };
 
 function parseMosaic(input: string): ParseResult;
 function validateMosaic(value: unknown): ParseResult;
 function serializeMosaic(document: MosaicDocument): string;
 ```
 
-Suggested error codes: `FILE_TOO_LARGE`, `INVALID_UTF8`, `INVALID_JSON`, `UNSUPPORTED_VERSION`, `SCHEMA_ERROR`, `DUPLICATE_ID`, `INVALID_ROOT`, `INVALID_BINDING`, `INVALID_DATASET`, `RESOURCE_LIMIT`.
+Fixed error codes: `FILE_TOO_LARGE`, `INVALID_UTF8`, `INVALID_JSON`, `UNSUPPORTED_VERSION`, `SCHEMA_ERROR`, `DUPLICATE_ID`, `INVALID_ROOT`, `INVALID_BINDING`, `INVALID_DATASET`, `RESOURCE_LIMIT`.
+
+The shared contracts live in `src/core/errors.ts`, `src/core/json-pointer.ts`, and `src/core/limits.ts`. See [core-contracts.md](core-contracts.md) for classification rules and helper usage. Published safety-ceiling violations use `RESOURCE_LIMIT`, except file size uses `FILE_TOO_LARGE`; other schema bounds remain `SCHEMA_ERROR`. Markdown character limits follow JSON Schema's Unicode code-point semantics. These definitions do not by themselves implement the import/validation pipeline.
 
 **Important:** `JSON.parse` input in JavaScript is already a string. The file loader enforces raw byte size and strict UTF-8 decoding (e.g., `TextDecoder("utf-8", { fatal: true })`) _before_ calling the parser. The public parser should also guard unusually large text via UTF-8 byte count or an equivalent documented safeguard. Avoid deep unbounded recursion; validate depth as you traverse, and use an explicit stack where practical.
 
@@ -548,6 +552,7 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 
 **Tasks**
 
+- [x] Define structured errors/results, JSON Pointer helpers, shared resource ceilings, inclusive limit diagnostics, and counting conventions (step 1, 2026-11-14).
 - [ ] Add file byte guard and strict UTF-8 decode path.
 - [ ] Implement `parseMosaic`, `validateMosaic`, `serializeMosaic`.
 - [ ] Compile JSON Schema validator once, not on every import.

@@ -2,9 +2,11 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-This repository currently establishes the **Phase 0 foundation**: the development environment, schema contract, portable TypeScript types, and automated schema checks. File import, semantic validation, document rendering, editing, and export are scheduled for later phases.
+The **Phase 0 foundation** establishes the development environment, schema contract, portable TypeScript types, and automated schema checks. **Phase 1, step 1** adds the shared error/result contract, JSON Pointer helpers, resource ceilings, and limit diagnostics. File import, semantic validation, document rendering, editing, and export remain pending.
 
 Phase 0 is complete. See the [verification report](docs/phase-0.md) for results and the development dependency audit limitation.
+
+See [core contracts](docs/core-contracts.md) for error classifications, pointer conventions, resource counting, examples, and the boundary between definitions and validation enforcement.
 
 ## Development environment
 
@@ -30,14 +32,14 @@ If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL pr
 | `npm run dev`              | Start Vite on the loopback interface.                                     |
 | `npm run typecheck`        | Check strict TypeScript across source, scripts, tests, and configuration. |
 | `npm run lint`             | Run ESLint with zero warnings allowed.                                    |
-| `npm run test`             | Run the schema tests once.                                                |
-| `npm run test:watch`       | Watch schema tests during development.                                    |
+| `npm run test`             | Run schema and core contract tests once.                                  |
+| `npm run test:watch`       | Watch tests during development.                                           |
 | `npm run validate:example` | Validate the reference demo against Draft 2020-12.                        |
 | `npm run format:check`     | Check formatting without editing files.                                   |
 | `npm run format`           | Apply formatting; preserve supplied reference files.                      |
 | `npm run build`            | Typecheck and create the static production build in `dist/`.              |
 | `npm run preview`          | Serve the production build locally.                                       |
-| `npm run check`            | Run all Phase 0 checks and the production build.                          |
+| `npm run check`            | Run all implemented checks and the production build.                      |
 
 Benchmark tooling is scheduled for Phase 5. Browser/component test dependencies will be added when those implementations begin; Phase 0 uses Vitest in Node without a DOM emulator.
 
@@ -47,6 +49,7 @@ Benchmark tooling is scheduled for Phase 5. Browser/component test dependencies 
 docs/
   SPEC_V0.1.md                 Working specification with approved amendments
   decisions.md                 Accepted decisions and implementation status
+  core-contracts.md             Errors, pointers, resource budgets, and counting rules
   reference/                   Unmodified supplied plan and schema
 schema/
   mosaic-v0.1.schema.json       Authoritative structural contract
@@ -57,12 +60,18 @@ scripts/
   validate-example.ts          Reference-document validation command
 src/
   core/types.ts                Portable types for all 14 node kinds
+  core/errors.ts               Structured diagnostics and parser result types
+  core/json-pointer.ts         Typed diagnostic-path construction and syntax checks
+  core/limits.ts               Fixed budgets and shared limit diagnostics
   app/App.tsx                  Minimal foundation screen
   main.tsx                    React entry point
   styles/global.css           Local stylesheet and system fonts
 tests/
   fixtures.ts                 Typed fixtures covering every node kind
   schema.test.ts              Structural contract and regression tests
+  errors.test.ts              Diagnostic/result contract tests
+  json-pointer.test.ts        Escaping and path-construction tests
+  limits.test.ts              Budget, boundary, and schema-agreement tests
 ```
 
 The working schema differs from the supplied original only by the approved prohibition on a declared column key named `id` (D003). Row `id` remains required metadata. A test guards that precise amendment; the original files remain available for review.
