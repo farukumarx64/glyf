@@ -3,7 +3,7 @@
 ## Status and scope
 
 - **Accepted:** 2026-11-13, by the project owner in the design-review conversation.
-- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1, step 1 (errors and resource limits) completed and verified on 2026-11-14; remaining steps are pending.
+- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1 includes error and resource contracts and safe file reading and parsing.
 - **Format version:** `0.1.0`.
 - **Scope:** Clarify and harden the existing v0.1 contract without introducing later-version features.
 
@@ -15,7 +15,7 @@ Reference documents supplied for the review:
 - `mosaic-v0.1.schema.json`
 - `mosaic-demo.mosa`
 
-The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 on 2026-11-13 and only the error/resource definitions step of Phase 1 on 2026-11-14. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
+The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 and Phase 1 steps 1 and 2. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
 
 ## D001 — Reject duplicate JSON property names
 
@@ -218,6 +218,13 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Follow schema Unicode code-point semantics for Markdown length, independently of UTF-8 byte size. D004's hidden-node, null-cell, row-ID exclusion, per-chart, and inclusive-boundary rules remain normative.
 - Document error classifications, path conventions, budgets, and implementation boundaries in [core-contracts.md](core-contracts.md). The source schema and reference files do not change in this step.
 - Verified with `npm run check`: 112 tests across four files, strict typecheck, lint, formatting, demo schema validation, and production build all pass. This adds 74 tests to the 38 Phase 0 tests. No runtime enforcement beyond the measured-count helper is claimed.
+
+## Phase 1, step 2 implementation choices
+
+- Use standard `Blob`, `Uint8Array` and `TextDecoder` APIs in the core. OS read failures retain their original promise rejection. Invalid content produces a structured Mosaic diagnostic.
+- The parsing stage returns an unvalidated `value: unknown`. The full `ParseResult` success branch is reserved for a document that passes resource preflight, schema, and semantic checks.
+- Bound the duplicate scanner's stack using the maximum JSON nesting implied by the existing format and root-depth convention. Build an escaped pointer only when reporting a duplicate or a nesting violation.
+- The reference validation command reads its local fixture through the same file API before running the schema check. See [core contracts](core-contracts.md) for the byte, BOM, and text-string rules.
 
 ## Supporting references
 

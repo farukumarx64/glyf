@@ -2,7 +2,7 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-The **Phase 0 foundation** establishes the development environment, schema contract, portable TypeScript types, and automated schema checks. **Phase 1, step 1** adds the shared error/result contract, JSON Pointer helpers, resource ceilings, and limit diagnostics. File import, semantic validation, document rendering, editing, and export remain pending.
+Phase 1 includes source parsing for browser files, byte arrays, and text, with typed diagnostics and fixed resource limits. Run `npm run validate:example` to read the reference file through this pipeline and check it against the schema. Full semantic validation follows in Phase 1.
 
 Phase 0 is complete. See the [verification report](docs/phase-0.md) for results and the development dependency audit limitation.
 
@@ -34,7 +34,7 @@ If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL pr
 | `npm run lint`             | Run ESLint with zero warnings allowed.                                    |
 | `npm run test`             | Run schema and core contract tests once.                                  |
 | `npm run test:watch`       | Watch tests during development.                                           |
-| `npm run validate:example` | Validate the reference demo against Draft 2020-12.                        |
+| `npm run validate:example` | Read the reference file and check it against Draft 2020-12.               |
 | `npm run format:check`     | Check formatting without editing files.                                   |
 | `npm run format`           | Apply formatting; preserve supplied reference files.                      |
 | `npm run build`            | Typecheck and create the static production build in `dist/`.              |
@@ -60,6 +60,9 @@ scripts/
   validate-example.ts          Reference-document validation command
 src/
   core/types.ts                Portable types for all 14 node kinds
+  core/file.ts                 Local File/Blob reading and byte guard
+  core/parse.ts                Byte and text parsing, encoding and version checks
+  core/json-source.ts          Duplicate JSON property scanning
   core/errors.ts               Structured diagnostics and parser result types
   core/json-pointer.ts         Typed diagnostic-path construction and syntax checks
   core/limits.ts               Fixed budgets and shared limit diagnostics
@@ -68,6 +71,7 @@ src/
   styles/global.css           Local stylesheet and system fonts
 tests/
   fixtures.ts                 Typed fixtures covering every node kind
+  parser.test.ts              File, byte, and text parsing tests
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
@@ -78,7 +82,7 @@ The working schema differs from the supplied original only by the approved prohi
 
 Types describe the format but cannot prove identifier patterns, finite numbers, limits, or cross-reference correctness. `MosaicDocument.root` reflects the specification's layout-root restriction, which the future semantic validator must enforce. Typed fixtures and schema tests check the node vocabulary together.
 
-**Schema validation alone does not establish full Mosaic validity.** The tooling validator is for the trusted local fixtures; it is not the public import API. Duplicate source keys, resource preflight, semantic rules, and safe serialization belong to Phase 1. It must not be connected directly to untrusted file import.
+**Schema validation alone does not establish full Mosaic validity.** The tooling validator is for the trusted local fixtures; it is not the public import API. Source parsing checks duplicate properties. Node-tree preflight, semantic checks, and serialization are the next Phase 1 steps. It must not be connected directly to untrusted file import.
 
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per tooling module instance.
 

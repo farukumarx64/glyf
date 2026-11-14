@@ -1,6 +1,24 @@
 # Core error and resource contracts
 
-**Scope:** Phase 1, step 1 — shared definitions and diagnostic helpers, implemented on 2026-11-14. Parsing, decoding, duplicate-key detection, tree traversal, semantic validation, and serialization remain subsequent steps. These modules do not validate a whole document.
+Phase 1 steps 1 and 2 cover shared diagnostics, resource ceilings, file reading, and source parsing.
+
+## Reading a source
+
+| Entry point               | Input                              | Return value            |
+| ------------------------- | ---------------------------------- | ----------------------- |
+| `readMosaicFile(file)`    | Browser `File` or `Blob`           | `Promise<SourceResult>` |
+| `parseMosaicBytes(bytes)` | `Uint8Array`, including a subarray | `SourceResult`          |
+| `parseMosaicText(text)`   | JavaScript string                  | `SourceResult`          |
+
+Success carries `{ ok: true, value: unknown }`. The reader has established that the source contains one JSON object with its own `mosaic` string set to `"0.1.0"`. The value still needs node-tree preflight, schema validation and semantic validation before a renderer can treat it as a `MosaicDocument`. Content failures carry the existing non-empty `errors` list. An operating-system failure reading a file rejects the promise so callers can handle I/O separately.
+
+The file reader checks `Blob.size` before `arrayBuffer()`. The byte parser checks the actual view length before strict UTF-8 decoding. The text parser measures UTF-8 length without allocating another full buffer and stops when the limit is exceeded. A raw unpaired UTF-16 surrogate in supplied text is an encoding error. A literal JSON escape such as `\uD800` consists of ASCII source characters and follows JSON string decoding rules.
+
+The 5 MiB limit includes the optional three-byte UTF-8 BOM. The parser consumes one U+FEFF only at the start. A second BOM or one after whitespace causes a syntax error. U+FEFF inside a quoted value remains data.
+
+Before the whole-document `JSON.parse`, an iterative token scanner tracks decoded member names per open object. It skips string values and releases each object's set when the object closes. A repeated member returns `INVALID_JSON` at its escaped JSON Pointer, including any enclosing array indices. Reusing a name in sibling objects is valid.
+
+The scanner bounds its own stack at 41 open JSON containers. Every valid v0.1 path fits within one document object plus at most 20 node objects and 20 children arrays. An input beyond this ceiling returns `RESOURCE_LIMIT` before further nesting can allocate scanner frames. The separate node-depth and total-node preflight is the next step.
 
 ## Structured errors and results
 
@@ -31,7 +49,7 @@ Checking `ok` narrows the result to success or failure. The failure tuple requir
 
 ## Error classification
 
-The following defines how subsequent implementations will use the specification's existing codes. This step implements the catalog and resource-error helper, not all the detectors listed here.
+The following table defines the error codes used by the source reader and subsequent validation stages.
 
 | Code                  | Use                                                                                                                                                                      | Typical path                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
@@ -119,12 +137,12 @@ checkResourceLimit('nodes', 2001, jsonPointer('root'));
 - Invalid counts (negative, fractional, non-finite, or outside the safe-integer range) throw `RangeError` to expose a caller bug. This restriction applies to counters, not numeric document cells or state values.
 - This helper checks upper bounds only. Zero may be within budget while violating another schema rule, such as the minimum of one dataset column.
 
-The helper does not count nodes, traverse datasets, measure bytes/strings, or select chart rows. Those operations belong to subsequent steps. It performs a fixed amount of comparison and diagnostic construction without copying or modifying documents.
+Callers supply the measured count. Byte measurement now runs at the source boundary. Node, dataset, and chart counting belong to subsequent steps. It performs a fixed amount of comparison and diagnostic construction without copying or modifying documents.
 
 ## Verification scope
 
 Tests cover pointer escaping, root/empty paths, Unicode and JSON-string round trips, malformed pointers, invalid numeric indices, readonly catalogs/budgets, typed error/result constraints, schema/constant agreement, exact and exceeded boundaries, invalid counters, and Unicode Markdown boundaries through the existing schema tool.
 
-Hidden-node traversal, dataset/chart counting, decoding, byte measurement, duplicate detection, and semantic validation still need direct tests when implemented. No package dependencies are added by this step.
+Parser tests exercise file reads, UTF-8 boundaries, BOMs, duplicate properties, syntax and version checks. Hidden-node traversal, dataset/chart counting and semantic validation remain pending.
 
 **Verified on 2026-11-14:** `npm run check` passed strict typechecking, ESLint, Prettier checks, 112 tests across four files (74 added in this step), reference-demo schema validation, and the production build.

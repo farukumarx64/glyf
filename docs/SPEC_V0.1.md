@@ -4,7 +4,7 @@
 > **Intended audience:** Codex / an implementing developer  
 > **Priority order:** Correctness and safety → small, portable files → fast loading/rendering → low memory usage → visual quality → extensibility.
 
-> **Repository edition (2026-11-14):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 is complete; only Phase 1's shared error/resource definitions step is now authorized. Remaining implementation steps require a new instruction. Embedded example prompts below are reference material, not authorization to begin work.
+> **Repository edition (2026-11-14):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 and the first two Phase 1 steps (diagnostics and safe source parsing) are implemented. Embedded example prompts below are reference material, not authorization to begin work.
 
 ## 0. Instructions to Codex
 
@@ -553,7 +553,7 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 **Tasks**
 
 - [x] Define structured errors/results, JSON Pointer helpers, shared resource ceilings, inclusive limit diagnostics, and counting conventions (step 1, 2026-11-14).
-- [ ] Add file byte guard and strict UTF-8 decode path.
+- [x] Read files, guard the inclusive 5 MiB limit, decode strict UTF-8, handle one leading BOM, reject duplicate JSON members, and report syntax and version errors.
 - [ ] Implement `parseMosaic`, `validateMosaic`, `serializeMosaic`.
 - [ ] Compile JSON Schema validator once, not on every import.
 - [ ] Add semantic traversal: unique IDs, limits, dataset types, binding checks, root type, chart compatibility.
