@@ -2,7 +2,7 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-Phase 1 includes source parsing for browser files, byte arrays, and text, with typed diagnostics and fixed resource limits. Run `npm run validate:example` to read the reference file through this pipeline and check it against the schema. Full semantic validation follows in Phase 1.
+Phase 1 includes source parsing for browser files, byte arrays, and text, with typed diagnostics and fixed resource limits. Run `npm run validate:example` to read the reference file, check node count, depth and cycles, then validate its structure against the schema. Full semantic validation follows in Phase 1.
 
 Phase 0 is complete. See the [verification report](docs/phase-0.md) for results and the development dependency audit limitation.
 
@@ -56,11 +56,14 @@ schema/
 examples/
   mosaic-demo.mosa              Unmodified reference document
 scripts/
-  schema-validator.ts          Shared schema-only tooling configuration
+  schema-validator.ts          Schema conformance helper for tests
   validate-example.ts          Reference-document validation command
 src/
   core/types.ts                Portable types for all 14 node kinds
   core/file.ts                 Local File/Blob reading and byte guard
+  core/preflight.ts            Iterative node limits and object cycle checks
+  core/schema.ts               Guarded, compiled Draft 2020-12 schema check
+  core/validate.ts             In-memory structural validation API
   core/parse.ts                Byte and text parsing, encoding and version checks
   core/json-source.ts          Duplicate JSON property scanning
   core/errors.ts               Structured diagnostics and parser result types
@@ -71,6 +74,7 @@ src/
   styles/global.css           Local stylesheet and system fonts
 tests/
   fixtures.ts                 Typed fixtures covering every node kind
+  preflight.test.ts           Node limits, graph cycles and validation ordering
   parser.test.ts              File, byte, and text parsing tests
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
@@ -82,7 +86,7 @@ The working schema differs from the supplied original only by the approved prohi
 
 Types describe the format but cannot prove identifier patterns, finite numbers, limits, or cross-reference correctness. `MosaicDocument.root` reflects the specification's layout-root restriction, which the future semantic validator must enforce. Typed fixtures and schema tests check the node vocabulary together.
 
-**Schema validation alone does not establish full Mosaic validity.** The tooling validator is for the trusted local fixtures; it is not the public import API. Source parsing checks duplicate properties. Node-tree preflight, semantic checks, and serialization are the next Phase 1 steps. It must not be connected directly to untrusted file import.
+Pass the file reader's parsed value or a direct JavaScript value to `validateMosaic(value)` for resource preflight and structural validation. Its current success result is `{ ok: true }`. Semantic validation and serialization are the remaining core steps.
 
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per tooling module instance.
 

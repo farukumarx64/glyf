@@ -1,6 +1,6 @@
 # Core error and resource contracts
 
-Phase 1 steps 1 and 2 cover shared diagnostics, resource ceilings, file reading, and source parsing.
+Phase 1 includes source reading, iterative resource preflight and Draft 2020-12 structural validation.
 
 ## Reading a source
 
@@ -18,7 +18,17 @@ The 5 MiB limit includes the optional three-byte UTF-8 BOM. The parser consumes 
 
 Before the whole-document `JSON.parse`, an iterative token scanner tracks decoded member names per open object. It skips string values and releases each object's set when the object closes. A repeated member returns `INVALID_JSON` at its escaped JSON Pointer, including any enclosing array indices. Reusing a name in sibling objects is valid.
 
-The scanner bounds its own stack at 41 open JSON containers. Every valid v0.1 path fits within one document object plus at most 20 node objects and 20 children arrays. An input beyond this ceiling returns `RESOURCE_LIMIT` before further nesting can allocate scanner frames. The separate node-depth and total-node preflight is the next step.
+The scanner bounds its own stack at 41 open JSON containers. Every valid v0.1 path fits within one document object plus at most 20 node objects and 20 children arrays. An input beyond this ceiling returns `RESOURCE_LIMIT` before further nesting can allocate scanner frames. The validation API checks Mosaic node depth and total node count after parsing.
+
+## Validating an in-memory value
+
+Call `validateMosaic(value)` from `src/core/validate.ts` with a parsed value or a JSON-shaped JavaScript object. For example, the demo command passes the successful file reader's `source.value` to this function. It runs resource preflight first and calls the compiled schema validator only after preflight succeeds. The current success result is `{ ok: true }` for these structural checks. The planned semantic stage will verify dataset and state references, IDs and cell types before returning a typed document.
+
+Preflight walks the input using an explicit stack. Only `root` and entries in a node's `children` array are candidate node positions. The root counts once at depth 1. Each child adds one node and one level below its parent, including children of hidden `when` nodes. Metadata, rows and state consume no node positions. A failure returns `RESOURCE_LIMIT` with the offending node pointer. If the length of a child list already proves that the total exceeds 2,000, the error points to that list and gives the minimum known total. A document with a root and 1,999 leaf children fits exactly.
+
+The same walk inspects object references throughout the input, including arrays and unknown fields. An edge back to an object on the active path produces `SCHEMA_ERROR` at that edge. For example, if `root.children[0]` refers to `root`, the pointer is `/root/children/0`. A completed object shared by siblings is acyclic. Preflight revisits shared node positions to account for each occurrence and its actual depth. It can skip previously checked objects in ordinary data fields. Each validation call has its own traversal state.
+
+For direct calls, use dense arrays and records with enumerable string-keyed data properties. Preflight uses property descriptors to inspect own values. It rejects own getters, setters, hidden properties, symbol keys, and extra array properties.
 
 ## Structured errors and results
 
@@ -49,7 +59,7 @@ Checking `ok` narrows the result to success or failure. The failure tuple requir
 
 ## Error classification
 
-The following table defines the error codes used by the source reader and subsequent validation stages.
+The following table defines the error codes used throughout the source reader and validation stages.
 
 | Code                  | Use                                                                                                                                                                      | Typical path                                               |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
@@ -66,7 +76,7 @@ The following table defines the error codes used by the source reader and subseq
 
 Use the code from the first applicable validation stage; later stages need not run after a failure. For example, the schema-level rejection of a column key named `id` is `SCHEMA_ERROR`, while a cross-field cell-kind mismatch is `INVALID_DATASET`. Duplicate row IDs use `DUPLICATE_ID`, not the more general dataset code.
 
-When later schema-error adapters identify a published safety ceiling, normalize it to `RESOURCE_LIMIT` regardless of the enforcement layer. Other structural bounds, such as heading length or allowed grid-column values, remain `SCHEMA_ERROR`. This is a classification convention for the future full validator; the existing schema-only development tool still reports Ajv diagnostics.
+The structural validation API reports published safety ceilings with `RESOURCE_LIMIT`. Other structural bounds, such as heading length or allowed grid-column values, remain `SCHEMA_ERROR`. The schema conformance helper retains the detailed Ajv diagnostics used by its tests.
 
 ## JSON Pointer paths
 
@@ -113,7 +123,7 @@ For example, 100 rows with three declared columns use 300 cells, even if some ar
 
 The Markdown limit counts code points, not UTF-8 bytes, JavaScript UTF-16 code units, or displayed grapheme clusters. A supplementary-plane character such as `😀` counts once, even though JavaScript's `.length` counts two code units. This follows [JSON Schema string-length semantics](https://json-schema.org/draft/2020-12/json-schema-validation#name-maxlength).
 
-Tests check every corresponding schema ceiling against the constants. The core does not import the entire schema to obtain a few numbers. The schema's per-`children` array ceiling is also checked, but cannot replace the future global node-count traversal.
+Tests check every corresponding schema ceiling against the constants. The core does not import the entire schema to obtain a few numbers. The schema's per-`children` array ceiling is also checked, and the preflight sums node positions across the entire tree.
 
 ## Shared limit diagnostics
 
@@ -137,12 +147,12 @@ checkResourceLimit('nodes', 2001, jsonPointer('root'));
 - Invalid counts (negative, fractional, non-finite, or outside the safe-integer range) throw `RangeError` to expose a caller bug. This restriction applies to counters, not numeric document cells or state values.
 - This helper checks upper bounds only. Zero may be within budget while violating another schema rule, such as the minimum of one dataset column.
 
-Callers supply the measured count. Byte measurement now runs at the source boundary. Node, dataset, and chart counting belong to subsequent steps. It performs a fixed amount of comparison and diagnostic construction without copying or modifying documents.
+Callers supply the measured count. Byte measurement now runs at the source boundary. Preflight measures node count and depth. Dataset cell and chart point totals belong to the semantic stage.
 
 ## Verification scope
 
 Tests cover pointer escaping, root/empty paths, Unicode and JSON-string round trips, malformed pointers, invalid numeric indices, readonly catalogs/budgets, typed error/result constraints, schema/constant agreement, exact and exceeded boundaries, invalid counters, and Unicode Markdown boundaries through the existing schema tool.
 
-Parser tests exercise file reads, UTF-8 boundaries, BOMs, duplicate properties, syntax and version checks. Hidden-node traversal, dataset/chart counting and semantic validation remain pending.
+Parser tests exercise file reads, UTF-8 boundaries, BOMs, duplicate properties, syntax and version checks. Preflight tests exercise exact and exceeded limits, hidden branches, shared objects, and cycles in the document tree and surrounding data. Dataset and chart counting belong to semantic validation.
 
-**Verified on 2026-11-14:** `npm run check` passed strict typechecking, ESLint, Prettier checks, 112 tests across four files (74 added in this step), reference-demo schema validation, and the production build.
+**Step 1 verification on 2026-11-14:** `npm run check` passed strict typechecking, ESLint, Prettier checks, 112 tests across four files (74 added in this step), reference-demo schema validation, and the production build.

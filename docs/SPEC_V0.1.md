@@ -4,7 +4,7 @@
 > **Intended audience:** Codex / an implementing developer  
 > **Priority order:** Correctness and safety → small, portable files → fast loading/rendering → low memory usage → visual quality → extensibility.
 
-> **Repository edition (2026-11-14):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 and the first two Phase 1 steps (diagnostics and safe source parsing) are implemented. Embedded example prompts below are reference material, not authorization to begin work.
+> **Repository edition (2026-11-14):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 and the first three Phase 1 steps (diagnostics, safe source parsing, and resource preflight) are implemented. Embedded example prompts below are reference material, not authorization to begin work.
 
 ## 0. Instructions to Codex
 
@@ -554,8 +554,9 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 
 - [x] Define structured errors/results, JSON Pointer helpers, shared resource ceilings, inclusive limit diagnostics, and counting conventions (step 1, 2026-11-14).
 - [x] Read files, guard the inclusive 5 MiB limit, decode strict UTF-8, handle one leading BOM, reject duplicate JSON members, and report syntax and version errors.
-- [ ] Implement `parseMosaic`, `validateMosaic`, `serializeMosaic`.
-- [ ] Compile JSON Schema validator once, not on every import.
+- [x] Run iterative node-count, depth and cycle checks before schema validation, including for direct in-memory inputs.
+- [ ] Complete `parseMosaic` and `validateMosaic` with semantic validation and implement `serializeMosaic`.
+- [x] Compile the JSON Schema validator once per module instance and run it behind preflight.
 - [ ] Add semantic traversal: unique IDs, limits, dataset types, binding checks, root type, chart compatibility.
 - [ ] Return structured errors with JSON Pointer paths; show unsupported version distinctly.
 - [ ] Add tests for malformed JSON, wrong version, unknown nodes, duplicate IDs, invalid types, oversized/deep documents, and successful roundtrip.
