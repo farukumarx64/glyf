@@ -622,15 +622,17 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 
 ### Unit / schema
 
-- [ ] Valid sample passes schema and semantic validation.
-- [ ] No data field or state value is silently coerced.
-- [ ] Unexpected top-level/node properties rejected.
-- [ ] Duplicate node IDs / dataset column keys / row IDs rejected.
-- [ ] Missing state binding and missing dataset columns rejected.
-- [ ] Chart with nonnumeric y rejected; null points handled.
-- [ ] Over-limit bytes/depth/node count/cell count/chart points rejected.
-- [ ] Wrong version gives `UNSUPPORTED_VERSION`.
+- [x] Valid sample passes schema and semantic validation.
+- [x] No data field or state value is silently coerced.
+- [x] Unexpected top-level/node properties rejected.
+- [x] Duplicate node IDs / dataset column keys / row IDs rejected.
+- [x] Missing state binding and missing dataset columns rejected.
+- [x] Chart with nonnumeric y rejected; null points handled.
+- [x] Over-limit bytes/depth/node count/cell count/chart points rejected.
+- [x] Wrong version gives `UNSUPPORTED_VERSION`.
 - [x] Serializer roundtrip preserves structure and saved values.
+- [x] Validation and serialization preserve input on success and failure.
+- [x] A generated document at all ten inclusive resource ceilings survives parse–serialize–parse.
 
 ### UI and editing
 
@@ -648,19 +650,19 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 - [ ] `<script>` in Markdown is shown as inert text or omitted, never executed.
 - [ ] `javascript:` links cannot execute.
 - [ ] SVG/HTML snippets from documents cannot become executable DOM.
-- [ ] Large hostile nesting fails gracefully.
+- [x] Large hostile nesting fails gracefully.
 - [ ] Invalid encoding and invalid JSON show actionable messages.
 - [ ] Importing a file never initiates a document-controlled fetch.
-- [ ] Object keys that could cause prototype pollution are rejected.
+- [x] Reserved dataset, state, and column names and references are rejected.
 
-### Fixtures to add
+### Format fixtures
 
 - `mosaic-demo.mosa` — gold sample with Markdown, chart, editable table, conditional and text input.
 - `examples/invalid/unsupported-version.mosa`
 - `examples/invalid/duplicate-node-id.mosa`
 - `examples/invalid/missing-binding.mosa`
 - `examples/invalid/wrong-column-type.mosa`
-- `examples/invalid/malicious-markdown.mosa` (structurally valid, security-render fixture)
+- `examples/invalid/malicious-markdown.mosa` (valid v0.1 Markdown content, retained for later renderer checks)
 - Synthetic medium/large valid documents generated in benchmark tests, not committed if huge.
 
 ---

@@ -55,6 +55,7 @@ schema/
   mosaic-v0.1.schema.json       Authoritative structural contract
 examples/
   mosaic-demo.mosa              Unmodified reference document
+  invalid/                     Format fixtures and literal Markdown sample
 scripts/
   schema-validator.ts          Schema conformance helper for tests
   validate-example.ts          Reference-document validation command
@@ -78,6 +79,7 @@ src/
   styles/global.css           Local stylesheet and system fonts
 tests/
   fixtures.ts                 Typed fixtures covering every node kind
+  format.test.ts              File diagnostics, immutability, and boundary round trips
   preflight.test.ts           Node limits, graph cycles and validation ordering
   semantics.test.ts           Cross-field validation and aggregate limits
   parser.test.ts              File, byte, and text parsing tests

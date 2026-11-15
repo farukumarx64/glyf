@@ -15,7 +15,7 @@ Reference documents supplied for the review:
 - `mosaic-v0.1.schema.json`
 - `mosaic-demo.mosa`
 
-The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 and Phase 1 steps 1 through 5. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
+The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0, Phase 1 steps 1 through 5, and completion of automated format tests. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
 
 ## D001 — Reject duplicate JSON property names
 
