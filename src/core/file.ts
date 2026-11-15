@@ -1,6 +1,6 @@
 import { ROOT_POINTER } from './json-pointer.ts';
 import { checkResourceLimit } from './limits.ts';
-import { parseMosaicBytes, type SourceResult } from './parse.ts';
+import { parseMosaicBytes, type SourceResult } from './source.ts';
 
 /** Accepts browser File and Blob. Operating-system read failures reject the promise. */
 export async function readMosaicFile(file: Blob): Promise<SourceResult> {

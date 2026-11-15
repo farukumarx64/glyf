@@ -20,14 +20,14 @@ describe('preflight before structural validation', () => {
     const source = parseMosaicText(
       readFileSync(new URL('../examples/mosaic-demo.mosa', import.meta.url), 'utf8'),
     );
-    expect(source.ok && validateMosaic(source.value)).toEqual({ ok: true });
+    expect(source.ok && validateMosaic(source.value)).toMatchObject({ ok: true });
   });
 
   it.each([1999, 2000, 2001])('counts the root in a %i-node document', (size) => {
     const children = Array.from({ length: size - 1 }, (_, i) => divider(i));
     const value = documentWith({ ...minimalDocument().root, children });
     const result = validateMosaic(value);
-    if (size <= 2000) expect(result).toEqual({ ok: true });
+    if (size <= 2000) expect(result).toMatchObject({ ok: true });
     else
       expect(result).toMatchObject({
         ok: false,
@@ -43,7 +43,7 @@ describe('preflight before structural validation', () => {
 
   it.each([19, 20, 21])('uses node levels for a chain of depth %i', (depth) => {
     const result = validateMosaic(documentWith(chain(depth)));
-    if (depth <= 20) expect(result).toEqual({ ok: true });
+    if (depth <= 20) expect(result).toMatchObject({ ok: true });
     else
       expect(result).toMatchObject({
         ok: false,
@@ -186,7 +186,7 @@ describe('preflight before structural validation', () => {
       ...minimalDocument(),
       datasets: { a: data, b: structuredClone(data), c: structuredClone(data) },
     };
-    expect(validateMosaic(value)).toEqual({ ok: true });
+    expect(validateMosaic(value)).toMatchObject({ ok: true });
   });
 
   it('reports the depth limit for a deeply nested direct node chain', () => {
@@ -252,14 +252,14 @@ describe('direct JavaScript object graphs', () => {
       rows: list,
     });
     const doc = Object.freeze({ ...minimalDocument(), datasets: { a: first, b: first } });
-    expect(validateMosaic(doc)).toEqual({ ok: true });
+    expect(validateMosaic(doc)).toMatchObject({ ok: true });
     list.push(first);
     expect(validateMosaic(doc)).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/datasets/a/rows/0' }],
     });
     list.pop();
-    expect(validateMosaic(doc)).toEqual({ ok: true });
+    expect(validateMosaic(doc)).toMatchObject({ ok: true });
   });
 
   it('handles deep cyclic data outside the tree iteratively', () => {
@@ -280,7 +280,7 @@ describe('direct JavaScript object graphs', () => {
 
   it('rejects an accessor without invoking it, and accepts own properties of null-prototype records', () => {
     const value = Object.assign(Object.create(null) as Record<string, unknown>, minimalDocument());
-    expect(validateMosaic(value)).toEqual({ ok: true });
+    expect(validateMosaic(value)).toMatchObject({ ok: true });
     const getter = vi.fn(() => value);
     Object.defineProperty(value, 'extra', { get: getter, enumerable: true });
     expect(validateMosaic(value)).toMatchObject({

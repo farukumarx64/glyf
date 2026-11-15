@@ -22,9 +22,31 @@ function location(stack: readonly Frame[], key?: string) {
   return key === undefined ? path : appendJsonPointer(path, key);
 }
 
+function isJsonContainer(value: object): boolean {
+  const prototype: unknown = Object.getPrototypeOf(value);
+  const intrinsic = Array.isArray(value) ? Array : Object;
+  if (prototype === intrinsic.prototype || (prototype === null && intrinsic === Object))
+    return true;
+  if (prototype === null || typeof prototype !== 'object') return false;
+  // Plain records and arrays can come from another realm (such as an iframe).
+  const constructor: unknown = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
+  return (
+    typeof constructor === 'function' &&
+    constructor.prototype === prototype &&
+    Function.prototype.toString.call(constructor) === Function.prototype.toString.call(intrinsic)
+  );
+}
+
 /** Inspect plain JSON data before passing it to the recursive schema validator. */
 export function preflightMosaic(input: unknown): MosaicError | undefined {
   if (input === null || typeof input !== 'object') return;
+  if (!isJsonContainer(input)) {
+    return {
+      code: 'SCHEMA_ERROR',
+      path: ROOT_POINTER,
+      message: 'Expected a JSON record or array.',
+    };
+  }
 
   const active = new WeakSet<object>([input]);
   // A completed data object cannot be part of a cycle. Node positions still
@@ -81,6 +103,18 @@ export function preflightMosaic(input: unknown): MosaicError | undefined {
       };
     }
     const child: unknown = property.value;
+    if (
+      child === undefined ||
+      typeof child === 'function' ||
+      typeof child === 'bigint' ||
+      typeof child === 'symbol'
+    ) {
+      return {
+        code: 'SCHEMA_ERROR',
+        path: location(stack, key),
+        message: 'Expected a JSON value.',
+      };
+    }
     if (child !== null && typeof child === 'object' && active.has(child)) {
       return {
         code: 'SCHEMA_ERROR',
@@ -110,6 +144,13 @@ export function preflightMosaic(input: unknown): MosaicError | undefined {
     }
     if (child === null || typeof child !== 'object') continue;
     if (role === 'data' && completed.has(child)) continue;
+    if (!isJsonContainer(child)) {
+      return {
+        code: 'SCHEMA_ERROR',
+        path: location(stack, key),
+        message: 'Expected a JSON record or array.',
+      };
+    }
     active.add(child);
     stack.push({ value: child, role, depth, key, keys: Reflect.ownKeys(child), next: 0 });
   }

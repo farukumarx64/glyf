@@ -10,8 +10,7 @@ try {
     console.error(JSON.stringify(result.errors, null, 2));
     process.exitCode = 1;
   } else {
-    console.log('mosaic-demo.mosa passes resource preflight and Draft 2020-12 schema validation.');
-    console.log('Semantic validation is scheduled for Phase 1.');
+    console.log('mosaic-demo.mosa passes resource preflight, schema, and semantic validation.');
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Could not validate the reference demo.');

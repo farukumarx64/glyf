@@ -28,7 +28,7 @@ export interface MosaicError {
 /** A failure must explain itself with at least one diagnostic. */
 export type MosaicErrors = readonly [MosaicError, ...MosaicError[]];
 
-/** Contract for the future parser and full validator, not the schema-only tool. */
+/** A successful document has passed preflight, schema, and semantic validation. */
 export type ParseResult =
   | { readonly ok: true; readonly document: MosaicDocument }
   | { readonly ok: false; readonly errors: MosaicErrors };

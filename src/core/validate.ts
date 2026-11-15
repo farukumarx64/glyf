@@ -1,15 +1,14 @@
-import type { MosaicErrors } from './errors.ts';
+import type { ParseResult } from './errors.ts';
 import { appendJsonPointer, isJsonPointer, ROOT_POINTER } from './json-pointer.ts';
-import { checkMosaicHeader } from './parse.ts';
+import { checkMosaicHeader } from './source.ts';
 import { checkStructure } from './schema.ts';
+import { validateSemantics } from './semantics.ts';
 
-type StructureResult =
-  { readonly ok: true } | { readonly ok: false; readonly errors: MosaicErrors };
-
-/** Current validation stages: resource preflight and the v0.1 structural schema. */
-export function validateMosaic(value: unknown): StructureResult {
-  const problem = checkStructure(value);
-  if (!problem) return { ok: true };
+/** Validate an in-memory document without coercing, copying, or mutating it. */
+export function validateMosaic(value: unknown): ParseResult {
+  const result = checkStructure(value);
+  if (result.ok) return validateSemantics(result.document);
+  const { problem } = result;
   if (!Array.isArray(problem)) return { ok: false, errors: [problem] };
 
   const headerError = checkMosaicHeader(value);
@@ -22,9 +21,18 @@ export function validateMosaic(value: unknown): StructureResult {
       error.keyword === 'maxProperties' ||
       error.schemaPath === '#/$defs/markdown/properties/text/maxLength',
   );
-  // oneOf failures also contain diagnostics from inapplicable node types.
-  const issue = budget ?? problem.find((error) => error.keyword === 'oneOf') ?? problem[0]!;
+  // The innermost failed node union includes mismatched type constants from
+  // other branches. Prefer a field failure inside that node when available.
+  const union = problem.find((error) => error.keyword === 'oneOf');
+  const field =
+    union &&
+    problem.find(
+      (error) =>
+        error.keyword !== 'const' && error.instancePath.startsWith(union.instancePath + '/'),
+    );
+  const issue = budget ?? field ?? union ?? problem[0]!;
   let path = isJsonPointer(issue.instancePath) ? issue.instancePath : ROOT_POINTER;
+  if (issue.propertyName !== undefined) path = appendJsonPointer(path, issue.propertyName);
   if (issue.keyword === 'required') path = appendJsonPointer(path, issue.params.missingProperty);
   if (issue.keyword === 'additionalProperties')
     path = appendJsonPointer(path, issue.params.additionalProperty);
