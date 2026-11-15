@@ -1,6 +1,6 @@
 # Core error and resource contracts
 
-Phase 1 includes source reading, iterative resource preflight and Draft 2020-12 structural validation.
+The core reads local sources and validates documents through iterative resource preflight, the Draft 2020-12 schema, and the v0.1 semantic rules.
 
 ## Reading a source
 
@@ -22,13 +22,24 @@ The scanner bounds its own stack at 41 open JSON containers. Every valid v0.1 pa
 
 ## Validating an in-memory value
 
-Call `validateMosaic(value)` from `src/core/validate.ts` with a parsed value or a JSON-shaped JavaScript object. For example, the demo command passes the successful file reader's `source.value` to this function. It runs resource preflight first and calls the compiled schema validator only after preflight succeeds. The current success result is `{ ok: true }` for these structural checks. The planned semantic stage will verify dataset and state references, IDs and cell types before returning a typed document.
+Call `validateMosaic(value)` from `src/core/validate.ts` with a parsed value or a JSON-shaped JavaScript object. The reference command passes the successful file reader's `source.value` to this function. Use `parseMosaic(text)` from `src/core/parse.ts` to read and validate a source string in one call. Both functions return `ParseResult`. Success includes the checked document. Direct validation returns the original object and leaves it untouched. Validation reports the first failure and attaches its JSON Pointer. Each call checks the current values, including any edits made since a prior call.
 
 Preflight walks the input using an explicit stack. Only `root` and entries in a node's `children` array are candidate node positions. The root counts once at depth 1. Each child adds one node and one level below its parent, including children of hidden `when` nodes. Metadata, rows and state consume no node positions. A failure returns `RESOURCE_LIMIT` with the offending node pointer. If the length of a child list already proves that the total exceeds 2,000, the error points to that list and gives the minimum known total. A document with a root and 1,999 leaf children fits exactly.
 
 The same walk inspects object references throughout the input, including arrays and unknown fields. An edge back to an object on the active path produces `SCHEMA_ERROR` at that edge. For example, if `root.children[0]` refers to `root`, the pointer is `/root/children/0`. A completed object shared by siblings is acyclic. Preflight revisits shared node positions to account for each occurrence and its actual depth. It can skip previously checked objects in ordinary data fields. Each validation call has its own traversal state.
 
-For direct calls, use dense arrays and records with enumerable string-keyed data properties. Preflight uses property descriptors to inspect own values. It rejects own getters, setters, hidden properties, symbol keys, and extra array properties.
+For direct calls, use JSON scalars, dense arrays and plain records with enumerable string-keyed data properties. Null-prototype records are supported. Class instances, custom prototypes and explicit `undefined` values fail the structural checks. Preflight uses property descriptors to inspect own values. It rejects own getters, setters, hidden properties, symbol keys, and extra array properties.
+
+## Semantic validation
+
+- The root must be a `column`, `row`, `grid`, or `card`. Visit nodes in document order, including every child of a `when`. A repeated ID points to the later node’s `id`. Document and row IDs have separate scopes.
+- Dataset names, state keys, column keys, and references to them reserve `__proto__`, `prototype`, and `constructor`. Ordinary text can contain these words. References resolve to declared entries using maps and own-property checks.
+- Each dataset has unique column keys and row IDs. A row must contain its own `id` and a cell for every declared column. Extra cells fail validation. A present `null` is valid in any column. Other cells must have the declared string, finite number, or boolean type.
+- The cumulative cell count adds `rows × columns` for each dataset, including unused datasets. If it exceeds 20,000, the pointer identifies the row collection of the dataset that crosses the limit.
+- A toggle binds to a boolean, a text input to a string, and a number input to a finite number. A `stateValue` or `when` can bind to any declared scalar, including `null`. A different scalar type in `when.equals` is valid and compares unequal under strict equality.
+- Tables and charts require a declared dataset. Both chart axes must be columns in that dataset. The x column accepts strings or numbers and the y column requires numbers. The same numeric column can serve both axes. More than 500 rows with both selected values present and non-null produces `RESOURCE_LIMIT` at the chart, including for a hidden chart. Validation preserves dataset row order.
+
+For example, a string `"12"` in a numeric column named `amount` in the first row of dataset `sales` returns `INVALID_DATASET` at `/datasets/sales/rows/0/amount`. Omitting the cell produces a missing-cell error at the same pointer. A cell containing `null` passes.
 
 ## Structured errors and results
 
@@ -47,7 +58,7 @@ interface MosaicError {
 - `message` is a human-readable explanation. Future validators must supply useful, non-empty messages; their wording is not an API discriminator.
 - Diagnostics contain no document copies, stack traces, or Ajv-specific objects.
 
-The future parser and full validator share this result contract:
+The text parser and in-memory validator share this result contract.
 
 ```ts
 type ParseResult =
@@ -153,6 +164,6 @@ Callers supply the measured count. Byte measurement now runs at the source bound
 
 Tests cover pointer escaping, root/empty paths, Unicode and JSON-string round trips, malformed pointers, invalid numeric indices, readonly catalogs/budgets, typed error/result constraints, schema/constant agreement, exact and exceeded boundaries, invalid counters, and Unicode Markdown boundaries through the existing schema tool.
 
-Parser tests exercise file reads, UTF-8 boundaries, BOMs, duplicate properties, syntax and version checks. Preflight tests exercise exact and exceeded limits, hidden branches, shared objects, and cycles in the document tree and surrounding data. Dataset and chart counting belong to semantic validation.
+Parser tests exercise file reads, UTF-8 boundaries, BOMs, duplicate properties, syntax and version checks. Preflight tests exercise exact and exceeded limits, hidden branches, shared objects, and cycles in the document tree and surrounding data. Semantic tests exercise the typed success result, identity scopes, safe name resolution, row shape, control types, chart compatibility, and exact and exceeded cell and chart budgets.
 
 **Step 1 verification on 2026-11-14:** `npm run check` passed strict typechecking, ESLint, Prettier checks, 112 tests across four files (74 added in this step), reference-demo schema validation, and the production build.

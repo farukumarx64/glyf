@@ -3,7 +3,7 @@
 ## Status and scope
 
 - **Accepted:** 2026-11-13, by the project owner in the design-review conversation.
-- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1 includes error and resource contracts, safe source parsing, and resource preflight.
+- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1 includes error and resource contracts, safe source parsing, resource preflight, and full validation.
 - **Format version:** `0.1.0`.
 - **Scope:** Clarify and harden the existing v0.1 contract without introducing later-version features.
 
@@ -15,7 +15,7 @@ Reference documents supplied for the review:
 - `mosaic-v0.1.schema.json`
 - `mosaic-demo.mosa`
 
-The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 and Phase 1 steps 1 through 3. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
+The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 and Phase 1 steps 1 through 4. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
 
 ## D001 — Reject duplicate JSON property names
 
@@ -231,6 +231,12 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Run one iterative walk before the existing compiled schema check for both direct calls and the demo workflow. A cycle points to the reference that closes it. Track completed objects separately from active ancestors so shared data stays valid and each shared node occurrence counts.
 - Keep source parsing and structural validation separately callable. Structural success carries `ok: true`; returning a typed document depends on the next semantic validation step.
 - Inspect own property descriptors on direct input and require JSON data properties and dense arrays. The traversal computes a diagnostic pointer only when reporting a failure. See [core contracts](core-contracts.md) for the counting conventions and API.
+
+## Phase 1, step 4 implementation choices
+
+- The public text parser and in-memory validator return the typed document after all validation stages succeed. Source-only reads still provide an unknown value for callers that need that stage.
+- Check each dataset once and index its column kinds for chart lookups. Count chart points only if the dataset contains more than 500 rows. Charts that use the same dataset and axis pair can reuse a successful count within the current call.
+- Visit all node positions in document order after the depth preflight. The first semantic failure reports a stable error code and the offending JSON Pointer. See [core contracts](core-contracts.md) for examples.
 
 ## Supporting references
 

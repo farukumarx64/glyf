@@ -2,7 +2,7 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-Phase 1 includes source parsing for browser files, byte arrays, and text, with typed diagnostics and fixed resource limits. Run `npm run validate:example` to read the reference file, check node count, depth and cycles, then validate its structure against the schema. Full semantic validation follows in Phase 1.
+Phase 1 includes safe source parsing and full v0.1 document validation. Run `npm run validate:example` to read the reference file and check its resource limits, schema, and semantics.
 
 Phase 0 is complete. See the [verification report](docs/phase-0.md) for results and the development dependency audit limitation.
 
@@ -34,7 +34,7 @@ If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL pr
 | `npm run lint`             | Run ESLint with zero warnings allowed.                                    |
 | `npm run test`             | Run schema and core contract tests once.                                  |
 | `npm run test:watch`       | Watch tests during development.                                           |
-| `npm run validate:example` | Read the reference file and check it against Draft 2020-12.               |
+| `npm run validate:example` | Run full v0.1 validation on the reference file.                           |
 | `npm run format:check`     | Check formatting without editing files.                                   |
 | `npm run format`           | Apply formatting; preserve supplied reference files.                      |
 | `npm run build`            | Typecheck and create the static production build in `dist/`.              |
@@ -63,8 +63,10 @@ src/
   core/file.ts                 Local File/Blob reading and byte guard
   core/preflight.ts            Iterative node limits and object cycle checks
   core/schema.ts               Guarded, compiled Draft 2020-12 schema check
-  core/validate.ts             In-memory structural validation API
-  core/parse.ts                Byte and text parsing, encoding and version checks
+  core/validate.ts             Full in-memory validation API
+  core/semantics.ts            Dataset, state, node, and chart rules
+  core/parse.ts                Parse and validate text into a typed document
+  core/source.ts               Byte and text decoding, syntax, and version checks
   core/json-source.ts          Duplicate JSON property scanning
   core/errors.ts               Structured diagnostics and parser result types
   core/json-pointer.ts         Typed diagnostic-path construction and syntax checks
@@ -75,6 +77,7 @@ src/
 tests/
   fixtures.ts                 Typed fixtures covering every node kind
   preflight.test.ts           Node limits, graph cycles and validation ordering
+  semantics.test.ts           Cross-field validation and aggregate limits
   parser.test.ts              File, byte, and text parsing tests
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
@@ -84,11 +87,9 @@ tests/
 
 The working schema differs from the supplied original only by the approved prohibition on a declared column key named `id` (D003). Row `id` remains required metadata. A test guards that precise amendment; the original files remain available for review.
 
-Types describe the format but cannot prove identifier patterns, finite numbers, limits, or cross-reference correctness. `MosaicDocument.root` reflects the specification's layout-root restriction, which the future semantic validator must enforce. Typed fixtures and schema tests check the node vocabulary together.
+Use `parseMosaic(text)` for JSON text or `validateMosaic(value)` for an in-memory value, including the successful file reader’s `value`. Both return `{ ok: true, document: MosaicDocument }` after preflight, schema, and semantic validation. Failure returns `{ ok: false, errors }` with a code, JSON Pointer, and message for the first violation. Serialization is the remaining Phase 1 implementation step.
 
-Pass the file reader's parsed value or a direct JavaScript value to `validateMosaic(value)` for resource preflight and structural validation. Its current success result is `{ ok: true }`. Semantic validation and serialization are the remaining core steps.
-
-The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per tooling module instance.
+The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per core module instance.
 
 ## Phase boundaries
 
