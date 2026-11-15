@@ -14,11 +14,20 @@ function withChild(node: unknown) {
 function withDataset(columns: unknown[], rows: unknown[]) {
   return { ...minimalDocument(), datasets: { values: { columns, rows } } };
 }
-function fails(value: unknown, code: MosaicErrorCode, path: string) {
-  expect(validateMosaic(value)).toMatchObject({
+function failsInMemory(value: unknown, code: MosaicErrorCode, path: string) {
+  const result = validateMosaic(value);
+  expect(result).toMatchObject({
     ok: false,
     errors: [{ code, path, message: expect.any(String) }],
   });
+  return result;
+}
+// JSON documents must give the same diagnostic through either public entry point.
+function fails(value: unknown, code: MosaicErrorCode, path: string) {
+  const source = JSON.stringify(value);
+  const direct = failsInMemory(value, code, path);
+  expect(parseMosaic(source)).toStrictEqual(direct);
+  expect(JSON.stringify(value)).toBe(source);
 }
 function chartDocument(rows: unknown[], children: unknown[] = [nodeSamples.chart]) {
   return { ...withDataset(sample.columns, rows), root: { ...minimalDocument().root, children } };
@@ -70,9 +79,9 @@ describe('full validation entry points', () => {
     });
     expect(validateMosaic(external).ok).toBe(true);
     for (const state of [new Date(), new Map(), Object.create({ visible: true })]) {
-      fails({ ...minimalDocument(), state }, 'SCHEMA_ERROR', '/state');
+      failsInMemory({ ...minimalDocument(), state }, 'SCHEMA_ERROR', '/state');
     }
-    fails({ ...minimalDocument(), theme: undefined }, 'SCHEMA_ERROR', '/theme');
+    failsInMemory({ ...minimalDocument(), theme: undefined }, 'SCHEMA_ERROR', '/theme');
   });
 });
 
@@ -195,8 +204,11 @@ describe('dataset declarations and cells', () => {
   });
   it.each([
     ['amount', '12'],
+    ['amount', false],
     ['label', 42],
+    ['label', false],
     ['active', 0],
+    ['active', 'false'],
   ] as const)('rejects a non-matching %s cell without coercion', (key, value) => {
     fails(
       withDataset(sample.columns, [{ ...sample.rows[0], [key]: value }]),
@@ -217,7 +229,7 @@ describe('dataset declarations and cells', () => {
   it.each([NaN, Infinity, -Infinity])(
     'rejects non-finite value %s before cell type checks',
     (value) => {
-      fails(
+      failsInMemory(
         withDataset(sample.columns, [{ ...sample.rows[0], amount: value }]),
         'SCHEMA_ERROR',
         '/datasets/values/rows/0/amount',
@@ -252,11 +264,14 @@ describe('state bindings', () => {
   );
   it.each([
     [nodeSamples.toggle, 'false'],
+    [nodeSamples.toggle, 0],
     [nodeSamples.toggle, null],
     [nodeSamples.input, 1],
+    [nodeSamples.input, false],
     [nodeSamples.input, null],
     [{ ...nodeSamples.input, kind: 'number' }, '12'],
     [{ ...nodeSamples.input, kind: 'number' }, false],
+    [{ ...nodeSamples.input, kind: 'number' }, null],
   ] as const)('rejects an incompatible control binding', (node, value) => {
     const doc = { ...withChild({ ...node, bind: 'v' }), state: { v: value } };
     fails(doc, 'INVALID_BINDING', childPath + '/bind');
@@ -285,6 +300,24 @@ describe('state bindings', () => {
     };
     fails(doc, 'INVALID_BINDING', childPath + '/children/0/bind');
   });
+
+  it.each([null, false, 0, '0'])(
+    'allows display and conditional bindings to the declared scalar %j',
+    (value) => {
+      const doc = {
+        ...minimalDocument(),
+        state: { v: value },
+        root: {
+          ...minimalDocument().root,
+          children: [
+            { ...nodeSamples.stateValue, bind: 'v' },
+            { ...nodeSamples.when, bind: 'v', equals: value },
+          ],
+        },
+      };
+      expect(parseMosaic(JSON.stringify(doc))).toStrictEqual({ ok: true, document: doc });
+    },
+  );
 });
 
 describe('dataset references and chart axes', () => {
@@ -418,5 +451,30 @@ describe('aggregate cells and chart point budgets', () => {
       childPath + '/children/0',
     );
     expect(validateMosaic(chartDocument(over, [nodeSamples.table])).ok).toBe(true);
+  });
+
+  it('checks chart points per dataset and checks edited rows again on the next validation', () => {
+    const rows = Array.from({ length: 501 }, (_, i) => ({
+      id: 'r' + i,
+      label: '',
+      amount: i === 500 ? null : i,
+      active: false,
+    }));
+    const otherRows = structuredClone(rows);
+    const doc = {
+      ...chartDocument(rows, [
+        nodeSamples.chart,
+        { ...nodeSamples.chart, id: 'otherChart', dataset: 'other' },
+      ]),
+      datasets: {
+        values: { columns: sample.columns, rows },
+        other: { columns: sample.columns, rows: otherRows },
+      },
+    };
+    expect(validateMosaic(doc).ok).toBe(true);
+    otherRows[500]!.amount = 0;
+    fails(doc, 'RESOURCE_LIMIT', '/root/children/1');
+    otherRows[500]!.amount = null;
+    expect(validateMosaic(doc).ok).toBe(true);
   });
 });

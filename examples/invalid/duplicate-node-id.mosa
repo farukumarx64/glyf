@@ -1,0 +1,13 @@
+{
+  "mosaic": "0.1.0",
+  "id": "duplicate",
+  "meta": { "title": "Repeated node ID" },
+  "root": {
+    "type": "column",
+    "id": "root",
+    "children": [
+      { "type": "divider", "id": "line" },
+      { "type": "card", "id": "box", "children": [{ "type": "divider", "id": "line" }] }
+    ]
+  }
+}

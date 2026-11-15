@@ -124,3 +124,75 @@ describe('Mosaic Draft 2020-12 structural contract', () => {
     ).toBe(valid);
   });
 });
+
+describe('v0.1 field boundaries', () => {
+  it.each([
+    ['title', 200],
+    ['description', 1000],
+    ['locale', 32],
+  ] as const)('enforces the metadata %s maximum of %i Unicode code points', (field, limit) => {
+    const doc = minimalDocument();
+    const make = (length: number) => ({
+      ...doc,
+      meta: { ...doc.meta, [field]: '雪'.repeat(length) },
+    });
+    expect(validateSchema(make(limit))).toBe(true);
+    expect(validateSchema(make(limit + 1))).toBe(false);
+  });
+
+  it.each([
+    [nodeSamples.heading, 'text', 500],
+    [nodeSamples.text, 'text', 10000],
+    [nodeSamples.card, 'title', 120],
+    [nodeSamples.chart, 'title', 120],
+    [nodeSamples.input, 'label', 120],
+    [nodeSamples.toggle, 'label', 120],
+    [nodeSamples.stateValue, 'prefix', 120],
+    [nodeSamples.stateValue, 'suffix', 120],
+  ] as const)('enforces the %j field %s maximum of %i code points', (node, field, limit) => {
+    const make = (length: number) => ({
+      ...typedDocument,
+      root: { ...typedDocument.root, children: [{ ...node, [field]: '😀'.repeat(length) }] },
+    });
+    expect(validateSchema(make(limit))).toBe(true);
+    expect(validateSchema(make(limit + 1))).toBe(false);
+  });
+
+  it.each([
+    [nodeSamples.heading, 'level', 1, 4],
+    [nodeSamples.grid, 'columns', 1, 4],
+    [nodeSamples.row, 'gap', 0, 6],
+    [nodeSamples.grid, 'gap', 0, 6],
+  ] as const)(
+    'enforces both ends of the integer interval for %j field %s',
+    (node, field, min, max) => {
+      for (const [value, valid] of [
+        [min, true],
+        [max, true],
+        [min - 1, false],
+        [max + 1, false],
+        [min + 0.5, false],
+      ] as const) {
+        expect(
+          validateSchema({
+            ...typedDocument,
+            root: { ...typedDocument.root, children: [{ ...node, [field]: value }] },
+          }),
+        ).toBe(valid);
+      }
+    },
+  );
+
+  it('requires a nonempty title and at least one column, while allowing an empty dataset', () => {
+    const doc = minimalDocument();
+    expect(validateSchema({ ...doc, meta: { title: '' } })).toBe(false);
+    expect(validateSchema({ ...doc, meta: { title: 'A' } })).toBe(true);
+    const dataset = (label: string) => ({
+      columns: [{ key: 'x', kind: 'number', label }],
+      rows: [],
+    });
+    expect(validateSchema({ ...doc, datasets: { empty: { columns: [], rows: [] } } })).toBe(false);
+    expect(validateSchema({ ...doc, datasets: { empty: dataset('😀'.repeat(100)) } })).toBe(true);
+    expect(validateSchema({ ...doc, datasets: { empty: dataset('😀'.repeat(101)) } })).toBe(false);
+  });
+});

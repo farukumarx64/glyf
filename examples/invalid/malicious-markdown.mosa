@@ -1,0 +1,16 @@
+{
+  "mosaic": "0.1.0",
+  "id": "markdown_content",
+  "meta": { "title": "Literal markup in a valid Markdown node" },
+  "root": {
+    "type": "column",
+    "id": "root",
+    "children": [
+      {
+        "type": "markdown",
+        "id": "source",
+        "text": "<script type=\"application/json\">{\"example\":true}</script>\n\n<svg><title>sample</title></svg>"
+      }
+    ]
+  }
+}

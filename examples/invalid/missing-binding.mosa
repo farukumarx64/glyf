@@ -1,0 +1,19 @@
+{
+  "mosaic": "0.1.0",
+  "id": "binding",
+  "meta": { "title": "Missing state binding" },
+  "state": { "visible": false },
+  "root": {
+    "type": "column",
+    "id": "root",
+    "children": [
+      {
+        "type": "when",
+        "id": "conditional",
+        "bind": "visible",
+        "equals": true,
+        "children": [{ "type": "stateValue", "id": "value", "bind": "absent" }]
+      }
+    ]
+  }
+}

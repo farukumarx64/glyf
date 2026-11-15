@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { parseMosaicText } from '../src/core/parse.ts';
+import { parseMosaic, parseMosaicText } from '../src/core/parse.ts';
 import { MOSAIC_LIMITS } from '../src/core/limits.ts';
 import { preflightMosaic } from '../src/core/preflight.ts';
 import { validateMosaic } from '../src/core/validate.ts';
@@ -27,6 +27,7 @@ describe('preflight before structural validation', () => {
     const children = Array.from({ length: size - 1 }, (_, i) => divider(i));
     const value = documentWith({ ...minimalDocument().root, children });
     const result = validateMosaic(value);
+    expect(parseMosaic(JSON.stringify(value))).toStrictEqual(result);
     if (size <= 2000) expect(result).toMatchObject({ ok: true });
     else
       expect(result).toMatchObject({
@@ -42,7 +43,16 @@ describe('preflight before structural validation', () => {
   });
 
   it.each([19, 20, 21])('uses node levels for a chain of depth %i', (depth) => {
-    const result = validateMosaic(documentWith(chain(depth)));
+    const doc = documentWith(chain(depth));
+    const result = validateMosaic(doc);
+    // Text can hit the raw container guard first. Both paths identify the same node.
+    const parsed = parseMosaic(JSON.stringify(doc));
+    if (depth <= 20) expect(parsed).toStrictEqual(result);
+    else
+      expect(parsed).toMatchObject({
+        ok: false,
+        errors: [{ code: 'RESOURCE_LIMIT', path: '/root' + '/children/0'.repeat(20) }],
+      });
     if (depth <= 20) expect(result).toMatchObject({ ok: true });
     else
       expect(result).toMatchObject({
@@ -310,5 +320,36 @@ describe('direct JavaScript object graphs', () => {
         errors: [{ code: 'SCHEMA_ERROR', path: '/root/children' }],
       });
     }
+  });
+});
+
+describe('non-JSON JavaScript input', () => {
+  it.each([
+    ['a function', () => 1],
+    ['a bigint', 1n],
+    ['a symbol', Symbol('value')],
+    ['undefined', undefined],
+  ])('rejects %s in a nested cell before it can be dropped or converted', (_kind, cell) => {
+    const row = { id: 'r', value: cell };
+    const data = { columns: [{ key: 'value', kind: 'number', label: 'Value' }], rows: [row] };
+    expect(validateMosaic({ ...minimalDocument(), datasets: { data } })).toMatchObject({
+      ok: false,
+      errors: [{ code: 'SCHEMA_ERROR', path: '/datasets/data/rows/0/value' }],
+    });
+    expect(row.value).toBe(cell);
+    expect(Object.hasOwn(row, 'value')).toBe(true);
+  });
+
+  it('reports an accessor in a child array without reading or replacing it', () => {
+    const children = [divider(0)];
+    const get = vi.fn(() => divider(1));
+    Object.defineProperty(children, '0', { get, enumerable: true, configurable: true });
+    const descriptor = Object.getOwnPropertyDescriptor(children, '0');
+    expect(validateMosaic(documentWith({ ...minimalDocument().root, children }))).toMatchObject({
+      ok: false,
+      errors: [{ code: 'SCHEMA_ERROR', path: '/root/children/0' }],
+    });
+    expect(get).not.toHaveBeenCalled();
+    expect(Object.getOwnPropertyDescriptor(children, '0')).toStrictEqual(descriptor);
   });
 });

@@ -1,0 +1,12 @@
+{
+  "mosaic": "0.1.0",
+  "id": "cell",
+  "meta": { "title": "Numeric column containing a string" },
+  "datasets": {
+    "sales": {
+      "columns": [{ "key": "amount", "label": "Amount", "kind": "number" }],
+      "rows": [{ "id": "r1", "amount": "12" }]
+    }
+  },
+  "root": { "type": "column", "id": "root", "children": [] }
+}
