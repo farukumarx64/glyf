@@ -2,7 +2,7 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-Phase 1 includes safe source parsing and full v0.1 document validation. Run `npm run validate:example` to read the reference file and check its resource limits, schema, and semantics.
+The Phase 1 core supports safe parsing, full v0.1 validation, and serialization. Run `npm run validate:example` to read the reference file and check its resource limits, schema, and semantics.
 
 Phase 0 is complete. See the [verification report](docs/phase-0.md) for results and the development dependency audit limitation.
 
@@ -66,6 +66,8 @@ src/
   core/validate.ts             Full in-memory validation API
   core/semantics.ts            Dataset, state, node, and chart rules
   core/parse.ts                Parse and validate text into a typed document
+  core/serialize.ts            Validate and produce formatted .mosa text
+  core/utf8.ts                 Shared UTF-8 text size and encoding checks
   core/source.ts               Byte and text decoding, syntax, and version checks
   core/json-source.ts          Duplicate JSON property scanning
   core/errors.ts               Structured diagnostics and parser result types
@@ -79,6 +81,7 @@ tests/
   preflight.test.ts           Node limits, graph cycles and validation ordering
   semantics.test.ts           Cross-field validation and aggregate limits
   parser.test.ts              File, byte, and text parsing tests
+  serialize.test.ts           Export formatting, round-trips, and final byte limits
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
@@ -87,7 +90,9 @@ tests/
 
 The working schema differs from the supplied original only by the approved prohibition on a declared column key named `id` (D003). Row `id` remains required metadata. A test guards that precise amendment; the original files remain available for review.
 
-Use `parseMosaic(text)` for JSON text or `validateMosaic(value)` for an in-memory value, including the successful file reader’s `value`. Both return `{ ok: true, document: MosaicDocument }` after preflight, schema, and semantic validation. Failure returns `{ ok: false, errors }` with a code, JSON Pointer, and message for the first violation. Serialization is the remaining Phase 1 implementation step.
+Use `parseMosaic(text)` for JSON text or `validateMosaic(value)` for an in-memory value, including the successful file reader’s `value`. Both return `{ ok: true, document: MosaicDocument }` after preflight, schema, and semantic validation. Failure returns `{ ok: false, errors }` with a code, JSON Pointer, and message for the first violation.
+
+Use `serializeMosaic(document)` to export the current model as two-space JSON with one final LF. It revalidates the document and enforces the inclusive 5 MiB limit on the formatted UTF-8 output. A failed export throws `MosaicSerializationError` with the same `errors` list used by validation. See the [serialization contract](docs/core-contracts.md#serializing-a-document) for boundary behavior.
 
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per core module instance.
 

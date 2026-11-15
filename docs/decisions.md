@@ -3,7 +3,7 @@
 ## Status and scope
 
 - **Accepted:** 2026-11-13, by the project owner in the design-review conversation.
-- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1 includes error and resource contracts, safe source parsing, resource preflight, and full validation.
+- **Implementation status:** Phase 0 completed and verified on 2026-11-13. Phase 1 includes error and resource contracts, safe source parsing, resource preflight, full validation, and serialization.
 - **Format version:** `0.1.0`.
 - **Scope:** Clarify and harden the existing v0.1 contract without introducing later-version features.
 
@@ -15,7 +15,7 @@ Reference documents supplied for the review:
 - `mosaic-v0.1.schema.json`
 - `mosaic-demo.mosa`
 
-The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 and Phase 1 steps 1 through 4. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
+The supplied originals remain unchanged and are retained in `docs/reference/`; the demo is preserved in `examples/`. The owner subsequently authorized Phase 0 and Phase 1 steps 1 through 5. The working schema and `docs/SPEC_V0.1.md` explicitly incorporate the approved contract amendments. Remaining implementation steps require a separate instruction.
 
 ## D001 — Reject duplicate JSON property names
 
@@ -237,6 +237,12 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - The public text parser and in-memory validator return the typed document after all validation stages succeed. Source-only reads still provide an unknown value for callers that need that stage.
 - Check each dataset once and index its column kinds for chart lookups. Count chart points only if the dataset contains more than 500 rows. Charts that use the same dataset and axis pair can reuse a successful count within the current call.
 - Visit all node positions in document order after the depth preflight. The first semantic failure reports a stable error code and the offending JSON Pointer. See [core contracts](core-contracts.md) for examples.
+
+## Phase 1, step 5 implementation choices
+
+- Preserve the specified string return type. Validation or file-size failure throws `MosaicSerializationError` with the original structured diagnostics.
+- Use the native JSON formatter with two-space indentation and append one LF. An identity replacer bounds the expansion of repeated string values in directly supplied documents. The final UTF-8 size check uses the text parser’s shared byte counter.
+- Keep download handling in Phase 4. The Phase 1 round-trip test encodes the core output and reopens it through the file reader and full validator.
 
 ## Supporting references
 

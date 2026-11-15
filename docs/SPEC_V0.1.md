@@ -4,7 +4,7 @@
 > **Intended audience:** Codex / an implementing developer  
 > **Priority order:** Correctness and safety → small, portable files → fast loading/rendering → low memory usage → visual quality → extensibility.
 
-> **Repository edition (2026-11-15):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 and the first four Phase 1 steps (diagnostics, safe source parsing, resource preflight, and full validation) are implemented. Embedded example prompts below are reference material, not authorization to begin work.
+> **Repository edition (2026-11-15):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 and the Phase 1 core (safe parsing, resource preflight, full validation, and serialization) are implemented. Embedded example prompts below are reference material, not authorization to begin work.
 
 ## 0. Instructions to Codex
 
@@ -556,11 +556,11 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 - [x] Read files, guard the inclusive 5 MiB limit, decode strict UTF-8, handle one leading BOM, reject duplicate JSON members, and report syntax and version errors.
 - [x] Run iterative node-count, depth and cycle checks before schema validation, including for direct in-memory inputs.
 - [x] Complete `parseMosaic` and `validateMosaic` with the typed document result.
-- [ ] Implement `serializeMosaic` and verify the export byte limit and roundtrip.
+- [x] Implement `serializeMosaic` and verify the export byte limit and roundtrip.
 - [x] Compile the JSON Schema validator once per module instance and run it behind preflight.
 - [x] Validate node and row identity, layout roots, dataset declarations and cells, state and dataset references, chart compatibility, and aggregate limits.
 - [x] Return structured errors with JSON Pointer paths and a distinct unsupported version code.
-- [ ] Add tests for malformed JSON, wrong version, unknown nodes, duplicate IDs, invalid types, oversized/deep documents, and successful roundtrip.
+- [x] Add tests for malformed JSON, wrong version, unknown nodes, duplicate IDs, invalid types, oversized/deep documents, and successful roundtrip.
 
 **Acceptance:** Valid examples parse/export; invalid input fails safely with actionable errors; 100% of specified semantic rules have direct tests.
 
@@ -630,7 +630,7 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 - [ ] Chart with nonnumeric y rejected; null points handled.
 - [ ] Over-limit bytes/depth/node count/cell count/chart points rejected.
 - [ ] Wrong version gives `UNSUPPORTED_VERSION`.
-- [ ] Serializer roundtrip preserves structure and saved values.
+- [x] Serializer roundtrip preserves structure and saved values.
 
 ### UI and editing
 

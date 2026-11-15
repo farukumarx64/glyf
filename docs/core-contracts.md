@@ -1,6 +1,6 @@
 # Core error and resource contracts
 
-The core reads local sources and validates documents through iterative resource preflight, the Draft 2020-12 schema, and the v0.1 semantic rules.
+The core reads local sources, validates them through iterative resource preflight, the Draft 2020-12 schema, and the v0.1 semantic rules, and serializes the current document for export.
 
 ## Reading a source
 
@@ -40,6 +40,14 @@ For direct calls, use JSON scalars, dense arrays and plain records with enumerab
 - Tables and charts require a declared dataset. Both chart axes must be columns in that dataset. The x column accepts strings or numbers and the y column requires numbers. The same numeric column can serve both axes. More than 500 rows with both selected values present and non-null produces `RESOURCE_LIMIT` at the chart, including for a hidden chart. Validation preserves dataset row order.
 
 For example, a string `"12"` in a numeric column named `amount` in the first row of dataset `sales` returns `INVALID_DATASET` at `/datasets/sales/rows/0/amount`. Omitting the cell produces a missing-cell error at the same pointer. A cell containing `null` passes.
+
+## Serializing a document
+
+`serializeMosaic(document: MosaicDocument): string` in `src/core/serialize.ts` validates the current document on every call. Only format fields are accepted. Keep UI state such as the active selection outside the document model. A failure throws `MosaicSerializationError` from the same module. Its `errors` property holds the usual non-empty list of Mosaic diagnostics. Callers can inspect `errors[0].code` and `errors[0].path` and retain their working document for a retry.
+
+Output matches `JSON.stringify(document, null, 2) + "\n"`. It starts with the opening brace and ends with one LF. Reopening preserves node, column, and row order, IDs, hidden content, optional fields, and committed cell and state values. JSON number spelling follows the native formatter, including writing JavaScript `-0` as `0`. A lone surrogate in a string is written as a JSON escape and recovered when parsed.
+
+The inclusive limit is 5,242,880 UTF-8 bytes including indentation, escapes, and the final LF. Output of 5,242,881 bytes raises `FILE_TOO_LARGE` at the document pointer `""`. A compact input can open successfully and then need a smaller payload to fit the formatted export. A failed export leaves the current edits available. The formatter stops early if the cumulative string content alone proves that the output exceeds the budget. The finished text goes through the same allocation-free byte scan used by the text parser.
 
 ## Structured errors and results
 
@@ -158,12 +166,14 @@ checkResourceLimit('nodes', 2001, jsonPointer('root'));
 - Invalid counts (negative, fractional, non-finite, or outside the safe-integer range) throw `RangeError` to expose a caller bug. This restriction applies to counters, not numeric document cells or state values.
 - This helper checks upper bounds only. Zero may be within budget while violating another schema rule, such as the minimum of one dataset column.
 
-Callers supply the measured count. Byte measurement now runs at the source boundary. Preflight measures node count and depth. Dataset cell and chart point totals belong to the semantic stage.
+Callers supply the measured count. Byte measurement runs on input and on formatted export text. Preflight measures node count and depth. Dataset cell and chart point totals belong to the semantic stage.
 
 ## Verification scope
 
 Tests cover pointer escaping, root/empty paths, Unicode and JSON-string round trips, malformed pointers, invalid numeric indices, readonly catalogs/budgets, typed error/result constraints, schema/constant agreement, exact and exceeded boundaries, invalid counters, and Unicode Markdown boundaries through the existing schema tool.
 
 Parser tests exercise file reads, UTF-8 boundaries, BOMs, duplicate properties, syntax and version checks. Preflight tests exercise exact and exceeded limits, hidden branches, shared objects, and cycles in the document tree and surrounding data. Semantic tests exercise the typed success result, identity scopes, safe name resolution, row shape, control types, chart compatibility, and exact and exceeded cell and chart budgets.
+
+Serialization tests cover the reference file round-trip, saved edits, invalid input, the specified formatting, and exact UTF-8 size boundaries.
 
 **Step 1 verification on 2026-11-14:** `npm run check` passed strict typechecking, ESLint, Prettier checks, 112 tests across four files (74 added in this step), reference-demo schema validation, and the production build.
