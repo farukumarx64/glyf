@@ -74,6 +74,8 @@ src/
   core/errors.ts               Structured diagnostics and parser result types
   core/json-pointer.ts         Typed diagnostic-path construction and syntax checks
   core/limits.ts               Fixed budgets and shared limit diagnostics
+  render/NodeRenderer.tsx      Preview a validated document starting at its root
+  render/nodeRegistry.tsx      Typed components for the 14 v0.1 node kinds
   app/App.tsx                  Minimal foundation screen
   main.tsx                    React entry point
   styles/global.css           Local stylesheet and system fonts
@@ -84,6 +86,7 @@ tests/
   semantics.test.ts           Cross-field validation and aggregate limits
   parser.test.ts              File, byte, and text parsing tests
   serialize.test.ts           Export formatting, round-trips, and final byte limits
+  rendering.test.tsx          Component dispatch, markup nesting, and child order
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
@@ -97,6 +100,12 @@ Use `parseMosaic(text)` for JSON text or `validateMosaic(value)` for an in-memor
 Use `serializeMosaic(document)` to export the current model as two-space JSON with one final LF. It revalidates the document and enforces the inclusive 5 MiB limit on the formatted UTF-8 output. A failed export throws `MosaicSerializationError` with the same `errors` list used by validation. See the [serialization contract](docs/core-contracts.md#serializing-a-document) for boundary behavior.
 
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per core module instance.
+
+## Rendering a validated document
+
+Pass the successful result of `parseMosaic` or `validateMosaic` to the React preview as `<NodeRenderer document={result.document} />`. The renderer starts at `document.root`. Each child keeps its array position and uses its node ID as its React key.
+
+The registry displays headings and text, uses the initial document state for conditional content and disabled controls, and labels chart and table placeholders. Markdown currently displays as escaped source text. Run `npm test -- tests/rendering.test.tsx` to exercise the renderer independently of the app shell.
 
 ## Phase boundaries
 
