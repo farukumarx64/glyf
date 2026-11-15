@@ -1,7 +1,8 @@
 import type { MosaicError, MosaicErrors } from './errors.ts';
 import { jsonPointer, ROOT_POINTER, type JsonPointer } from './json-pointer.ts';
 import { checkJsonSource } from './json-source.ts';
-import { checkResourceLimit, MOSAIC_LIMITS } from './limits.ts';
+import { checkResourceLimit } from './limits.ts';
+import { checkUtf8Text } from './utf8.ts';
 
 export type SourceResult =
   | { readonly ok: true; readonly value: unknown }
@@ -58,41 +59,8 @@ function parseSource(text: string): SourceResult {
   return headerError ? { ok: false, errors: [headerError] } : { ok: true, value };
 }
 
-// Measure supplied JS strings without allocating an encoded copy. UTF-16 length
-// is a lower bound, so an oversized string can be rejected immediately.
-function checkSourceText(text: string): MosaicError | undefined {
-  const max = MOSAIC_LIMITS.fileBytes;
-  const tooLarge: MosaicError = {
-    code: 'FILE_TOO_LARGE',
-    path: ROOT_POINTER,
-    message: `Source text exceeds the limit of ${max} UTF-8 bytes.`,
-  };
-  let bytes = text.length;
-  if (bytes > max) return tooLarge;
-  for (let i = 0; i < text.length; i++) {
-    const unit = text.charCodeAt(i);
-    if (unit < 0x80) continue;
-    if (unit < 0x800) bytes++;
-    else if (unit >= 0xd800 && unit <= 0xdfff) {
-      const next = text.charCodeAt(i + 1);
-      if (unit > 0xdbff || !(next >= 0xdc00 && next <= 0xdfff)) {
-        return {
-          code: 'INVALID_UTF8',
-          path: ROOT_POINTER,
-          message:
-            'Source text contains an unpaired surrogate that cannot be represented in UTF-8.',
-        };
-      }
-      i++;
-      bytes += 2; // Already counted both UTF-16 units; this pair takes four bytes.
-    } else bytes += 2;
-    if (bytes > max) return tooLarge;
-  }
-  return undefined;
-}
-
 export function parseMosaicText(text: string): SourceResult {
-  const error = checkSourceText(text);
+  const error = checkUtf8Text(text);
   if (error) return { ok: false, errors: [error] };
   return parseSource(text);
 }

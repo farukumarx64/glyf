@@ -25,9 +25,23 @@ function location(stack: readonly Frame[], key?: string) {
 function isJsonContainer(value: object): boolean {
   const prototype: unknown = Object.getPrototypeOf(value);
   const intrinsic = Array.isArray(value) ? Array : Object;
-  if (prototype === intrinsic.prototype || (prototype === null && intrinsic === Object))
-    return true;
+  if (prototype === null && intrinsic === Object) {
+    // Raw JSON wrappers look like null-prototype records but stringify as a scalar.
+    return !('isRawJSON' in JSON && typeof JSON.isRawJSON === 'function' && JSON.isRawJSON(value));
+  }
   if (prototype === null || typeof prototype !== 'object') return false;
+  // Native stringify consults inherited toJSON even on ordinary cross-realm
+  // objects. Inspect the descriptor without running a getter or the method.
+  if ('toJSON' in value && !Object.hasOwn(value, 'toJSON')) {
+    for (let owner: object | null = prototype; owner; owner = Object.getPrototypeOf(owner)) {
+      const hook = Object.getOwnPropertyDescriptor(owner, 'toJSON');
+      if (hook) {
+        if (!('value' in hook) || typeof hook.value === 'function') return false;
+        break;
+      }
+    }
+  }
+  if (prototype === intrinsic.prototype) return true;
   // Plain records and arrays can come from another realm (such as an iframe).
   const constructor: unknown = Object.getOwnPropertyDescriptor(prototype, 'constructor')?.value;
   return (
