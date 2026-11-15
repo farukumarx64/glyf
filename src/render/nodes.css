@@ -1,0 +1,23 @@
+.mosaic-column,
+.mosaic-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.mosaic-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.mosaic-grid {
+  display: grid;
+}
+
+.mosaic-card {
+  border: 1px solid currentColor;
+  padding: 1rem;
+}
+
+.mosaic-markdown {
+  white-space: pre-wrap;
+}
