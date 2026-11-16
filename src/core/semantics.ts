@@ -1,3 +1,4 @@
+import { checkChartPointLimit, isCellValue } from './dataset-rules.ts';
 import type { MosaicError, MosaicErrorCode, ParseResult } from './errors.ts';
 import { appendJsonPointer, jsonPointer, type JsonPointer } from './json-pointer.ts';
 import { checkResourceLimit, MOSAIC_LIMITS } from './limits.ts';
@@ -57,7 +58,7 @@ function checkRows(
         );
       }
       const cell = row[key];
-      if (cell !== null && typeof cell !== kind) {
+      if (!isCellValue(cell, kind)) {
         return issue(
           'INVALID_DATASET',
           jsonPointer('datasets', name, 'rows', index, key),
@@ -189,14 +190,8 @@ function checkChart(node: ChartNode, dataset: IndexedDataset, path: JsonPointer)
   // A colon cannot occur in a v0.1 column key.
   const axes = node.x + ':' + node.y;
   if (dataset.checkedAxes.has(axes)) return;
-  let points = 0;
-  for (const row of dataset.rows) {
-    if (row[node.x] !== null && row[node.y] !== null) {
-      points++;
-      if (points > MOSAIC_LIMITS.chartPoints)
-        return checkResourceLimit('chartPoints', points, path);
-    }
-  }
+  const error = checkChartPointLimit(dataset.rows, node.x, node.y, path);
+  if (error) return error;
   dataset.checkedAxes.add(axes);
 }
 
