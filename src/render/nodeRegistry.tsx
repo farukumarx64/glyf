@@ -21,6 +21,10 @@ function gapSize(gap?: Gap) {
   return gap === undefined ? undefined : `${gap * 0.25}rem`;
 }
 
+function displayLabel(label: string | undefined, fallback: string) {
+  return label?.trim() ? label : fallback;
+}
+
 export const nodeRegistry = Object.freeze<NodeRegistry>({
   column: function ColumnView({ node, children, anchorId }) {
     return (
@@ -71,7 +75,7 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
     return <hr id={anchorId} className="mosaic-divider" />;
   },
   chart: function ChartView({ node, anchorId }) {
-    return <p id={anchorId}>Chart placeholder for {node.title || node.dataset}</p>;
+    return <p id={anchorId}>Chart placeholder for {displayLabel(node.title, node.dataset)}</p>;
   },
   table: function TableView({ node, anchorId }) {
     return <p id={anchorId}>Table placeholder for {node.dataset}</p>;
@@ -80,21 +84,26 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
     return (
       <label id={anchorId}>
         <input type="checkbox" checked={document.state?.[node.bind] === true} disabled />
-        {node.label}
+        {displayLabel(node.label, node.bind)}
       </label>
     );
   },
   input: function InputView({ node, document, anchorId }) {
+    const value = String(document.state?.[node.bind] ?? '');
     return (
       <label id={anchorId}>
-        {node.label}
-        <input type={node.kind} value={String(document.state?.[node.bind] ?? '')} disabled />
+        {displayLabel(node.label, node.bind)}
+        {node.kind === 'text' && /[\r\n]/.test(value) ? (
+          <textarea value={value} disabled />
+        ) : (
+          <input type={node.kind} value={value} disabled />
+        )}
       </label>
     );
   },
   stateValue: function StateValueView({ node, document, anchorId }) {
     return (
-      <span id={anchorId}>
+      <span id={anchorId} className="mosaic-text">
         {node.prefix}
         {String(document.state?.[node.bind] ?? '—')}
         {node.suffix}

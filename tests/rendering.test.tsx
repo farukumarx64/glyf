@@ -66,7 +66,7 @@ describe('NodeRenderer', () => {
       'checked',
       'type="text"',
       'value="Hello"',
-      '<span id="mosaic-node-stateValue">(Hello)</span>',
+      '<span id="mosaic-node-stateValue" class="mosaic-text">(Hello)</span>',
     ])
       expect(html).toContain(fragment);
   });
@@ -130,7 +130,9 @@ describe('NodeRenderer', () => {
             Count
             <input type="number" value={0} disabled />
           </label>
-          <span id="mosaic-node-stateValue">(—)</span>
+          <span id="mosaic-node-stateValue" className="mosaic-text">
+            (—)
+          </span>
         </div>,
       ),
     );
