@@ -573,9 +573,11 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 - [x] Per D006, evaluate `when` and display `stateValue` using initial state; show input/toggle controls disabled and explicit placeholders for known chart/table nodes. Unknown node types remain validation errors.
 - [x] Build a minimal responsive app shell with Open Demo, Open File, drag/drop, Preview, Source, and ErrorPanel.
 - [x] Implement safe Markdown URL policy and disable HTML/images.
-- [ ] Add responsive layouts, system font, light/dark theme tokens and keyboard focus styling.
+- [x] Add responsive layouts, system font, light/dark theme tokens and keyboard focus styling.
 
 **Acceptance:** Demo can be opened and displayed offline after app assets are available; valid Markdown renders safely; malformed files do not crash; mobile-width layout works.
+
+Verified with the production build in headless Chromium and WebKit. The browser suite loads the viewer before disabling the network and opening the demo. It checks request attempts, malformed-file diagnostics and recovery, keyboard focus, safe Markdown, and computed theme styles. A four-column fixture renders four columns at 1280 CSS pixels and one at 375 and 320, with wide code and Source scrolling inside their panels. See the [browser tests](../tests/browser/viewer.spec.ts) and the [run instructions](../README.md#verify-the-production-viewer).
 
 ### Phase 3 — Datasets, tables, SVG charts
 
@@ -637,7 +639,7 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 ### UI and editing
 
 - [ ] Heading hierarchy and Markdown look correct.
-- [ ] Small screens show no accidental horizontal page overflow.
+- [x] Small screens show no accidental horizontal page overflow.
 - [ ] Editable cells have accessible labels and honor type restrictions.
 - [ ] Editing source data updates dependent chart without reloading entire file.
 - [ ] Toggle hides and restores conditional region.
@@ -647,12 +649,12 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 
 ### Security / robustness
 
-- [ ] `<script>` in Markdown is shown as inert text or omitted, never executed.
-- [ ] `javascript:` links cannot execute.
-- [ ] SVG/HTML snippets from documents cannot become executable DOM.
+- [x] `<script>` in Markdown is shown as inert text or omitted, never executed.
+- [x] `javascript:` links cannot execute.
+- [x] SVG/HTML snippets from documents cannot become executable DOM.
 - [x] Large hostile nesting fails gracefully.
-- [ ] Invalid encoding and invalid JSON show actionable messages.
-- [ ] Importing a file never initiates a document-controlled fetch.
+- [x] Invalid encoding and invalid JSON show actionable messages.
+- [x] Importing a file never initiates a document-controlled fetch.
 - [x] Reserved dataset, state, and column names and references are rejected.
 
 ### Format fixtures

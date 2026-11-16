@@ -37,15 +37,27 @@ File contents are read and validated locally. When opening a replacement fails, 
 | `npm run typecheck`        | Check strict TypeScript across source, scripts, tests, and configuration. |
 | `npm run lint`             | Run ESLint with zero warnings allowed.                                    |
 | `npm run test`             | Run format, renderer, and file workflow tests once.                       |
+| `npm run test:viewer`      | Build and run the production viewer smoke tests in Chromium and WebKit.   |
 | `npm run test:watch`       | Watch tests during development.                                           |
 | `npm run validate:example` | Run full v0.1 validation on the reference file.                           |
 | `npm run format:check`     | Check formatting without editing files.                                   |
 | `npm run format`           | Apply formatting; preserve supplied reference files.                      |
 | `npm run build`            | Typecheck and create the static production build in `dist/`.              |
 | `npm run preview`          | Serve the production build locally.                                       |
-| `npm run check`            | Run all implemented checks and the production build.                      |
+| `npm run check`            | Run typechecking, lint, formatting, Vitest, demo validation, and build.   |
 
 The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmark tooling is scheduled for Phase 5.
+
+### Verify the production viewer
+
+After `npm ci`, install the Playwright browsers once, then run the suite:
+
+```sh
+npx playwright install --only-shell chromium webkit
+npm run test:viewer
+```
+
+The suite builds the app and serves it on `127.0.0.1:4174` for the duration of the run. The offline checks load the app assets, disable networking for that browser context, then open the bundled demo or a local file. They also count request attempts, including requests that would fail offline. The other checks cover malformed-file recovery, responsive layout at 320, 375, and 1280 CSS pixels, computed theme styles, keyboard focus, and the DOM produced by Markdown.
 
 ## Contract and source layout
 
@@ -116,7 +128,9 @@ The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-pro
 
 Pass the successful result of `parseMosaic` or `validateMosaic` to the React preview as `<NodeRenderer document={result.document} />`. The renderer starts at `document.root`. Each child keeps its array position and uses its node ID as its React key.
 
-Columns stack children, rows wrap, and grids use the declared column count when space permits. Each grid measures its own available width. It sheds columns as tracks approach 14 rem and can shrink a single track to the width of a narrow card. Layout gaps default to 0.75 rem. An explicit token from 0 through 6 sets the gap in steps of 0.25 rem. Cards group ordered children under an optional title. Headings use the declared level, text preserves line breaks, and dividers render a horizontal rule.
+Columns stack children, rows wrap, and grids use the declared column count when space permits. Each grid measures its own available width. It sheds columns as tracks approach 14 rem and can shrink a single track to the width of a narrow card. An explicit gap token from 0 through 6 sets the gap in steps of 0.25 rem. Cards group ordered children under an optional title. Headings use the declared level, text preserves line breaks, and dividers render a horizontal rule.
+
+Opening a validated document applies its `theme` to the viewer. Mode defaults to `system` and follows live changes to the device color scheme. A document can also select `light` or `dark`. The accent is `blue` by default, with `teal` and `amber` alternatives for controls, links, and focus indicators. The default `comfortable` density uses a 0.75 rem layout gap. The `compact` density uses a 0.5 rem default gap and tighter card and panel padding. Explicit node gaps take precedence.
 
 Markdown uses CommonMark for paragraphs, emphasis, lists, quotations, code, and links. The renderer skips raw HTML and drops images before React creates DOM elements. Markup inside a code span or fence displays literally. These rules affect the preview only. The Markdown source stays in the document for serialization.
 
