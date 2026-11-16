@@ -4,7 +4,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import demoSource from '../examples/mosaic-demo.mosa?raw';
 import missingBinding from '../examples/invalid/missing-binding.mosa?raw';
 import { App } from '../src/app/App.tsx';
+import { DocumentView } from '../src/app/DocumentView.tsx';
 import { MOSAIC_LIMITS } from '../src/core/limits.ts';
+import { parseMosaic } from '../src/core/parse.ts';
+import { createDocumentStore } from '../src/core/store.ts';
 import { minimalDocument } from './fixtures.ts';
 
 afterEach(cleanup);
@@ -23,6 +26,21 @@ async function openDemo() {
 }
 
 describe('viewer file workflow', () => {
+  it('refreshes the open Source tab when the document store commits an edit', () => {
+    const opened = parseMosaic(demoSource);
+    if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
+    const store = createDocumentStore(opened);
+    render(<DocumentView store={store} fileName="mosaic-demo.mosa" />);
+    fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
+    const panel = screen.getByRole('tabpanel', { name: 'Source' });
+    expect(panel.textContent).toContain('"amount": 1200');
+    act(() => {
+      store.updateCell('revenueTable', 'jan', 'amount', 1500);
+    });
+    expect(panel.textContent).toBe(JSON.stringify(store.getSnapshot(), null, 2) + '\n');
+    expect(panel.textContent).toContain('"amount": 1500');
+  });
+
   it('opens the bundled reference demo and switches accessible tabs by keyboard and click', async () => {
     render(<App />);
     expect(screen.queryByRole('tablist')).toBeNull();

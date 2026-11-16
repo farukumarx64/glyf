@@ -1,12 +1,12 @@
 import { useRef, useState, type DragEvent } from 'react';
 import demoSource from '../../examples/mosaic-demo.mosa?raw';
 import { readMosaicFile } from '../core/file.ts';
-import type { MosaicDocument } from '../core/types.ts';
+import { createDocumentStore, type DocumentStore } from '../core/store.ts';
 import { validateMosaic } from '../core/validate.ts';
 import { DocumentView } from './DocumentView.tsx';
 import { ErrorPanel, type OpenFailure } from './ErrorPanel.tsx';
 
-type OpenDocument = { document: MosaicDocument; name: string; request: number };
+type OpenDocument = { store: DocumentStore; name: string; request: number };
 type Notice = { kind: 'loading'; name: string } | { kind: 'error'; failure: OpenFailure };
 
 export function App() {
@@ -42,7 +42,7 @@ export function App() {
       setNotice({ kind: 'error', failure: { name: file.name, errors: result.errors } });
       return;
     }
-    setOpened({ document: result.document, name: file.name, request });
+    setOpened({ store: createDocumentStore(result), name: file.name, request });
     setNotice(null);
   }
 
@@ -59,12 +59,13 @@ export function App() {
     }
   }
 
+  const theme = opened?.store.getSnapshot().theme;
   return (
     <div
       className="viewer"
-      data-mode={opened?.document.theme?.mode ?? 'system'}
-      data-accent={opened?.document.theme?.accent ?? 'blue'}
-      data-density={opened?.document.theme?.density ?? 'comfortable'}
+      data-mode={theme?.mode ?? 'system'}
+      data-accent={theme?.accent ?? 'blue'}
+      data-density={theme?.density ?? 'comfortable'}
       onDragEnter={(event) => {
         if (event.dataTransfer.types.includes('Files')) {
           event.preventDefault();
@@ -132,7 +133,7 @@ export function App() {
         )}
         {notice?.kind === 'error' && <ErrorPanel failure={notice.failure} />}
         {opened ? (
-          <DocumentView key={opened.request} document={opened.document} fileName={opened.name} />
+          <DocumentView key={opened.request} store={opened.store} fileName={opened.name} />
         ) : (
           <section className="start-screen">
             <h1>Open a document</h1>

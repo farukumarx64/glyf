@@ -1,17 +1,18 @@
-import { memo, useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import type { MosaicDocument } from '../core/types.ts';
+import { memo, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
+import type { DocumentStore } from '../core/store.ts';
 import { NodeRenderer } from '../render/NodeRenderer.tsx';
 
 const views = ['Preview', 'Source'] as const;
 type View = (typeof views)[number];
 
 export const DocumentView = memo(function DocumentView({
-  document,
+  store,
   fileName,
 }: {
-  document: MosaicDocument;
+  store: DocumentStore;
   fileName: string;
 }) {
+  const document = useSyncExternalStore(store.subscribe, store.getSnapshot);
   const [view, setView] = useState<View>('Preview');
   const previewTab = useRef<HTMLButtonElement>(null);
   useEffect(() => {
