@@ -1,3 +1,16 @@
+:is(.mosaic-column, .mosaic-row, .mosaic-grid, .mosaic-card) {
+  gap: 0.75rem;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+:is(.mosaic-column, .mosaic-row, .mosaic-grid, .mosaic-card) > * {
+  box-sizing: border-box;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  margin: 0;
+}
+
 .mosaic-column,
 .mosaic-card {
   display: flex;
@@ -7,17 +20,55 @@
 .mosaic-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: start;
 }
 
 .mosaic-grid {
+  --mosaic-gap: 0.75rem;
+  /* Divide the width left after the gaps among the declared columns. */
+  --track-share: calc((100% + var(--mosaic-gap)) / var(--mosaic-columns) - var(--mosaic-gap));
   display: grid;
+  gap: var(--mosaic-gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, max(14rem, var(--track-share))), 1fr));
 }
 
 .mosaic-card {
-  border: 1px solid currentColor;
+  border: 1px solid var(--mosaic-rule, #788593);
+  border-radius: 0.5rem;
   padding: 1rem;
 }
 
-.mosaic-markdown {
+.mosaic-text {
   white-space: pre-wrap;
+}
+
+.mosaic-divider {
+  inline-size: 100%;
+  border: 0;
+  border-block-start: 1px solid var(--mosaic-rule, #788593);
+}
+
+.mosaic-markdown > :first-child {
+  margin-block-start: 0;
+}
+
+.mosaic-markdown > :last-child {
+  margin-block-end: 0;
+}
+
+.mosaic-markdown blockquote {
+  margin-inline: 0;
+  border-inline-start: 0.2rem solid var(--mosaic-rule, #788593);
+  padding-inline-start: 1rem;
+}
+
+.mosaic-markdown pre {
+  overflow-x: auto;
+  padding: 0.75rem;
+  background: rgb(128 128 128 / 10%);
+}
+
+.mosaic-markdown a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
 }

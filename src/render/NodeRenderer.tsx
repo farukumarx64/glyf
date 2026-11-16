@@ -1,4 +1,5 @@
 import type { MosaicDocument } from '../core/types.ts';
+import { nodeAnchorId } from './markdown-policy.ts';
 import { nodeRegistry, type NodesByType, type NodeView } from './nodeRegistry.tsx';
 import './nodes.css';
 
@@ -12,7 +13,7 @@ function RenderNode<Kind extends keyof NodesByType>({
 }) {
   const Component: NodeView<Kind> = nodeRegistry[node.type];
   return (
-    <Component node={node} document={document}>
+    <Component node={node} document={document} anchorId={nodeAnchorId(node.id)}>
       {'children' in node &&
         node.children.map((child) => (
           <RenderNode key={child.id} node={child} document={document} />

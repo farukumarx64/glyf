@@ -1,11 +1,13 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import type { Gap, MosaicDocument, MosaicNode } from '../core/types.ts';
+import { MarkdownView } from './MarkdownView.tsx';
 
 export type NodesByType = { [Node in MosaicNode as Node['type']]: Node };
 
 export type NodeView<Kind extends keyof NodesByType> = (props: {
   readonly node: NodesByType[Kind];
   readonly document: MosaicDocument;
+  readonly anchorId: string;
   readonly children?: ReactNode;
 }) => ReactElement | null;
 
@@ -20,36 +22,31 @@ function gapSize(gap?: Gap) {
 }
 
 export const nodeRegistry = Object.freeze<NodeRegistry>({
-  column: function ColumnView({ node, children }) {
+  column: function ColumnView({ node, children, anchorId }) {
     return (
-      <div className="mosaic-column" style={{ gap: gapSize(node.gap) }}>
+      <div id={anchorId} className="mosaic-column" style={{ gap: gapSize(node.gap) }}>
         {children}
       </div>
     );
   },
-  row: function RowView({ node, children }) {
+  row: function RowView({ node, children, anchorId }) {
     return (
-      <div className="mosaic-row" style={{ gap: gapSize(node.gap) }}>
+      <div id={anchorId} className="mosaic-row" style={{ gap: gapSize(node.gap) }}>
         {children}
       </div>
     );
   },
-  grid: function GridView({ node, children }) {
+  grid: function GridView({ node, children, anchorId }) {
+    const style = { '--mosaic-columns': node.columns, '--mosaic-gap': gapSize(node.gap) };
     return (
-      <div
-        className="mosaic-grid"
-        style={{
-          gridTemplateColumns: `repeat(${node.columns}, minmax(0, 1fr))`,
-          gap: gapSize(node.gap),
-        }}
-      >
+      <div id={anchorId} className="mosaic-grid" style={style as CSSProperties}>
         {children}
       </div>
     );
   },
-  card: function CardView({ node, children }) {
+  card: function CardView({ node, children, anchorId }) {
     return (
-      <section className="mosaic-card">
+      <section id={anchorId} className="mosaic-card" aria-label={node.title || undefined}>
         {node.title && <strong>{node.title}</strong>}
         {children}
       </section>
@@ -58,45 +55,46 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
   when: function WhenView({ node, document, children }) {
     return document.state?.[node.bind] === node.equals ? <>{children}</> : null;
   },
-  heading: function HeadingView({ node }) {
+  heading: function HeadingView({ node, anchorId }) {
     const Heading = headingTags[node.level];
-    return <Heading>{node.text}</Heading>;
+    return <Heading id={anchorId}>{node.text}</Heading>;
   },
-  markdown: function MarkdownView({ node }) {
-    // Keep Markdown literal until the Markdown renderer and URL policy land together.
-    return <p className="mosaic-markdown">{node.text}</p>;
-  },
-  text: function TextView({ node }) {
-    return <p>{node.text}</p>;
-  },
-  divider: function DividerView() {
-    return <hr />;
-  },
-  chart: function ChartView({ node }) {
-    return <p>Chart placeholder for {node.title || node.dataset}</p>;
-  },
-  table: function TableView({ node }) {
-    return <p>Table placeholder for {node.dataset}</p>;
-  },
-  toggle: function ToggleView({ node, document }) {
+  markdown: MarkdownView,
+  text: function TextView({ node, anchorId }) {
     return (
-      <label>
+      <p id={anchorId} className="mosaic-text">
+        {node.text}
+      </p>
+    );
+  },
+  divider: function DividerView({ anchorId }) {
+    return <hr id={anchorId} className="mosaic-divider" />;
+  },
+  chart: function ChartView({ node, anchorId }) {
+    return <p id={anchorId}>Chart placeholder for {node.title || node.dataset}</p>;
+  },
+  table: function TableView({ node, anchorId }) {
+    return <p id={anchorId}>Table placeholder for {node.dataset}</p>;
+  },
+  toggle: function ToggleView({ node, document, anchorId }) {
+    return (
+      <label id={anchorId}>
         <input type="checkbox" checked={document.state?.[node.bind] === true} disabled />
         {node.label}
       </label>
     );
   },
-  input: function InputView({ node, document }) {
+  input: function InputView({ node, document, anchorId }) {
     return (
-      <label>
+      <label id={anchorId}>
         {node.label}
         <input type={node.kind} value={String(document.state?.[node.bind] ?? '')} disabled />
       </label>
     );
   },
-  stateValue: function StateValueView({ node, document }) {
+  stateValue: function StateValueView({ node, document, anchorId }) {
     return (
-      <span>
+      <span id={anchorId}>
         {node.prefix}
         {String(document.state?.[node.bind] ?? '—')}
         {node.suffix}
