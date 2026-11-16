@@ -62,6 +62,9 @@ export function App() {
   return (
     <div
       className="viewer"
+      data-mode={opened?.document.theme?.mode ?? 'system'}
+      data-accent={opened?.document.theme?.accent ?? 'blue'}
+      data-density={opened?.document.theme?.density ?? 'comfortable'}
       onDragEnter={(event) => {
         if (event.dataTransfer.types.includes('Files')) {
           event.preventDefault();

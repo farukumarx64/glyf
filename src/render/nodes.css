@@ -1,5 +1,5 @@
 :is(.mosaic-column, .mosaic-row, .mosaic-grid, .mosaic-card) {
-  gap: 0.75rem;
+  gap: var(--mosaic-layout-gap, 0.75rem);
   min-inline-size: 0;
   overflow-wrap: anywhere;
 }
@@ -24,7 +24,7 @@
 }
 
 .mosaic-grid {
-  --mosaic-gap: 0.75rem;
+  --mosaic-gap: var(--mosaic-layout-gap, 0.75rem);
   /* Divide the width left after the gaps among the declared columns. */
   --track-share: calc((100% + var(--mosaic-gap)) / var(--mosaic-columns) - var(--mosaic-gap));
   display: grid;
@@ -35,7 +35,7 @@
 .mosaic-card {
   border: 1px solid var(--mosaic-rule, #788593);
   border-radius: 0.5rem;
-  padding: 1rem;
+  padding: var(--mosaic-card-padding, 1rem);
 }
 
 .mosaic-text {
@@ -66,6 +66,10 @@
   overflow-x: auto;
   padding: 0.75rem;
   background: rgb(128 128 128 / 10%);
+}
+
+.mosaic-markdown a {
+  color: var(--accent, LinkText);
 }
 
 .mosaic-markdown a:focus-visible {

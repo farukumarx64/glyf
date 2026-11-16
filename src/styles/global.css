@@ -6,16 +6,16 @@
     'Segoe UI',
     sans-serif;
   color-scheme: light dark;
-  --canvas: #f5f7fa;
-  --sheet: #fff;
-  --ink: #192538;
-  --muted: #516177;
-  --line: #d5dde7;
-  --accent: #2159ad;
-  --accent-fill: #2459aa;
-  --tint: #edf3fb;
-  --error: #982f24;
-  --error-surface: #fff5f2;
+  --canvas: light-dark(#f5f7fa, #121b27);
+  --sheet: light-dark(#fff, #192535);
+  --ink: light-dark(#192538, #eaf0f8);
+  --muted: light-dark(#516177, #b0bfd1);
+  --line: light-dark(#d5dde7, #3c4c60);
+  --accent: light-dark(#2159ad, #97beff);
+  --accent-fill: light-dark(#2459aa, #315fa8);
+  --tint: light-dark(#edf3fb, #20334b);
+  --error: light-dark(#982f24, #ffb2a7);
+  --error-surface: light-dark(#fff5f2, #36262a);
   color: var(--ink);
   background: var(--canvas);
   font-synthesis: none;
@@ -38,6 +38,27 @@ p {
 }
 .viewer {
   min-height: 100svh;
+}
+:root:has(.viewer[data-mode='light']) {
+  color-scheme: light;
+}
+:root:has(.viewer[data-mode='dark']) {
+  color-scheme: dark;
+}
+.viewer[data-accent='teal'] {
+  --accent: light-dark(#00685f, #75dccb);
+  --accent-fill: light-dark(#00685f, #19695e);
+  --tint: light-dark(#e8f6f3, #1a3734);
+}
+.viewer[data-accent='amber'] {
+  --accent: light-dark(#845000, #ffd083);
+  --accent-fill: light-dark(#845000, #855500);
+  --tint: light-dark(#fcf3e2, #3c3222);
+}
+.viewer[data-density='compact'] {
+  --mosaic-layout-gap: 0.5rem;
+  --mosaic-card-padding: 0.75rem;
+  --panel-padding: clamp(0.75rem, 2.5vw, 1.5rem);
 }
 .viewer :focus-visible {
   outline: 3px solid var(--accent);
@@ -112,7 +133,7 @@ p {
   color: #fff;
 }
 .file-actions .primary-action:hover {
-  background: #1e4887;
+  background: color-mix(in srgb, var(--accent-fill) 82%, black);
 }
 
 .workspace {
@@ -231,7 +252,7 @@ p {
 .preview-panel,
 .source-panel {
   min-width: 0;
-  padding: clamp(1rem, 3.5vw, 2.5rem);
+  padding: var(--panel-padding, clamp(1rem, 3.5vw, 2.5rem));
 }
 .source-panel {
   overflow-x: auto;
@@ -278,20 +299,5 @@ p {
   }
   .file-actions button {
     padding-inline: 0.65rem;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #121b27;
-    --sheet: #192535;
-    --ink: #eaf0f8;
-    --muted: #b0bfd1;
-    --line: #3c4c60;
-    --accent: #97beff;
-    --accent-fill: #315fa8;
-    --tint: #20334b;
-    --error: #ffb2a7;
-    --error-surface: #36262a;
   }
 }
