@@ -21,7 +21,11 @@ npm ci
 npm run dev
 ```
 
-If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL printed by Vite (normally `http://127.0.0.1:5173`). The initial screen is a foundation placeholder, not the document viewer. Use Ctrl+C to stop the server.
+If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL printed by Vite (normally `http://127.0.0.1:5173`). Choose **Open Demo** for the bundled reference document, choose **Open File**, or drop a single `.mosa` file anywhere in the viewer. Use Ctrl+C to stop the server.
+
+A successful open selects **Preview**. **Source** displays the complete validated document as read-only, two-space-indented JSON. Formatting happens when you select the tab, so a compact file that fits the import limit can still be inspected if indentation takes its displayed source past 5 MiB. The arrow keys, Home, and End switch between focused tabs.
+
+File contents are read and validated locally. When opening a replacement fails, the viewer keeps the current document and tab. The error panel identifies the attempted file and displays each validator message, error code, and JSON Pointer. An empty pointer appears as `""` (document root). A file read failure has a separate retry message.
 
 `npm ci` installs the committed lockfile exactly. `npm install` also works for initial setup or intentional dependency changes. Direct dependency versions are exact; do not update them automatically.
 
@@ -32,7 +36,7 @@ If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL pr
 | `npm run dev`              | Start Vite on the loopback interface.                                     |
 | `npm run typecheck`        | Check strict TypeScript across source, scripts, tests, and configuration. |
 | `npm run lint`             | Run ESLint with zero warnings allowed.                                    |
-| `npm run test`             | Run schema and core contract tests once.                                  |
+| `npm run test`             | Run format, renderer, and file workflow tests once.                       |
 | `npm run test:watch`       | Watch tests during development.                                           |
 | `npm run validate:example` | Run full v0.1 validation on the reference file.                           |
 | `npm run format:check`     | Check formatting without editing files.                                   |
@@ -41,7 +45,7 @@ If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL pr
 | `npm run preview`          | Serve the production build locally.                                       |
 | `npm run check`            | Run all implemented checks and the production build.                      |
 
-Benchmark tooling is scheduled for Phase 5. Browser/component test dependencies will be added when those implementations begin; Phase 0 uses Vitest in Node without a DOM emulator.
+The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmark tooling is scheduled for Phase 5.
 
 ## Contract and source layout
 
@@ -78,7 +82,9 @@ src/
   render/nodeRegistry.tsx      Typed components for the 14 v0.1 node kinds
   render/MarkdownView.tsx      CommonMark rendering with HTML and images disabled
   render/markdown-policy.ts    Link destinations and document fragment targets
-  app/App.tsx                  Minimal foundation screen
+  app/App.tsx                  Demo, file picker, drop handling, and validated replacement
+  app/DocumentView.tsx         Preview and formatted Source tabs
+  app/ErrorPanel.tsx           Import diagnostics and JSON Pointers
   main.tsx                    React entry point
   styles/global.css           Local stylesheet and system fonts
 tests/
@@ -91,6 +97,7 @@ tests/
   rendering.test.tsx          Component dispatch, layout, nesting, and child order
   markdown.test.tsx           CommonMark output and viewer URL policy
   initial-state.test.tsx      Saved values, conditional content, and read-only controls
+  file-workflow.test.tsx      File opening, replacement, recovery, and view switching
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
