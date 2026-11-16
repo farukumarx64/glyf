@@ -90,6 +90,7 @@ tests/
   serialize.test.ts           Export formatting, round-trips, and final byte limits
   rendering.test.tsx          Component dispatch, layout, nesting, and child order
   markdown.test.tsx           CommonMark output and viewer URL policy
+  initial-state.test.tsx      Saved values, conditional content, and read-only controls
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
@@ -114,7 +115,11 @@ Markdown uses CommonMark for paragraphs, emphasis, lists, quotations, code, and 
 
 HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links use the user's mail handler. A fragment such as `#notes` targets the rendered element for the Mosaic node with ID `notes`. DOM targets have a viewer-owned prefix to avoid collisions with the app shell. Other destinations, including relative paths and protocol-relative URLs, display their link label as ordinary content.
 
-The registry also uses the initial document state for conditional content and disabled controls, and labels chart and table placeholders. Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx` to exercise the renderer independently of the app shell.
+The read-only preview uses the saved `state` map. A `when` renders its children in order only if the bound value equals `equals` in both type and value. A `stateValue` displays its optional prefix, the saved value, and its optional suffix. It displays `null` as an em dash and preserves empty strings, zero, and false.
+
+Inputs and checkboxes show their saved values in disabled, labeled controls. Multiline text uses a disabled text area to preserve line breaks. An empty or whitespace-only control label falls back to its binding key. Chart placeholders show the chart title if present and nonblank, or the dataset name otherwise. Table placeholders show the dataset name, including for editable tables.
+
+Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx` to exercise the renderer independently of the app shell.
 
 ## Phase boundaries
 
