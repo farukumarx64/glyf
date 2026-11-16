@@ -84,6 +84,8 @@ src/
   core/semantics.ts            Dataset, state, node, and chart rules
   core/parse.ts                Parse and validate text into a typed document
   core/serialize.ts            Validate and produce formatted .mosa text
+  core/store.ts                Indexed dataset reads and immutable cell edits
+  core/dataset-rules.ts        Shared cell-type and chart-point checks
   core/utf8.ts                 Shared UTF-8 text size and encoding checks
   core/source.ts               Byte and text decoding, syntax, and version checks
   core/json-source.ts          Duplicate JSON property scanning
@@ -125,6 +127,28 @@ Use `serializeMosaic(document)` to export the current model as two-space JSON wi
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per core module instance.
 
 ## Rendering a validated document
+
+### Document store
+
+`createDocumentStore(opened)` takes the successful result of `parseMosaic` or `validateMosaic`. The viewer creates one store for each file it successfully opens. Preview and Source read the current snapshot.
+
+```ts
+const opened = parseMosaic(demoText);
+if (opened.ok) {
+  const store = createDocumentStore(opened);
+  const result = store.updateCell('revenueTable', 'jan', 'amount', 1500);
+  if (result.ok) {
+    const january = store.getRow('revenue', 'jan'); // amount is now 1500
+    const dataset = store.getDataset('revenue'); // rows are still jan, feb, mar
+  }
+}
+```
+
+Lookups return `undefined` for a missing dataset or row. Edits identify the originating table by node ID because two tables can bind to the same dataset with different permissions. Both the table and the column must explicitly enable editing. A changed value publishes a new readonly snapshot and notifies subscribers. An identical value returns the current snapshot. A rejected edit returns structured errors with JSON Pointer paths and leaves the store at its last successful edit.
+
+Row and column positions are indexed once per dataset. Each edit copies the affected row, row array, dataset, dataset map, and document. Filling a null chart coordinate in a dataset with more than 500 rows can require a bounded scan for each affected axis pair. The store checks those charts before publishing the edit, including charts inside hidden conditions.
+
+### Preview
 
 Pass the successful result of `parseMosaic` or `validateMosaic` to the React preview as `<NodeRenderer document={result.document} />`. The renderer starts at `document.root`. Each child keeps its array position and uses its node ID as its React key.
 

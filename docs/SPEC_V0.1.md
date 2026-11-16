@@ -583,7 +583,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 **Tasks**
 
-- [ ] Build a small document store with datasets keyed by name and rows keyed by stable IDs.
+- [x] Build a small document store with datasets keyed by name and rows keyed by stable IDs.
 - [ ] Render accessible table with typed cell display.
 - [ ] Replace Phase 2 chart/table placeholders; keep state controls read-only until Phase 4.
 - [ ] Implement `bar` and `line` charts using responsive SVG with zero/negative ranges, axes, and an accessible summary.
