@@ -569,10 +569,10 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 **Tasks**
 
 - [x] Implement the component registry and `NodeRenderer`.
-- [ ] Render text, Markdown, heading, column, row, grid, card, divider.
+- [x] Render text, Markdown, heading, column, row, grid, card, divider.
 - [x] Per D006, evaluate `when` and display `stateValue` using initial state; show input/toggle controls disabled and explicit placeholders for known chart/table nodes. Unknown node types remain validation errors.
 - [ ] Build a minimal responsive app shell with Open Demo, Open File, drag/drop, Preview, Source, and ErrorPanel.
-- [ ] Implement safe Markdown URL policy and disable HTML/images.
+- [x] Implement safe Markdown URL policy and disable HTML/images.
 - [ ] Add responsive layouts, system font, light/dark theme tokens and keyboard focus styling.
 
 **Acceptance:** Demo can be opened and displayed offline after app assets are available; valid Markdown renders safely; malformed files do not crash; mobile-width layout works.

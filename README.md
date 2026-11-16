@@ -76,6 +76,8 @@ src/
   core/limits.ts               Fixed budgets and shared limit diagnostics
   render/NodeRenderer.tsx      Preview a validated document starting at its root
   render/nodeRegistry.tsx      Typed components for the 14 v0.1 node kinds
+  render/MarkdownView.tsx      CommonMark rendering with HTML and images disabled
+  render/markdown-policy.ts    Link destinations and document fragment targets
   app/App.tsx                  Minimal foundation screen
   main.tsx                    React entry point
   styles/global.css           Local stylesheet and system fonts
@@ -86,7 +88,8 @@ tests/
   semantics.test.ts           Cross-field validation and aggregate limits
   parser.test.ts              File, byte, and text parsing tests
   serialize.test.ts           Export formatting, round-trips, and final byte limits
-  rendering.test.tsx          Component dispatch, markup nesting, and child order
+  rendering.test.tsx          Component dispatch, layout, nesting, and child order
+  markdown.test.tsx           CommonMark output and viewer URL policy
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
@@ -105,7 +108,13 @@ The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-pro
 
 Pass the successful result of `parseMosaic` or `validateMosaic` to the React preview as `<NodeRenderer document={result.document} />`. The renderer starts at `document.root`. Each child keeps its array position and uses its node ID as its React key.
 
-The registry displays headings and text, uses the initial document state for conditional content and disabled controls, and labels chart and table placeholders. Markdown currently displays as escaped source text. Run `npm test -- tests/rendering.test.tsx` to exercise the renderer independently of the app shell.
+Columns stack children, rows wrap, and grids use the declared column count when space permits. Each grid measures its own available width. It sheds columns as tracks approach 14 rem and can shrink a single track to the width of a narrow card. Layout gaps default to 0.75 rem. An explicit token from 0 through 6 sets the gap in steps of 0.25 rem. Cards group ordered children under an optional title. Headings use the declared level, text preserves line breaks, and dividers render a horizontal rule.
+
+Markdown uses CommonMark for paragraphs, emphasis, lists, quotations, code, and links. The renderer skips raw HTML and drops images before React creates DOM elements. Markup inside a code span or fence displays literally. These rules affect the preview only. The Markdown source stays in the document for serialization.
+
+HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links use the user's mail handler. A fragment such as `#notes` targets the rendered element for the Mosaic node with ID `notes`. DOM targets have a viewer-owned prefix to avoid collisions with the app shell. Other destinations, including relative paths and protocol-relative URLs, display their link label as ordinary content.
+
+The registry also uses the initial document state for conditional content and disabled controls, and labels chart and table placeholders. Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx` to exercise the renderer independently of the app shell.
 
 ## Phase boundaries
 
