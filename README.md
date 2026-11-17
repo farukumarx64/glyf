@@ -96,6 +96,8 @@ src/
   render/nodeRegistry.tsx      Typed components for the 14 v0.1 node kinds
   render/MarkdownView.tsx      CommonMark rendering with HTML and images disabled
   render/TableView.tsx         Captioned dataset tables with progressive row rendering
+  render/ChartView.tsx         Responsive SVG bar and line charts with text summaries
+  render/chart-geometry.ts     Finite scales, bounded ticks, and ordered point selection
   render/markdown-policy.ts    Link destinations and document fragment targets
   app/App.tsx                  Demo, file picker, drop handling, and validated replacement
   app/DocumentView.tsx         Preview and formatted Source tabs
@@ -163,13 +165,19 @@ HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links us
 
 The read-only preview uses the saved `state` map. A `when` renders its children in order only if the bound value equals `equals` in both type and value. A `stateValue` displays its optional prefix, the saved value, and its optional suffix. It displays `null` as an em dash and preserves empty strings, zero, and false.
 
-Inputs and checkboxes show their saved values in disabled, labeled controls. Multiline text uses a disabled text area to preserve line breaks. An empty or whitespace-only control label falls back to its binding key. Chart placeholders show the chart title if present and nonblank, or the dataset name otherwise.
+Inputs and checkboxes show their saved values in disabled, labeled controls. Multiline text uses a disabled text area to preserve line breaks. An empty or whitespace-only control label falls back to its binding key.
 
 Tables use the dataset name as a visible caption and each column's label as its header. A blank label falls back to its column key. Rows and columns appear in file order. Strings display literally, including line breaks and empty strings. Numbers display without rounding or grouping, booleans display as `true` and `false`, and a null cell shows an em dash with the accessible name “No value”.
 
 Tables with up to 100 rows display in full. Larger tables start with 100 rows and show how many are visible. **Show more** appends up to 100 rows at a time and moves keyboard focus to the first new row. Each table expands independently. Wide tables scroll horizontally inside the preview.
 
-Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx` to exercise the renderer and table interactions.
+Charts render as SVG and measure their container to keep labels readable as the layout resizes. The visible caption uses the chart title, falling back to the dataset name when the title is blank. A visible text summary supplies the chart kind, axis labels, plotted point count, exact y-value range, and skipped-row count. The SVG references that caption and summary for its accessible name and description.
+
+Bars occupy equally spaced categories in file order, including numeric x labels, with a zero baseline for positive and negative values. Lines use proportional spacing for numeric x values and equally spaced positions for string x values. Line segments connect points in file order, including when numeric x values run backward. Each plotted line point has a visible marker, so a single point remains visible. Line y scales cover the data range and expand for constant series.
+
+Both chart kinds skip any row with null x or y. Empty strings and zero remain valid points. An empty or entirely skipped dataset displays an explanatory message. Axis labels are capped at five x ticks and six y ticks, including zero when it is in range. Long string labels are abbreviated to fit, while the document retains their complete values. Chart colors follow the document theme, and committed store edits refresh both geometry and summaries.
+
+Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx` to exercise the renderer, table interactions, and chart geometry.
 
 ## Phase boundaries
 
