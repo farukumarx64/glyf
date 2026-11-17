@@ -60,6 +60,10 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   const revenue = page.getByRole('table', { name: 'revenue', exact: true });
   await expect(revenue.getByRole('columnheader')).toHaveText(['Month', 'Revenue (NGN)']);
   await expect(revenue.getByRole('cell')).toHaveText(['Jan', '1200', 'Feb', '1800', 'Mar', '2500']);
+  const chart = page.getByRole('img', { name: 'Revenue by month' });
+  await expect(chart).toBeVisible();
+  await expect(chart.locator('rect')).toHaveCount(3);
+  await expect(chart).toHaveAccessibleDescription(/3 points. Values range from 1200 to 2500/);
   await page.keyboard.press('ArrowRight');
   await expect(source).toBeFocused();
   await expect(page.getByRole('tabpanel', { name: 'Source' })).toContainText(
@@ -77,6 +81,79 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   await page.setViewportSize({ width: 320, height: 740 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   expect(requests).toEqual([]);
+});
+
+test('fits SVG charts to their containers and describes signed and missing data', async ({
+  page,
+}, testInfo) => {
+  const doc = minimalDocument();
+  const rows = [
+    { id: 'first', label: 'First category with a long label', amount: -10 },
+    { id: 'second', label: 'Second category with a long label', amount: 0 },
+    { id: 'third', label: 'Third category with a long label', amount: 20 },
+    { id: 'missing', label: 'Missing', amount: null },
+  ];
+  const data = {
+    columns: [
+      { key: 'label', label: 'Category', kind: 'string' as const },
+      { key: 'amount', label: 'Amount', kind: 'number' as const },
+    ],
+    rows,
+  };
+  await openDocument(page, {
+    ...doc,
+    theme: { mode: 'light', accent: 'teal' },
+    datasets: { values: data, empty: { ...data, rows: [] } },
+    root: {
+      ...doc.root,
+      children: [
+        {
+          ...nodeSamples.grid,
+          columns: 2,
+          children: [
+            { ...nodeSamples.chart, id: 'bars', title: 'Signed bars' },
+            { ...nodeSamples.chart, id: 'line', kind: 'line', title: 'Signed line' },
+          ],
+        },
+        { ...nodeSamples.chart, id: 'emptyChart', dataset: 'empty', title: 'Empty series' },
+      ],
+    },
+  });
+  const charts = page.getByRole('img');
+  await expect(charts).toHaveCount(2);
+  await expect(charts.first()).toHaveAccessibleDescription(
+    /3 points. Values range from -10 to 20. 1 row skipped/,
+  );
+  await expect(charts.last().locator('circle')).toHaveCount(3);
+  await expect(page.getByText('No plottable data. The dataset is empty.')).toBeVisible();
+  await expect(charts.first().locator('rect').first()).toHaveCSS('fill', 'rgb(0, 104, 95)');
+
+  for (const width of [1280, 375, 320]) {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const svg of await charts.all()) {
+      await expect
+        .poll(async () =>
+          svg.evaluate((element) => {
+            const viewBoxWidth = Number(element.getAttribute('viewBox')!.split(' ')[2]);
+            return Math.abs(element.getBoundingClientRect().width - viewBoxWidth);
+          }),
+        )
+        .toBeLessThanOrEqual(1);
+      await expect(svg.locator('text').first()).toHaveCSS('font-size', '12px');
+      expect(
+        await svg.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          return [...element.querySelectorAll('text')].every((text) => {
+            const label = text.getBoundingClientRect();
+            return label.left >= bounds.left - 1 && label.right <= bounds.right + 1;
+          });
+        }),
+      ).toBe(true);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+    if (width !== 375)
+      await page.screenshot({ path: testInfo.outputPath(`charts-${width}.png`), fullPage: true });
+  }
 });
 
 test('scrolls a wide table and reveals successive rows with the keyboard', async ({
