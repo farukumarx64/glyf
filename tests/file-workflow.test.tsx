@@ -26,6 +26,30 @@ async function openDemo() {
 }
 
 describe('viewer file workflow', () => {
+  it('reflects programmatic state updates in content, conditional charts and Source', () => {
+    const opened = parseMosaic(demoSource);
+    if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
+    const store = createDocumentStore(opened);
+    render(<DocumentView store={store} fileName="mosaic-demo.mosa" />);
+    act(() => {
+      expect(store.updateState('note', 'Updated report').ok).toBe(true);
+      expect(store.updateState('showChart', false).ok).toBe(true);
+    });
+    expect(screen.getByText('Current note: Updated report')).toBeTruthy();
+    expect(screen.queryByRole('img', { name: 'Revenue by month' })).toBeNull();
+    act(() => {
+      expect(store.updateState('showChart', true).ok).toBe(true);
+    });
+    expect(screen.getByRole('img', { name: 'Revenue by month' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
+    act(() => {
+      expect(store.updateState('note', 'Latest note').ok).toBe(true);
+    });
+    expect(screen.getByRole('tabpanel', { name: 'Source' }).textContent).toBe(
+      JSON.stringify(store.getSnapshot(), null, 2) + '\n',
+    );
+  });
+
   it('refreshes the open Source tab when the document store commits an edit', () => {
     const opened = parseMosaic(demoSource);
     if (!opened.ok) throw new Error(JSON.stringify(opened.errors));

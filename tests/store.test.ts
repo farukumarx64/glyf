@@ -253,3 +253,189 @@ describe('document store', () => {
     expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
   });
 });
+
+describe('state updates', () => {
+  it('updates the demo note and preserves the original document and earlier snapshots', () => {
+    const opened = parseMosaic(demoSource);
+    if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
+    const original = opened.document;
+    Object.freeze(original.state);
+    Object.freeze(original);
+    const store = createDocumentStore(opened);
+
+    const result = store.updateState('note', 'Updated report');
+    if (!result.ok) throw new Error(JSON.stringify(result.errors));
+    expect(result.document).toBe(store.getSnapshot());
+    expect(result.document).not.toBe(original);
+    expect(result.document.state).not.toBe(original.state);
+    expect(result.document.state).toEqual({ showChart: true, note: 'Updated report' });
+    expect(original.state!.note).toBe('First report');
+    expect(result.document.datasets).toBe(original.datasets);
+    expect(result.document.root).toBe(original.root);
+    expect(result.document.meta).toBe(original.meta);
+    expect(result.document.theme).toBe(original.theme);
+    expect(store.updateState('showChart', false).ok).toBe(true);
+    expect(result.document.state!.showChart).toBe(true);
+    expect(store.getSnapshot().state).toEqual({ showChart: false, note: 'Updated report' });
+    expect(parseMosaic(serializeMosaic(store.getSnapshot()))).toEqual({
+      ok: true,
+      document: store.getSnapshot(),
+    });
+  });
+
+  it('enforces all control binding types, including shared bindings inside a hidden condition', () => {
+    const doc = minimalDocument();
+    const store = storeFor({
+      ...doc,
+      state: { visible: false, count: 1, note: 'Initial' },
+      root: {
+        ...doc.root,
+        children: [
+          nodeSamples.toggle,
+          nodeSamples.input,
+          {
+            ...nodeSamples.when,
+            children: [
+              { ...nodeSamples.input, id: 'number', kind: 'number', bind: 'count' },
+              { ...nodeSamples.input, id: 'secondNumber', kind: 'number', bind: 'count' },
+              { ...nodeSamples.toggle, id: 'hiddenToggle' },
+            ],
+          },
+        ],
+      },
+    });
+    for (const [key, invalidValues, valid] of [
+      ['visible', [0, 'false', null], true],
+      ['note', [0, false, null], ''],
+      ['count', ['2', false, null], -2.5],
+    ] as const) {
+      const before = store.getSnapshot();
+      for (const value of invalidValues) {
+        expect(store.updateState(key, value)).toMatchObject({
+          ok: false,
+          errors: [{ code: 'INVALID_BINDING', path: '/state/' + key }],
+        });
+        expect(store.getSnapshot()).toBe(before);
+      }
+      expect(store.updateState(key, valid).ok).toBe(true);
+      expect(store.getSnapshot().state![key]).toBe(valid);
+      expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+    }
+  });
+
+  it('allows scalar type changes for unbound keys and keys used only by when or stateValue', () => {
+    const doc = minimalDocument();
+    const store = storeFor({
+      ...doc,
+      state: { value: null, unused: 0 },
+      root: {
+        ...doc.root,
+        children: [
+          { ...nodeSamples.when, bind: 'value', equals: 'show' },
+          { ...nodeSamples.stateValue, bind: 'value' },
+        ],
+      },
+    });
+    for (const key of ['value', 'unused']) {
+      for (const value of ['show', '', false, true, -0, Number.MIN_VALUE, Number.MAX_VALUE, null]) {
+        expect(store.updateState(key, value).ok).toBe(true);
+        expect(store.getSnapshot().state![key]).toBe(value);
+        expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+      }
+    }
+  });
+
+  it.each([NaN, Infinity, -Infinity, undefined, {}, [], 1n, Symbol('value'), () => 0])(
+    'rejects the invalid state value %s without publishing a snapshot',
+    (value) => {
+      const store = storeFor(typedDocument);
+      const original = store.getSnapshot();
+      const notify = vi.fn();
+      store.subscribe(notify);
+      expect(store.updateState('empty', value)).toMatchObject({
+        ok: false,
+        errors: [{ code: 'INVALID_BINDING', path: '/state/empty' }],
+      });
+      expect(store.getSnapshot()).toBe(original);
+      expect(notify).not.toHaveBeenCalled();
+    },
+  );
+
+  it('rejects non-finite numbers for numeric control bindings', () => {
+    const doc = minimalDocument();
+    const store = storeFor({
+      ...doc,
+      state: { count: 0 },
+      root: { ...doc.root, children: [{ ...nodeSamples.input, kind: 'number', bind: 'count' }] },
+    });
+    for (const value of [NaN, Infinity, -Infinity]) {
+      expect(store.updateState('count', value)).toMatchObject({
+        ok: false,
+        errors: [{ code: 'INVALID_BINDING', path: '/state/count' }],
+      });
+      expect(store.getSnapshot().state!.count).toBe(0);
+    }
+  });
+
+  it('rejects missing and reserved keys with escaped JSON Pointers, including absent state', () => {
+    for (const document of [
+      minimalDocument(),
+      { ...minimalDocument(), state: {} },
+      typedDocument,
+    ]) {
+      const store = storeFor(document);
+      for (const key of [
+        'missing',
+        '__proto__',
+        'constructor',
+        'prototype',
+        'toString',
+        'bad/~key',
+      ]) {
+        const path = '/state/' + key.replaceAll('~', '~0').replaceAll('/', '~1');
+        expect(store.updateState(key, 1)).toMatchObject({
+          ok: false,
+          errors: [{ code: 'INVALID_BINDING', path }],
+        });
+        expect(store.getSnapshot()).toBe(document);
+      }
+    }
+  });
+
+  it('uses own keys for null-prototype state maps and legal names that shadow object properties', () => {
+    const state = Object.assign(Object.create(null), { toString: 1, hasOwnProperty: false });
+    const store = storeFor({ ...minimalDocument(), state });
+    expect(store.updateState('toString', 'Literal').ok).toBe(true);
+    expect(store.updateState('hasOwnProperty', true).ok).toBe(true);
+    expect(store.getSnapshot().state).toEqual({ toString: 'Literal', hasOwnProperty: true });
+    expect(state.toString).toBe(1);
+    expect(state.hasOwnProperty).toBe(false);
+    expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+  });
+
+  it('publishes once per actual change, supports unsubscribe and composes state and cell edits', () => {
+    const store = storeFor(typedDocument);
+    const notify = vi.fn(() => store.getSnapshot());
+    const unsubscribe = store.subscribe(notify);
+    const original = store.getSnapshot();
+    expect(store.updateState('note', 'Hello')).toEqual({ ok: true, document: original });
+    expect(store.updateState('note', null).ok).toBe(false);
+    expect(notify).not.toHaveBeenCalled();
+    const changed = store.updateState('note', 'Updated');
+    expect(notify).toHaveReturnedWith(store.getSnapshot());
+    expect(notify).toHaveBeenCalledTimes(1);
+    expect(changed).toEqual({ ok: true, document: store.getSnapshot() });
+    expect(store.updateCell('table', 'first', 'amount', 10).ok).toBe(true);
+    expect(store.updateState('visible', false).ok).toBe(true);
+    expect(store.getSnapshot().state).toEqual({
+      ...original.state,
+      note: 'Updated',
+      visible: false,
+    });
+    expect(store.getRow('values', 'first')?.amount).toBe(10);
+    expect(notify).toHaveBeenCalledTimes(3);
+    unsubscribe();
+    expect(store.updateState('note', 'Final').ok).toBe(true);
+    expect(notify).toHaveBeenCalledTimes(3);
+  });
+});

@@ -2,6 +2,7 @@ import { checkChartPointLimit, isCellValue } from './dataset-rules.ts';
 import type { ParseResult } from './errors.ts';
 import { appendJsonPointer, jsonPointer, type JsonPointer } from './json-pointer.ts';
 import { MOSAIC_LIMITS } from './limits.ts';
+import { stateBindingType } from './semantics.ts';
 import type { MosaicNode, TableNode } from './types.ts';
 
 interface DatasetIndex {
@@ -24,11 +25,19 @@ function invalidEdit(path: JsonPointer, message: string): ParseResult {
   return { ok: false, errors: [{ code: 'INVALID_DATASET', path, message }] };
 }
 
+function invalidState(key: string, message: string): ParseResult {
+  return {
+    ok: false,
+    errors: [{ code: 'INVALID_BINDING', path: jsonPointer('state', key), message }],
+  };
+}
+
 /** Open one store per successful parse or validation. Its snapshots use the readonly core model. */
 export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) {
   let document = opened.document;
   const datasets = new Map<string, DatasetIndex>();
   const tables = new Map<string, { node: TableNode; path: JsonPointer }>();
+  const stateTypes = new Map<string, 'boolean' | 'string' | 'number'>();
   const listeners = new Set<() => void>();
 
   for (const [name, dataset] of Object.entries(document.datasets ?? {})) {
@@ -40,6 +49,10 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
   }
 
   function indexNode(node: MosaicNode, path: JsonPointer) {
+    if ('bind' in node) {
+      const type = stateBindingType(node);
+      if (type) stateTypes.set(node.bind, type);
+    }
     if (node.type === 'table') tables.set(node.id, { node, path });
     if (node.type === 'chart') {
       // Row count is fixed. A smaller dataset can never exceed the chart limit.
@@ -65,6 +78,34 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
   function getRow(name: string, rowId: string) {
     const position = datasets.get(name)?.rowPositions.get(rowId);
     return position === undefined ? undefined : document.datasets![name]!.rows[position];
+  }
+
+  function updateState(key: string, value: unknown): ParseResult {
+    const state = document.state;
+    if (!state || !Object.hasOwn(state, key)) {
+      return invalidState(key, `State key "${key}" is not declared.`);
+    }
+    if (
+      value !== null &&
+      typeof value !== 'string' &&
+      typeof value !== 'boolean' &&
+      !(typeof value === 'number' && Number.isFinite(value))
+    ) {
+      return invalidState(key, 'State values must be strings, booleans, finite numbers, or null.');
+    }
+    const expected = stateTypes.get(key);
+    if (expected && typeof value !== expected) {
+      return invalidState(
+        key,
+        `State key "${key}" requires a ${expected} value for its control bindings.`,
+      );
+    }
+    if (Object.is(state[key], value)) return { ok: true, document };
+
+    document = { ...document, state: { ...state, [key]: value } };
+    const result = { ok: true, document } as const;
+    for (const notify of listeners) notify();
+    return result;
   }
 
   function updateCell(
@@ -137,6 +178,7 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
     getDataset,
     getRow,
     updateCell,
+    updateState,
     subscribe(notify: () => void) {
       listeners.add(notify);
       return () => {

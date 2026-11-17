@@ -126,6 +126,12 @@ function indexDatasets(
   }
 }
 
+/** Shared by import validation and store updates, including hidden controls. */
+export function stateBindingType(node: WhenNode | StateValueNode | ToggleNode | InputNode) {
+  if (node.type === 'toggle') return 'boolean';
+  if (node.type === 'input') return node.kind === 'text' ? 'string' : 'number';
+}
+
 function checkBinding(
   node: WhenNode | StateValueNode | ToggleNode | InputNode,
   state: MosaicDocument['state'],
@@ -146,10 +152,8 @@ function checkBinding(
       `State key "${key}" is not declared.`,
     );
   }
-  let expected: 'boolean' | 'string' | 'number';
-  if (node.type === 'toggle') expected = 'boolean';
-  else if (node.type === 'input') expected = node.kind === 'text' ? 'string' : 'number';
-  else return; // when and stateValue accept every declared scalar, including null.
+  const expected = stateBindingType(node);
+  if (!expected) return; // when and stateValue accept every declared scalar, including null.
   if (typeof state[key] !== expected) {
     return issue(
       'INVALID_BINDING',
