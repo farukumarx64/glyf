@@ -108,11 +108,11 @@ describe('read-only initial state', () => {
     );
   });
 
-  it('labels the chart placeholder by dataset when the chart title is blank', () => {
+  it('labels the chart by dataset when the chart title is blank', () => {
     const children = [{ ...nodeSamples.chart, title: '   ' }];
     const html = renderDocument({ ...typedDocument, root: { ...typedDocument.root, children } });
-    expect(html).toContain('Chart placeholder for values</p>');
-    expect(html).not.toMatch(/<svg\b/);
+    expect(html).toMatch(/<figcaption[^>]*>values<\/figcaption>/);
+    expect(html).toContain('role="img"');
   });
 
   it('renders the reference demo from its saved state and keeps the chart conditional', () => {
@@ -139,7 +139,7 @@ describe('read-only initial state', () => {
         </label>,
       ),
     );
-    expect(html).toContain('Chart placeholder for Revenue by month</p>');
+    expect(html).toMatch(/<figcaption[^>]*>Revenue by month<\/figcaption>/);
     expect(html).toContain('<caption>revenue</caption>');
 
     const hidden = renderDocument({ ...doc, state: { ...doc.state, showChart: false } });

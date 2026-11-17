@@ -60,7 +60,7 @@ describe('NodeRenderer', () => {
       '<strong>Markdown</strong>',
       'class="mosaic-text">Plain text</p>',
       '<hr',
-      'Chart placeholder for Values',
+      'class="mosaic-chart"',
       '<caption>values</caption>',
       'type="checkbox"',
       'checked',

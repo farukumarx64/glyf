@@ -2,6 +2,7 @@ import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import type { Gap, MosaicDocument, MosaicNode } from '../core/types.ts';
 import { MarkdownView } from './MarkdownView.tsx';
 import { TableView } from './TableView.tsx';
+import { ChartView } from './ChartView.tsx';
 
 export type NodesByType = { [Node in MosaicNode as Node['type']]: Node };
 
@@ -75,9 +76,7 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
   divider: function DividerView({ anchorId }) {
     return <hr id={anchorId} className="mosaic-divider" />;
   },
-  chart: function ChartView({ node, anchorId }) {
-    return <p id={anchorId}>Chart placeholder for {displayLabel(node.title, node.dataset)}</p>;
-  },
+  chart: ChartView,
   table: TableView,
   toggle: function ToggleView({ node, document, anchorId }) {
     return (

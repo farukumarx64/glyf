@@ -134,3 +134,50 @@
   color: var(--accent);
   background: var(--sheet);
 }
+
+.mosaic-chart {
+  inline-size: 100%;
+  margin: 0;
+}
+
+.mosaic-chart figcaption {
+  font-weight: 650;
+}
+
+.mosaic-chart svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  font-size: 12px;
+}
+
+.mosaic-chart text {
+  fill: var(--ink, currentColor);
+}
+
+.mosaic-chart-tick line {
+  stroke: var(--line, #788593);
+}
+
+.mosaic-chart-baseline line,
+.mosaic-chart-axis {
+  stroke: var(--muted, #516177);
+}
+
+.mosaic-chart-bar,
+.mosaic-chart-point {
+  fill: var(--accent, #2159ad);
+}
+
+.mosaic-chart-line {
+  fill: none;
+  stroke: var(--accent, #2159ad);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.mosaic-chart > p {
+  color: var(--muted, #516177);
+  font-size: 0.875rem;
+  margin: 0.5rem 0 0;
+}
