@@ -1,6 +1,9 @@
-import { memo, useState } from 'react';
+import { memo, useContext, useState } from 'react';
 import type { ColumnDefinition, DatasetRow } from '../core/types.ts';
+import type { DocumentStore } from '../core/store.ts';
 import type { NodeView } from './nodeRegistry.tsx';
+import { CellEditor } from './CellEditor.tsx';
+import { CellEditingContext } from './cell-editing-context.ts';
 
 const ROW_BATCH_SIZE = 100;
 
@@ -13,11 +16,15 @@ const TableRow = memo(function TableRow({
   columns,
   ariaRowIndex,
   firstNewRow,
+  tableId,
+  updateCell,
 }: {
   row: DatasetRow;
   columns: readonly ColumnDefinition[];
   ariaRowIndex: number | undefined;
   firstNewRow: boolean;
+  tableId: string;
+  updateCell: DocumentStore['updateCell'] | undefined;
 }) {
   return (
     <tr
@@ -25,11 +32,30 @@ const TableRow = memo(function TableRow({
       tabIndex={firstNewRow ? -1 : undefined}
       ref={firstNewRow ? focusRow : undefined}
     >
-      {columns.map(({ key, kind }) => {
-        const value = row[key];
+      {columns.map((column) => {
+        const { key, kind } = column;
+        const value = row[key]!;
+        const editable =
+          updateCell && Object.hasOwn(column, 'editable') && column.editable === true;
         return (
-          <td key={key} data-kind={kind} aria-label={value === null ? 'No value' : undefined}>
-            {value === null ? '—' : String(value)}
+          <td
+            key={key}
+            data-kind={kind}
+            aria-label={!editable && value === null ? 'No value' : undefined}
+          >
+            {editable ? (
+              <CellEditor
+                tableId={tableId}
+                rowId={row.id}
+                column={column}
+                value={value}
+                updateCell={updateCell}
+              />
+            ) : value === null ? (
+              '—'
+            ) : (
+              String(value)
+            )}
           </td>
         );
       })}
@@ -40,6 +66,7 @@ const TableRow = memo(function TableRow({
 export const TableView: NodeView<'table'> = ({ node, document, anchorId }) => {
   // Document validation resolves this binding and guarantees one cell per column.
   const { columns, rows } = document.datasets![node.dataset]!;
+  const updateCell = useContext(CellEditingContext);
   const [batch, setBatch] = useState(1);
   const progressive = rows.length > ROW_BATCH_SIZE;
   const visibleCount = Math.min(rows.length, batch * ROW_BATCH_SIZE);
@@ -73,6 +100,10 @@ export const TableView: NodeView<'table'> = ({ node, document, anchorId }) => {
                 columns={columns}
                 ariaRowIndex={progressive ? i + 2 : undefined}
                 firstNewRow={batch > 1 && i === (batch - 1) * ROW_BATCH_SIZE}
+                tableId={node.id}
+                updateCell={
+                  Object.hasOwn(node, 'editable') && node.editable === true ? updateCell : undefined
+                }
               />
             ))}
           </tbody>

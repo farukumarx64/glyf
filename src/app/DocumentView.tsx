@@ -70,7 +70,7 @@ export const DocumentView = memo(function DocumentView({
           hidden={view !== 'Preview'}
           tabIndex={0}
         >
-          {view === 'Preview' && <NodeRenderer document={document} />}
+          {view === 'Preview' && <NodeRenderer document={document} onCellEdit={store.updateCell} />}
         </div>
         <div
           className="source-panel"

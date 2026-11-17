@@ -22,9 +22,9 @@ function openTable(data: Dataset, tables: TableNode[] = [nodeSamples.table]) {
   return store;
 }
 
-function numberedRows(count: number): Dataset {
+function numberedRows(count: number, editable = false): Dataset {
   return {
-    columns: [{ key: 'value', label: 'Value', kind: 'number', editable: true }],
+    columns: [{ key: 'value', label: 'Value', kind: 'number', editable }],
     rows: Array.from({ length: count }, (_, i) => ({ id: 'row-' + i, value: i + 1 })),
   };
 }
@@ -99,7 +99,7 @@ describe('table rendering', () => {
   });
 
   it('expands each view independently and reads edits to visible and unrevealed rows', () => {
-    const store = openTable(numberedRows(101), [
+    const store = openTable(numberedRows(101, true), [
       nodeSamples.table,
       { ...nodeSamples.table, id: 'secondTable' },
     ]);
@@ -115,11 +115,14 @@ describe('table rendering', () => {
       store.updateCell('table', 'row-0', 'value', -7);
       store.updateCell('table', 'row-100', 'value', 0);
     });
-    expect(firstRows[0]?.textContent).toBe('-7');
-    expect(secondRows[0]?.textContent).toBe('-7');
+    expect(within(firstRows[0] as HTMLElement).getByRole('textbox')).toHaveProperty('value', '-7');
+    expect(within(secondRows[0] as HTMLElement).getByRole('textbox')).toHaveProperty('value', '-7');
     expect(firstRows[100]).toBe(last);
-    expect(last?.textContent).toBe('0');
+    expect(within(last as HTMLElement).getByRole('textbox')).toHaveProperty('value', '0');
     fireEvent.click(more[1]!);
-    expect(secondRows[100]?.textContent).toBe('0');
+    expect(within(secondRows[100] as HTMLElement).getByRole('textbox')).toHaveProperty(
+      'value',
+      '0',
+    );
   });
 });

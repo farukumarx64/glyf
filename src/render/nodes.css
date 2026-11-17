@@ -135,6 +135,59 @@
   background: var(--sheet);
 }
 
+.mosaic-cell-editor {
+  display: grid;
+  grid-template-columns: minmax(8ch, 1fr) auto;
+  align-items: start;
+  gap: 0.4rem;
+  min-inline-size: 12rem;
+}
+
+.mosaic-cell-editor :is(input, textarea, select, button) {
+  font: inherit;
+  color: var(--ink, currentColor);
+  background: var(--sheet, Canvas);
+  border: 1px solid var(--line, #788593);
+  border-radius: 0.3rem;
+  padding: 0.35rem 0.5rem;
+  min-inline-size: 0;
+}
+
+.mosaic-cell-editor :is(input, textarea, select) {
+  inline-size: 100%;
+}
+
+.mosaic-cell-editor textarea {
+  resize: vertical;
+}
+
+.mosaic-cell-editor input {
+  text-align: end;
+}
+
+.mosaic-cell-editor button {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.mosaic-cell-editor select,
+.mosaic-cell-error {
+  grid-column: 1 / -1;
+}
+
+.mosaic-cell-editor [aria-invalid='true'] {
+  border-color: var(--error, #982f24);
+}
+
+.mosaic-cell-error {
+  margin: 0;
+  max-inline-size: 24rem;
+  color: var(--error, #982f24);
+  font-size: 0.8rem;
+  text-align: start;
+  white-space: normal;
+}
+
 .mosaic-chart {
   inline-size: 100%;
   margin: 0;
