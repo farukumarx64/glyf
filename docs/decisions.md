@@ -244,6 +244,12 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Use the native JSON formatter with two-space indentation and append one LF. An identity replacer bounds the expansion of repeated string values in directly supplied documents. The final UTF-8 size check uses the text parser’s shared byte counter.
 - Keep download handling in Phase 4. The Phase 1 round-trip test encodes the core output and reopens it through the file reader and full validator.
 
+## Phase 4 control implementation choices
+
+- Pass the store's typed `updateState` callback through a renderer context. The viewer subscribes to the current snapshot, so `stateValue`, `when`, and repeated bindings reflect each successful edit together. Standalone renderers without that callback retain disabled state controls.
+- Reuse the cell editor's local draft handling and complete finite-decimal parser for numeric state inputs. A text field with `inputMode="decimal"` retains incomplete or invalid spelling for feedback across browsers. Empty fields do not become zero or null. Valid spelling normalizes on blur, and Escape restores the latest committed value. Drafts are UI state and disappear when their control unmounts.
+- Use a textarea for editable text inputs so multiline values remain representable without replacing the DOM control during typing. Toggles use native checkboxes. All changes pass through the existing store validation; the schema and node vocabulary remain unchanged.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

@@ -598,7 +598,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 **Tasks**
 
 - [x] Add typed state updates to the document store with immutable snapshots, existing-key checks, control binding compatibility, and finite-number validation.
-- [ ] Enable mutations for `toggle` and `input`, and reactive updates for `stateValue` and `when`, building on their Phase 2 read-only rendering; use typed state changes.
+- [x] Enable mutations for `toggle` and `input`, and reactive updates for `stateValue` and `when`, building on their Phase 2 read-only rendering; use typed state changes.
 - [ ] Export current datasets and state via new `.mosa` download.
 - [ ] Re-import exported file and verify structural equivalence and persisted edits.
 - [ ] Track unsaved changes; warn before replacing a modified document.
@@ -643,8 +643,8 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 - [x] Small screens show no accidental horizontal page overflow.
 - [x] Editable cells have accessible labels and honor type restrictions.
 - [x] Editing source data updates dependent chart without reloading entire file.
-- [ ] Toggle hides and restores conditional region.
-- [ ] Text input updates state display; invalid number input cannot corrupt state.
+- [x] Toggle hides and restores conditional region.
+- [x] Text input updates state display; invalid number input cannot corrupt state.
 - [ ] Downloaded file reopens with persistent edits.
 - [ ] Open-replace warns about unsaved edits.
 

@@ -97,6 +97,8 @@ src/
   render/MarkdownView.tsx      CommonMark rendering with HTML and images disabled
   render/TableView.tsx         Captioned dataset tables with progressive row rendering
   render/CellEditor.tsx        Typed cell controls, local drafts, and inline error feedback
+  render/StateControls.tsx     Bound text/number inputs and boolean toggles
+  render/useValueDraft.ts      Shared local drafts and complete finite-number parsing
   render/ChartView.tsx         Responsive SVG bar and line charts with text summaries
   render/chart-geometry.ts     Finite scales, bounded ticks, and ordered point selection
   render/markdown-policy.ts    Link destinations and document fragment targets
@@ -115,6 +117,7 @@ tests/
   rendering.test.tsx          Component dispatch, layout, nesting, and child order
   markdown.test.tsx           CommonMark output and viewer URL policy
   initial-state.test.tsx      Saved values, conditional content, and read-only controls
+  state-controls.test.tsx     Reactive state controls, numeric drafts, and shared bindings
   file-workflow.test.tsx      File opening, replacement, recovery, and view switching
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
@@ -168,9 +171,11 @@ Markdown uses CommonMark for paragraphs, emphasis, lists, quotations, code, and 
 
 HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links use the user's mail handler. A fragment such as `#notes` targets the rendered element for the Mosaic node with ID `notes`. DOM targets have a viewer-owned prefix to avoid collisions with the app shell. Other destinations, including relative paths and protocol-relative URLs, display their link label as ordinary content.
 
-The read-only preview uses the saved `state` map. A `when` renders its children in order only if the bound value equals `equals` in both type and value. A `stateValue` displays its optional prefix, the saved value, and its optional suffix. It displays `null` as an em dash and preserves empty strings, zero, and false.
+The preview uses the current `state` map. A `when` renders its children in order only if the bound value equals `equals` in both type and value. A `stateValue` displays its optional prefix, the current value, and its optional suffix. It displays `null` as an em dash and preserves empty strings, zero, and false.
 
-Inputs and checkboxes show their saved values in disabled, labeled controls. Multiline text uses a disabled text area to preserve line breaks. An empty or whitespace-only control label falls back to its binding key.
+Inputs and toggles start with saved values and immediately commit valid changes through `updateState`. Text inputs use multiline fields, preserving line breaks and empty strings. Toggles use native checkboxes and commit booleans. An empty or whitespace-only control label falls back to its binding key. Each successful change updates all controls and `stateValue` nodes bound to that key, reevaluates `when`, and appears in Source.
+
+Number inputs share the cell editor's complete finite-decimal parsing, including signs, fractions, and exponents. Drafts such as an empty field, `-`, `1e`, or an overflowing number stay in the control with associated inline feedback; the last valid number remains in the document. Valid spelling stays visible while typing and normalizes on blur. Escape restores the latest committed value. Unrelated state or cell edits preserve a draft; a changed value from the same binding replaces it. Controls bind to strings, numbers, or booleans, so they do not offer a null option. Leaving Preview or hiding a conditional region discards its local drafts; committed edits remain in the store.
 
 Tables use the dataset name as a visible caption and each column's label as its header. A blank label falls back to its column key. Rows and columns appear in file order. Strings display literally, including line breaks and empty strings. Numbers display without rounding or grouping, booleans display as `true` and `false`, and a null cell shows an em dash with the accessible name “No value”.
 
@@ -182,7 +187,7 @@ String cells use a multiline text field and preserve empty strings. Boolean cell
 
 Invalid drafts stay visible with an associated inline error and preserve the latest committed document value. This also applies when the store rejects an edit that would exceed a chart's point limit. Escape restores the latest committed value. Numeric spelling is preserved during typing and normalized on blur after successful validation. An edit to the same cell through another table replaces its previous draft with the newly committed value.
 
-The viewer supplies `NodeRenderer` with the store's edit callback through `onCellEdit`. A standalone renderer can enable the same controls by supplying that callback along with its subscribed document snapshot.
+The viewer supplies `NodeRenderer` with `onCellEdit={store.updateCell}` and `onStateEdit={store.updateState}`. A standalone renderer can enable either set of controls by supplying its callback along with a subscribed document snapshot. Without those callbacks, tables remain read-only and state controls remain disabled.
 
 Charts render as SVG and measure their container to keep labels readable as the layout resizes. The visible caption uses the chart title, falling back to the dataset name when the title is blank. A visible text summary supplies the chart kind, axis labels, plotted point count, exact y-value range, and skipped-row count. The SVG references that caption and summary for its accessible name and description.
 
@@ -190,7 +195,7 @@ Bars occupy equally spaced categories in file order, including numeric x labels,
 
 Both chart kinds skip any row with null x or y. Empty strings and zero remain valid points. An empty or entirely skipped dataset displays an explanatory message. Axis labels are capped at five x ticks and six y ticks, including zero when it is in range. Long string labels are abbreviated to fit, while the document retains their complete values. Chart colors follow the document theme, and committed store edits refresh both geometry and summaries.
 
-Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx tests/cell-editing.test.tsx` to exercise rendering, table interactions, cell editing, and chart geometry.
+Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx tests/cell-editing.test.tsx tests/state-controls.test.tsx` to exercise rendering, table interactions, cell and state editing, and chart geometry.
 
 ## Phase boundaries
 
