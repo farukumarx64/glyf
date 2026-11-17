@@ -59,7 +59,20 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeDisabled();
   const revenue = page.getByRole('table', { name: 'revenue', exact: true });
   await expect(revenue.getByRole('columnheader')).toHaveText(['Month', 'Revenue (NGN)']);
-  await expect(revenue.getByRole('cell')).toHaveText(['Jan', '1200', 'Feb', '1800', 'Mar', '2500']);
+  await expect(revenue.getByRole('cell').filter({ hasNot: page.locator('input') })).toHaveText([
+    'Jan',
+    'Feb',
+    'Mar',
+  ]);
+  for (const [id, value] of [
+    ['jan', '1200'],
+    ['feb', '1800'],
+    ['mar', '2500'],
+  ]) {
+    await expect(revenue.getByRole('textbox', { name: `Revenue (NGN), row ${id}` })).toHaveValue(
+      value!,
+    );
+  }
   const chart = page.getByRole('img', { name: 'Revenue by month' });
   await expect(chart).toBeVisible();
   await expect(chart.locator('rect')).toHaveCount(3);
@@ -80,6 +93,60 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   await expect(page.getByRole('tabpanel', { name: 'Preview' })).toBeVisible();
   await page.setViewportSize({ width: 320, height: 740 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  expect(requests).toEqual([]);
+});
+
+test('edits the demo offline and keeps invalid drafts out of charts and Source', async ({
+  page,
+  browserName,
+}, testInfo) => {
+  const requests = await goOffline(page);
+  await page.getByRole('button', { name: 'Open Demo' }).click();
+  const tabKey = nextFocusKey(browserName);
+  await expect(page.getByRole('tab', { name: 'Preview' })).toBeFocused();
+  await page.keyboard.press(tabKey); // Preview panel
+  await page.keyboard.press(tabKey); // Table scroll region
+  await page.keyboard.press(tabKey);
+  const january = page.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
+  await expect(january).toBeFocused();
+  await expect(january).toHaveCSS('outline-style', 'solid');
+  const chart = page.getByRole('img', { name: 'Revenue by month' });
+  await january.fill('5000');
+  await expect(chart).toHaveAccessibleDescription(/Values range from 1800 to 5000/);
+  const committed = await chart.innerHTML();
+  await january.fill('1e9999');
+  await expect(january).toHaveValue('1e9999');
+  await expect(january).toHaveAttribute('aria-invalid', 'true');
+  await expect(january).toHaveAccessibleDescription(
+    'Enter a finite decimal number, or choose No value.',
+  );
+  expect(await chart.innerHTML()).toBe(committed);
+  await page.setViewportSize({ width: 320, height: 1000 });
+  await expect
+    .poll(() =>
+      chart.evaluate((svg) => {
+        const viewBoxWidth = Number(svg.getAttribute('viewBox')!.split(' ')[2]);
+        return Math.abs(svg.getBoundingClientRect().width - viewBoxWidth);
+      }),
+    )
+    .toBeLessThanOrEqual(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  await page.screenshot({ path: testInfo.outputPath('invalid-cell-320.png'), fullPage: true });
+  await page.keyboard.press('Escape');
+  await expect(january).toHaveValue('5000');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Set Revenue (NGN), row jan to no value' }).click();
+  await expect(january).toHaveValue('');
+  await expect(chart).toHaveAccessibleDescription(/2 points/);
+  await january.fill('1500');
+  await expect(chart).toHaveAccessibleDescription(/3 points. Values range from 1500 to 2500/);
+  await page.getByRole('tab', { name: 'Source' }).click();
+  const source = JSON.parse(
+    await page.getByRole('tabpanel', { name: 'Source' }).innerText(),
+  ) as MosaicDocument;
+  expect(source.datasets!.revenue!.rows[0]?.amount).toBe(1500);
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect(january).toHaveValue('1500');
   expect(requests).toEqual([]);
 });
 
