@@ -84,7 +84,7 @@ src/
   core/semantics.ts            Dataset, state, node, and chart rules
   core/parse.ts                Parse and validate text into a typed document
   core/serialize.ts            Validate and produce formatted .mosa text
-  core/store.ts                Indexed dataset reads and immutable cell edits
+  core/store.ts                Indexed dataset reads and immutable cell and state edits
   core/dataset-rules.ts        Shared cell-type and chart-point checks
   core/utf8.ts                 Shared UTF-8 text size and encoding checks
   core/source.ts               Byte and text decoding, syntax, and version checks
@@ -151,6 +151,10 @@ if (opened.ok) {
 Lookups return `undefined` for a missing dataset or row. Edits identify the originating table by node ID because two tables can bind to the same dataset with different permissions. Both the table and the column must explicitly enable editing. A changed value publishes a new readonly snapshot and notifies subscribers. An identical value returns the current snapshot. A rejected edit returns structured errors with JSON Pointer paths and leaves the store at its last successful edit.
 
 Row and column positions are indexed once per dataset. Each edit copies the affected row, row array, dataset, dataset map, and document. Filling a null chart coordinate in a dataset with more than 500 rows can require a bounded scan for each affected axis pair. The store checks those charts before publishing the edit, including charts inside hidden conditions.
+
+`store.updateState('note', 'Updated report')` updates an existing state key and returns the same success/error result shape as `updateCell`. A successful change copies the state map and document and notifies subscribers once. Equal values reuse the current snapshot. Errors use `INVALID_BINDING` and the affected state key's JSON Pointer, such as `/state/note`.
+
+The store indexes control binding types when it opens the validated document, including hidden controls. Toggle bindings require booleans, text inputs require strings, and number inputs require finite numbers. Keys used only by `when` or `stateValue`, along with unbound keys, can change among strings, finite numbers, booleans, and null. Rejected edits preserve the current snapshot. State updates also compose with cell edits and survive serialization and reopening.
 
 ### Preview
 

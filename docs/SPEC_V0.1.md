@@ -597,6 +597,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 **Tasks**
 
+- [x] Add typed state updates to the document store with immutable snapshots, existing-key checks, control binding compatibility, and finite-number validation.
 - [ ] Enable mutations for `toggle` and `input`, and reactive updates for `stateValue` and `when`, building on their Phase 2 read-only rendering; use typed state changes.
 - [ ] Export current datasets and state via new `.mosa` download.
 - [ ] Re-import exported file and verify structural equivalence and persisted edits.
