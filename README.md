@@ -96,6 +96,7 @@ src/
   render/nodeRegistry.tsx      Typed components for the 14 v0.1 node kinds
   render/MarkdownView.tsx      CommonMark rendering with HTML and images disabled
   render/TableView.tsx         Captioned dataset tables with progressive row rendering
+  render/CellEditor.tsx        Typed cell controls, local drafts, and inline error feedback
   render/ChartView.tsx         Responsive SVG bar and line charts with text summaries
   render/chart-geometry.ts     Finite scales, bounded ticks, and ordered point selection
   render/markdown-policy.ts    Link destinations and document fragment targets
@@ -171,13 +172,21 @@ Tables use the dataset name as a visible caption and each column's label as its 
 
 Tables with up to 100 rows display in full. Larger tables start with 100 rows and show how many are visible. **Show more** appends up to 100 rows at a time and moves keyboard focus to the first new row. Each table expands independently. Wide tables scroll horizontally inside the preview.
 
+The viewer enables a cell control when both its table and column specify `editable: true`. Valid edits immediately update the store, every table and chart using that dataset, and Source. Each control's accessible label includes its column label and stable row ID.
+
+String cells use a multiline text field and preserve empty strings. Boolean cells offer `true`, `false`, and **No value**. Number cells accept complete finite decimal notation, including signs, fractions, and exponents. Text and number cells also offer **No value** to store `null`. An empty numeric field remains a draft until the user enters a number or chooses **No value**.
+
+Invalid drafts stay visible with an associated inline error and preserve the latest committed document value. This also applies when the store rejects an edit that would exceed a chart's point limit. Escape restores the latest committed value. Numeric spelling is preserved during typing and normalized on blur after successful validation. An edit to the same cell through another table replaces its previous draft with the newly committed value.
+
+The viewer supplies `NodeRenderer` with the store's edit callback through `onCellEdit`. A standalone renderer can enable the same controls by supplying that callback along with its subscribed document snapshot.
+
 Charts render as SVG and measure their container to keep labels readable as the layout resizes. The visible caption uses the chart title, falling back to the dataset name when the title is blank. A visible text summary supplies the chart kind, axis labels, plotted point count, exact y-value range, and skipped-row count. The SVG references that caption and summary for its accessible name and description.
 
 Bars occupy equally spaced categories in file order, including numeric x labels, with a zero baseline for positive and negative values. Lines use proportional spacing for numeric x values and equally spaced positions for string x values. Line segments connect points in file order, including when numeric x values run backward. Each plotted line point has a visible marker, so a single point remains visible. Line y scales cover the data range and expand for constant series.
 
 Both chart kinds skip any row with null x or y. Empty strings and zero remain valid points. An empty or entirely skipped dataset displays an explanatory message. Axis labels are capped at five x ticks and six y ticks, including zero when it is in range. Long string labels are abbreviated to fit, while the document retains their complete values. Chart colors follow the document theme, and committed store edits refresh both geometry and summaries.
 
-Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx` to exercise the renderer, table interactions, and chart geometry.
+Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx tests/cell-editing.test.tsx` to exercise rendering, table interactions, cell editing, and chart geometry.
 
 ## Phase boundaries
 

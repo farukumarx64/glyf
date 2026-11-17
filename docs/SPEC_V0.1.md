@@ -587,8 +587,8 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 - [x] Render accessible table with typed cell display.
 - [x] Replace Phase 2 chart/table placeholders; keep state controls read-only until Phase 4.
 - [x] Implement `bar` and `line` charts using responsive SVG with zero/negative ranges, axes, and an accessible summary.
-- [ ] Make table cells editable only when table and column permissions both allow it.
-- [ ] Wire shared datasets so successful cell edits update bound charts.
+- [x] Make table cells editable only when table and column permissions both allow it.
+- [x] Wire shared datasets so successful cell edits update bound charts.
 - [x] Add bounded rendering for >100 rows; benchmark any virtualization decision. The viewer uses progressive rendering in batches of up to 100 rows.
 
 **Acceptance:** Editing the demo's numeric cell updates the chart; invalid edits show feedback and do not corrupt data; column/table permissions enforced.
@@ -640,8 +640,8 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 - [ ] Heading hierarchy and Markdown look correct.
 - [x] Small screens show no accidental horizontal page overflow.
-- [ ] Editable cells have accessible labels and honor type restrictions.
-- [ ] Editing source data updates dependent chart without reloading entire file.
+- [x] Editable cells have accessible labels and honor type restrictions.
+- [x] Editing source data updates dependent chart without reloading entire file.
 - [ ] Toggle hides and restores conditional region.
 - [ ] Text input updates state display; invalid number input cannot corrupt state.
 - [ ] Downloaded file reopens with persistent edits.
