@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
 import type { Gap, MosaicDocument, MosaicNode } from '../core/types.ts';
 import { MarkdownView } from './MarkdownView.tsx';
+import { TableView } from './TableView.tsx';
 
 export type NodesByType = { [Node in MosaicNode as Node['type']]: Node };
 
@@ -77,9 +78,7 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
   chart: function ChartView({ node, anchorId }) {
     return <p id={anchorId}>Chart placeholder for {displayLabel(node.title, node.dataset)}</p>;
   },
-  table: function TableView({ node, anchorId }) {
-    return <p id={anchorId}>Table placeholder for {node.dataset}</p>;
-  },
+  table: TableView,
   toggle: function ToggleView({ node, document, anchorId }) {
     return (
       <label id={anchorId}>

@@ -61,7 +61,7 @@ describe('NodeRenderer', () => {
       'class="mosaic-text">Plain text</p>',
       '<hr',
       'Chart placeholder for Values',
-      'Table placeholder for values',
+      '<caption>values</caption>',
       'type="checkbox"',
       'checked',
       'type="text"',

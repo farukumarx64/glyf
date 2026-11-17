@@ -76,3 +76,61 @@
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+.mosaic-table-scroll {
+  overflow-x: auto;
+}
+
+.mosaic-table-scroll table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.mosaic-table-scroll caption {
+  padding-block-end: 0.5rem;
+  text-align: start;
+  font-weight: 650;
+}
+
+.mosaic-table-scroll :is(th, td) {
+  min-inline-size: 7ch;
+  padding: var(--mosaic-layout-gap, 0.75rem);
+  border-block-end: 1px solid var(--line);
+  text-align: start;
+  vertical-align: top;
+  white-space: pre-wrap;
+}
+
+.mosaic-table-scroll th {
+  background: var(--tint);
+}
+
+.mosaic-table-scroll [data-kind='number'] {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.mosaic-table-scroll tr:focus-visible {
+  outline-offset: -3px;
+}
+
+.mosaic-table-view > p {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+}
+
+.mosaic-table-progress {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-block-start: 0.75rem;
+}
+
+.mosaic-table-progress button {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.4rem;
+  color: var(--accent);
+  background: var(--sheet);
+}

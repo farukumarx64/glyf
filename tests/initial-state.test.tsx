@@ -108,15 +108,11 @@ describe('read-only initial state', () => {
     );
   });
 
-  it('labels chart and table placeholders by dataset when the chart title is blank', () => {
-    const children = [
-      { ...nodeSamples.chart, title: '   ' },
-      { ...nodeSamples.table, editable: true },
-    ];
+  it('labels the chart placeholder by dataset when the chart title is blank', () => {
+    const children = [{ ...nodeSamples.chart, title: '   ' }];
     const html = renderDocument({ ...typedDocument, root: { ...typedDocument.root, children } });
     expect(html).toContain('Chart placeholder for values</p>');
-    expect(html).toContain('Table placeholder for values</p>');
-    expect(html).not.toMatch(/<(?:svg|table|input)\b/);
+    expect(html).not.toMatch(/<svg\b/);
   });
 
   it('renders the reference demo from its saved state and keeps the chart conditional', () => {
@@ -143,13 +139,12 @@ describe('read-only initial state', () => {
         </label>,
       ),
     );
-    expect(html).toContain(
-      'Chart placeholder for Revenue by month</p><p id="mosaic-node-revenueTable">Table placeholder for revenue</p>',
-    );
+    expect(html).toContain('Chart placeholder for Revenue by month</p>');
+    expect(html).toContain('<caption>revenue</caption>');
 
     const hidden = renderDocument({ ...doc, state: { ...doc.state, showChart: false } });
     expect(hidden).not.toContain('mosaic-node-revenueChart');
-    expect(hidden).toContain('Table placeholder for revenue</p>');
+    expect(hidden).toContain('<caption>revenue</caption>');
     expect(serializeMosaic(doc)).toBe(before);
   });
 });
