@@ -57,6 +57,9 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   ).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Document note' })).toHaveValue('First report');
   await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeDisabled();
+  const revenue = page.getByRole('table', { name: 'revenue', exact: true });
+  await expect(revenue.getByRole('columnheader')).toHaveText(['Month', 'Revenue (NGN)']);
+  await expect(revenue.getByRole('cell')).toHaveText(['Jan', '1200', 'Feb', '1800', 'Mar', '2500']);
   await page.keyboard.press('ArrowRight');
   await expect(source).toBeFocused();
   await expect(page.getByRole('tabpanel', { name: 'Source' })).toContainText(
@@ -74,6 +77,58 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   await page.setViewportSize({ width: 320, height: 740 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   expect(requests).toEqual([]);
+});
+
+test('scrolls a wide table and reveals successive rows with the keyboard', async ({
+  page,
+  browserName,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  const doc = minimalDocument();
+  const columns = Array.from({ length: 12 }, (_, i) => ({
+    key: 'c' + i,
+    label: 'Column ' + i,
+    kind: 'number' as const,
+  }));
+  const rows = Array.from({ length: 201 }, (_, i) => ({
+    id: 'r' + i,
+    ...Object.fromEntries(columns.map(({ key }) => [key, i + 1])),
+  }));
+  const wide = {
+    ...doc,
+    datasets: { values: { columns, rows } },
+    root: { ...doc.root, children: [nodeSamples.table] },
+  };
+  await openDocument(page, wide);
+  const table = page.getByRole('table', { name: 'values', exact: true });
+  const scroller = page.getByRole('group', { name: 'values table' });
+  const bodyRows = table.locator('tbody tr');
+  await expect(bodyRows).toHaveCount(100);
+  expect(await scroller.evaluate((el) => el.scrollWidth > el.clientWidth)).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+
+  const tab = nextFocusKey(browserName);
+  await page.keyboard.press(tab); // Preview panel
+  await page.keyboard.press(tab);
+  await expect(scroller).toBeFocused();
+  await page.keyboard.press('ArrowRight', { delay: 100 });
+  await expect.poll(() => scroller.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
+  await page.keyboard.press(tab);
+  await expect(page.getByRole('button', { name: 'Show 100 more rows' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(bodyRows).toHaveCount(200);
+  await expect(bodyRows.nth(100)).toBeFocused();
+  await expect(bodyRows.nth(100).getByRole('cell').first()).toHaveText('101');
+  await page.keyboard.press(tab);
+  await expect(page.getByRole('button', { name: 'Show 1 more row' })).toBeFocused();
+  await page.keyboard.press('Space');
+  await expect(bodyRows).toHaveCount(201);
+  await expect(bodyRows.last()).toBeFocused();
+  await expect(page.getByRole('status')).toHaveText('Showing 201 of 201 rows');
+  await expect(page.getByRole('button', { name: /more rows?/ })).toHaveCount(0);
+
+  await openDocument(page, wide);
+  await expect(bodyRows).toHaveCount(100);
 });
 
 test('reports malformed files offline, keeps the open Source, and recovers', async ({ page }) => {
