@@ -584,12 +584,12 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 **Tasks**
 
 - [x] Build a small document store with datasets keyed by name and rows keyed by stable IDs.
-- [ ] Render accessible table with typed cell display.
+- [x] Render accessible table with typed cell display.
 - [ ] Replace Phase 2 chart/table placeholders; keep state controls read-only until Phase 4.
 - [ ] Implement `bar` and `line` charts using responsive SVG with zero/negative ranges, axes, and an accessible summary.
 - [ ] Make table cells editable only when table and column permissions both allow it.
 - [ ] Wire shared datasets so successful cell edits update bound charts.
-- [ ] Add bounded rendering for >100 rows; benchmark any virtualization decision.
+- [x] Add bounded rendering for >100 rows; benchmark any virtualization decision. The viewer uses progressive rendering in batches of up to 100 rows.
 
 **Acceptance:** Editing the demo's numeric cell updates the chart; invalid edits show feedback and do not corrupt data; column/table permissions enforced.
 

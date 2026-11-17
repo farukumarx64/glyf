@@ -95,6 +95,7 @@ src/
   render/NodeRenderer.tsx      Preview a validated document starting at its root
   render/nodeRegistry.tsx      Typed components for the 14 v0.1 node kinds
   render/MarkdownView.tsx      CommonMark rendering with HTML and images disabled
+  render/TableView.tsx         Captioned dataset tables with progressive row rendering
   render/markdown-policy.ts    Link destinations and document fragment targets
   app/App.tsx                  Demo, file picker, drop handling, and validated replacement
   app/DocumentView.tsx         Preview and formatted Source tabs
@@ -162,9 +163,13 @@ HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links us
 
 The read-only preview uses the saved `state` map. A `when` renders its children in order only if the bound value equals `equals` in both type and value. A `stateValue` displays its optional prefix, the saved value, and its optional suffix. It displays `null` as an em dash and preserves empty strings, zero, and false.
 
-Inputs and checkboxes show their saved values in disabled, labeled controls. Multiline text uses a disabled text area to preserve line breaks. An empty or whitespace-only control label falls back to its binding key. Chart placeholders show the chart title if present and nonblank, or the dataset name otherwise. Table placeholders show the dataset name, including for editable tables.
+Inputs and checkboxes show their saved values in disabled, labeled controls. Multiline text uses a disabled text area to preserve line breaks. An empty or whitespace-only control label falls back to its binding key. Chart placeholders show the chart title if present and nonblank, or the dataset name otherwise.
 
-Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx` to exercise the renderer independently of the app shell.
+Tables use the dataset name as a visible caption and each column's label as its header. A blank label falls back to its column key. Rows and columns appear in file order. Strings display literally, including line breaks and empty strings. Numbers display without rounding or grouping, booleans display as `true` and `false`, and a null cell shows an em dash with the accessible name “No value”.
+
+Tables with up to 100 rows display in full. Larger tables start with 100 rows and show how many are visible. **Show more** appends up to 100 rows at a time and moves keyboard focus to the first new row. Each table expands independently. Wide tables scroll horizontally inside the preview.
+
+Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx` to exercise the renderer and table interactions.
 
 ## Phase boundaries
 
