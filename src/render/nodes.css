@@ -143,7 +143,8 @@
   min-inline-size: 12rem;
 }
 
-.mosaic-cell-editor :is(input, textarea, select, button) {
+.mosaic-cell-editor :is(input, textarea, select, button),
+.mosaic-input :is(input, textarea) {
   font: inherit;
   color: var(--ink, currentColor);
   background: var(--sheet, Canvas);
@@ -157,7 +158,8 @@
   inline-size: 100%;
 }
 
-.mosaic-cell-editor textarea {
+.mosaic-cell-editor textarea,
+.mosaic-input textarea {
   resize: vertical;
 }
 
@@ -175,17 +177,41 @@
   grid-column: 1 / -1;
 }
 
-.mosaic-cell-editor [aria-invalid='true'] {
+.mosaic-cell-editor [aria-invalid='true'],
+.mosaic-input [aria-invalid='true'] {
   border-color: var(--error, #982f24);
 }
 
-.mosaic-cell-error {
+.mosaic-cell-error,
+.mosaic-control-error {
   margin: 0;
   max-inline-size: 24rem;
   color: var(--error, #982f24);
   font-size: 0.8rem;
   text-align: start;
   white-space: normal;
+}
+
+.mosaic-input {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.mosaic-input :is(input, textarea) {
+  box-sizing: border-box;
+  inline-size: 100%;
+  max-inline-size: 100%;
+}
+
+.mosaic-toggle label {
+  display: flex;
+  align-items: start;
+  gap: 0.5rem;
+}
+
+.mosaic-toggle input {
+  flex: none;
+  accent-color: var(--accent, Highlight);
 }
 
 .mosaic-chart {

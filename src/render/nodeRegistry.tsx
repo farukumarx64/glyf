@@ -3,6 +3,7 @@ import type { Gap, MosaicDocument, MosaicNode } from '../core/types.ts';
 import { MarkdownView } from './MarkdownView.tsx';
 import { TableView } from './TableView.tsx';
 import { ChartView } from './ChartView.tsx';
+import { InputView, ToggleView } from './StateControls.tsx';
 
 export type NodesByType = { [Node in MosaicNode as Node['type']]: Node };
 
@@ -21,10 +22,6 @@ const headingTags = { 1: 'h1', 2: 'h2', 3: 'h3', 4: 'h4' } as const;
 
 function gapSize(gap?: Gap) {
   return gap === undefined ? undefined : `${gap * 0.25}rem`;
-}
-
-function displayLabel(label: string | undefined, fallback: string) {
-  return label?.trim() ? label : fallback;
 }
 
 export const nodeRegistry = Object.freeze<NodeRegistry>({
@@ -78,27 +75,8 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
   },
   chart: ChartView,
   table: TableView,
-  toggle: function ToggleView({ node, document, anchorId }) {
-    return (
-      <label id={anchorId}>
-        <input type="checkbox" checked={document.state?.[node.bind] === true} disabled />
-        {displayLabel(node.label, node.bind)}
-      </label>
-    );
-  },
-  input: function InputView({ node, document, anchorId }) {
-    const value = String(document.state?.[node.bind] ?? '');
-    return (
-      <label id={anchorId}>
-        {displayLabel(node.label, node.bind)}
-        {node.kind === 'text' && /[\r\n]/.test(value) ? (
-          <textarea value={value} disabled />
-        ) : (
-          <input type={node.kind} value={value} disabled />
-        )}
-      </label>
-    );
-  },
+  toggle: ToggleView,
+  input: InputView,
   stateValue: function StateValueView({ node, document, anchorId }) {
     return (
       <span id={anchorId} className="mosaic-text">

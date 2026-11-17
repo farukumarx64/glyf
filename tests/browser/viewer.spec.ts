@@ -56,7 +56,7 @@ test('opens the bundled demo offline and navigates the viewer using only the key
     page.getByRole('heading', { name: 'Mosaic: First Interactive Document' }),
   ).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Document note' })).toHaveValue('First report');
-  await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeDisabled();
+  await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeEnabled();
   const revenue = page.getByRole('table', { name: 'revenue', exact: true });
   await expect(revenue.getByRole('columnheader')).toHaveText(['Month', 'Revenue (NGN)']);
   await expect(revenue.getByRole('cell').filter({ hasNot: page.locator('input') })).toHaveText([
@@ -105,6 +105,8 @@ test('edits the demo offline and keeps invalid drafts out of charts and Source',
   const tabKey = nextFocusKey(browserName);
   await expect(page.getByRole('tab', { name: 'Preview' })).toBeFocused();
   await page.keyboard.press(tabKey); // Preview panel
+  await page.keyboard.press(tabKey); // Document note
+  await page.keyboard.press(tabKey); // Show revenue chart
   await page.keyboard.press(tabKey); // Table scroll region
   await page.keyboard.press(tabKey);
   const january = page.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
@@ -147,6 +149,121 @@ test('edits the demo offline and keeps invalid drafts out of charts and Source',
   expect(source.datasets!.revenue!.rows[0]?.amount).toBe(1500);
   await page.getByRole('tab', { name: 'Preview' }).click();
   await expect(january).toHaveValue('1500');
+  expect(requests).toEqual([]);
+});
+
+test('edits state offline with the keyboard and preserves it when conditional content returns', async ({
+  page,
+  browserName,
+}) => {
+  const requests = await goOffline(page);
+  const tabKey = nextFocusKey(browserName);
+  await page.getByRole('button', { name: 'Open Demo' }).click();
+  await expect(page.getByRole('tab', { name: 'Preview' })).toBeFocused();
+  await page.keyboard.press(tabKey); // Preview panel
+  await page.keyboard.press(tabKey);
+  const note = page.getByRole('textbox', { name: 'Document note' });
+  await expect(note).toBeFocused();
+  await expect(note).toHaveCSS('outline-width', '3px');
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+  await page.keyboard.insertText('<b>Updated</b>');
+  await page.keyboard.press('Enter');
+  await page.keyboard.insertText('Next line');
+  await expect(note).toBeFocused();
+  await expect(note).toHaveValue('<b>Updated</b>\nNext line');
+  await expect(page.locator('#mosaic-node-noteDisplay')).toHaveText(
+    'Current note: <b>Updated</b>\nNext line',
+  );
+  await expect(page.locator('#mosaic-node-noteDisplay b')).toHaveCount(0);
+  await page.keyboard.press(tabKey);
+  const toggle = page.getByRole('checkbox', { name: 'Show revenue chart' });
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toHaveCSS('outline-width', '3px');
+  await page.keyboard.press('Space');
+  await expect(toggle).not.toBeChecked();
+  await expect(page.getByRole('img', { name: 'Revenue by month' })).toHaveCount(0);
+  await page.getByRole('textbox', { name: 'Revenue (NGN), row jan' }).fill('5000');
+  await toggle.focus();
+  await page.keyboard.press('Space');
+  await expect(toggle).toBeChecked();
+  await expect(page.getByRole('img', { name: 'Revenue by month' })).toHaveAccessibleDescription(
+    /Values range from 1800 to 5000/,
+  );
+  await page.getByRole('tab', { name: 'Source' }).click();
+  const source = JSON.parse(
+    await page.getByRole('tabpanel', { name: 'Source' }).innerText(),
+  ) as MosaicDocument;
+  expect(source.state).toEqual({ note: '<b>Updated</b>\nNext line', showChart: true });
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect(note).toHaveValue('<b>Updated</b>\nNext line');
+  await expect(toggle).toBeChecked();
+  expect(requests).toEqual([]);
+});
+
+test('keeps invalid numeric state local with accessible feedback on a narrow screen', async ({
+  page,
+  browserName,
+}, testInfo) => {
+  const requests = await goOffline(page);
+  const doc = minimalDocument();
+  await openDocument(page, {
+    ...doc,
+    meta: { title: 'State controls' },
+    theme: { mode: 'dark', accent: 'teal' },
+    state: { amount: 2 },
+    root: {
+      ...doc.root,
+      children: [
+        { ...nodeSamples.input, kind: 'number', bind: 'amount', label: 'Amount' },
+        { ...nodeSamples.stateValue, bind: 'amount', prefix: 'Amount: ', suffix: '' },
+        { ...nodeSamples.when, bind: 'amount', equals: 0, children: [nodeSamples.text] },
+      ],
+    },
+  });
+  await page.setViewportSize({ width: 320, height: 740 });
+  const tabKey = nextFocusKey(browserName);
+  await expect(page.getByRole('tab', { name: 'Preview' })).toBeFocused();
+  await page.keyboard.press(tabKey); // Preview panel
+  await page.keyboard.press(tabKey);
+  const amount = page.getByRole('textbox', { name: 'Amount' });
+  await expect(amount).toBeFocused();
+  await expect(amount).toHaveAttribute('inputmode', 'decimal');
+  await expect(amount).toHaveCSS('outline-color', 'rgb(117, 220, 203)');
+  await expect(amount).toHaveCSS('background-color', 'rgb(25, 37, 53)');
+  await expect(amount).toHaveCSS('color', 'rgb(234, 240, 248)');
+  await amount.fill('0');
+  await expect(page.getByText('Amount: 0', { exact: true })).toBeVisible();
+  await expect(page.getByText('Plain text')).toBeVisible();
+  for (const draft of ['', '-', '1e', '1e9999']) {
+    await amount.fill(draft);
+    await expect(amount).toHaveValue(draft);
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await expect(amount).toHaveAccessibleDescription('Enter a finite decimal number.');
+    await expect(page.getByText('Amount: 0', { exact: true })).toBeVisible();
+    await expect(page.getByText('Plain text')).toBeVisible();
+  }
+  await expect(page.getByRole('alert')).toHaveCSS('color', 'rgb(255, 178, 167)');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+  await page.screenshot({ path: testInfo.outputPath('invalid-state-320.png'), fullPage: true });
+  await page.keyboard.press(tabKey);
+  await expect(amount).toHaveValue('1e9999');
+  await amount.focus();
+  await page.keyboard.press('Escape');
+  await expect(amount).toHaveValue('0');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  await amount.fill('-.5');
+  await expect(page.getByText('Amount: -0.5', { exact: true })).toBeVisible();
+  await expect(page.getByText('Plain text')).toHaveCount(0);
+  await page.keyboard.press(tabKey);
+  await expect(amount).toHaveValue('-0.5');
+  await amount.fill('1e-');
+  await page.getByRole('tab', { name: 'Source' }).click();
+  const source = JSON.parse(
+    await page.getByRole('tabpanel', { name: 'Source' }).innerText(),
+  ) as MosaicDocument;
+  expect(source.state?.amount).toBe(-0.5);
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect(amount).toHaveValue('-0.5');
   expect(requests).toEqual([]);
 });
 

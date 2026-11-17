@@ -1,6 +1,7 @@
 import type { MosaicDocument, MosaicNode } from '../core/types.ts';
 import type { DocumentStore } from '../core/store.ts';
 import { CellEditingContext } from './cell-editing-context.ts';
+import { StateEditingContext } from './state-editing-context.ts';
 import { nodeAnchorId } from './markdown-policy.ts';
 import { nodeRegistry, type NodesByType, type NodeView } from './nodeRegistry.tsx';
 import './nodes.css';
@@ -36,13 +37,17 @@ function RenderNode<Kind extends keyof NodesByType>({
 export function NodeRenderer({
   document,
   onCellEdit,
+  onStateEdit,
 }: {
   readonly document: MosaicDocument;
   readonly onCellEdit?: DocumentStore['updateCell'];
+  readonly onStateEdit?: DocumentStore['updateState'];
 }) {
   return (
     <CellEditingContext value={onCellEdit}>
-      <RenderNode node={document.root} document={document} />
+      <StateEditingContext value={onStateEdit}>
+        <RenderNode node={document.root} document={document} />
+      </StateEditingContext>
     </CellEditingContext>
   );
 }
