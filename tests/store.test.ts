@@ -218,6 +218,7 @@ describe('document store', () => {
     });
     expect(store.getSnapshot()).toBe(before);
     expect(listener).not.toHaveBeenCalled();
+    expect(store.isDirty()).toBe(false);
     // Free a point, fill another up to exactly 500, then change the other axis.
     expect(store.updateCell('table', 'r1', 'amount', null).ok).toBe(true);
     expect(store.updateCell('table', 'r500', 'amount', 0).ok).toBe(true);
@@ -225,6 +226,13 @@ describe('document store', () => {
     expect(store.updateCell('table', 'r0', 'amount', -1).ok).toBe(true);
     expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
     expect(listener).toHaveBeenCalledTimes(4);
+    const edited = store.getSnapshot();
+    const exported = serializeMosaic(edited);
+    expect(store.updateCell('table', 'r501', 'amount', 2).ok).toBe(false);
+    expect(store.getSnapshot()).toBe(edited);
+    expect(store.isDirty()).toBe(true);
+    expect(listener).toHaveBeenCalledTimes(4);
+    expect(serializeMosaic(store.getSnapshot())).toBe(exported);
   });
 
   it('counts a new x value only if y is present and permits exactly 500 points', () => {

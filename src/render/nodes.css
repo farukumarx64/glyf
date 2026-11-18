@@ -68,6 +68,11 @@
   background: rgb(128 128 128 / 10%);
 }
 
+.mosaic-markdown-fallback {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
 .mosaic-markdown a {
   color: var(--accent, LinkText);
 }
