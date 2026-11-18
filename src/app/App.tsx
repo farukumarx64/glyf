@@ -51,6 +51,14 @@ export function App() {
       });
       return;
     }
+    // Check at the point of replacement so edits made during file reading are protected.
+    if (
+      opened?.store.isDirty() &&
+      !window.confirm('This document has unsaved changes. Replace it and discard those changes?')
+    ) {
+      setNotice(null);
+      return;
+    }
     setOpened({ store: createDocumentStore(result), name: file.name, request });
     setNotice(null);
   }
@@ -58,7 +66,9 @@ export function App() {
   function download() {
     if (!opened || notice?.kind === 'loading') return;
     try {
-      downloadMosaic(opened.store.getSnapshot(), opened.name);
+      const snapshot = opened.store.getSnapshot();
+      downloadMosaic(snapshot, opened.name);
+      opened.store.markDownloaded(snapshot);
       setNotice(null);
     } catch (error) {
       setNotice({

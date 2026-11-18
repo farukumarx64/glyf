@@ -24,6 +24,7 @@ test('downloads current edits offline using the keyboard and reopens the complet
   await page.getByRole('checkbox', { name: 'Show revenue chart' }).uncheck();
   const cell = page.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
   await cell.fill('5000');
+  await expect(page.getByText('Unsaved changes', { exact: true })).toBeVisible();
   await page.getByRole('tab', { name: 'Source' }).click();
   const expected = await page.getByRole('tabpanel', { name: 'Source' }).innerText();
   await page.getByRole('tab', { name: 'Preview' }).click();
@@ -40,6 +41,7 @@ test('downloads current edits offline using the keyboard and reopens the complet
   expect(downloaded.suggestedFilename()).toBe('mosaic-demo.mosa');
   const file = testInfo.outputPath('edited.mosa');
   await downloaded.saveAs(file);
+  await expect(page.getByText('Unsaved changes', { exact: true })).toHaveCount(0);
   expect(await downloaded.failure()).toBeNull();
   const bytes = await readFile(file);
   expect(bytes).toEqual(Buffer.from(expected, 'utf8'));
@@ -96,6 +98,7 @@ test('blocks oversized formatted exports, preserves edits and downloads after co
   await expect(error).toContainText('FILE_TOO_LARGE');
   await expect(error).toContainText('"" (document root)');
   await expect(note).toHaveValue('é');
+  await expect(page.getByText('Unsaved changes', { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 320, height: 740 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
   await page.screenshot({ path: testInfo.outputPath('download-error-320.png'), fullPage: true });
@@ -108,5 +111,6 @@ test('blocks oversized formatted exports, preserves edits and downloads after co
   expect(bytes.length).toBe(MOSAIC_LIMITS.fileBytes);
   expect(JSON.parse(bytes.toString('utf8')) as MosaicDocument).toEqual(doc);
   await expect(error).toHaveCount(0);
+  await expect(page.getByText('Unsaved changes', { exact: true })).toHaveCount(0);
   expect(downloads).toEqual(['limit.mosa']);
 });

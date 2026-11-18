@@ -182,7 +182,9 @@ describe('viewer Download action', () => {
     const cell = screen.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
     fireEvent.change(cell, { target: { value: '5000' } });
     fireEvent.change(cell, { target: { value: '1e' } });
+    expect(screen.getByText('Unsaved changes')).toBeTruthy();
     download();
+    expect(screen.queryByText('Unsaved changes')).toBeNull();
     const expected = JSON.parse(demoSource);
     expected.state.note = '雪 😀\nUpdated';
     expected.state.showChart = false;
@@ -215,6 +217,7 @@ describe('viewer Download action', () => {
     expect(alert.textContent).toContain('5242880 UTF-8 bytes');
     expect(document.activeElement).toBe(alert);
     expect(note).toHaveProperty('value', 'é');
+    expect(screen.getByText('Unsaved changes')).toBeTruthy();
     expect(URL.createObjectURL).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
     expect(JSON.parse(screen.getByRole('tabpanel').textContent!)).toEqual({
@@ -225,6 +228,7 @@ describe('viewer Download action', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Note' }), { target: { value: '' } });
     download();
     expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByText('Unsaved changes')).toBeNull();
     expect(blobs[0]?.size).toBe(MOSAIC_LIMITS.fileBytes);
     expect(JSON.parse(await blobs[0]!.text())).toEqual(doc);
   });

@@ -3,7 +3,7 @@ import type { ParseResult } from './errors.ts';
 import { appendJsonPointer, jsonPointer, type JsonPointer } from './json-pointer.ts';
 import { MOSAIC_LIMITS } from './limits.ts';
 import { stateBindingType } from './semantics.ts';
-import type { MosaicNode, TableNode } from './types.ts';
+import type { MosaicDocument, MosaicNode, TableNode } from './types.ts';
 
 interface DatasetIndex {
   rowPositions: Map<string, number>;
@@ -35,6 +35,7 @@ function invalidState(key: string, message: string): ParseResult {
 /** Open one store per successful parse or validation. Its snapshots use the readonly core model. */
 export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) {
   let document = opened.document;
+  let dirty = false;
   const datasets = new Map<string, DatasetIndex>();
   const tables = new Map<string, { node: TableNode; path: JsonPointer }>();
   const stateTypes = new Map<string, 'boolean' | 'string' | 'number'>();
@@ -103,6 +104,7 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
     if (Object.is(state[key], value)) return { ok: true, document };
 
     document = { ...document, state: { ...state, [key]: value } };
+    dirty = true;
     const result = { ok: true, document } as const;
     for (const notify of listeners) notify();
     return result;
@@ -168,6 +170,7 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
     }
 
     document = { ...document, datasets: { ...document.datasets, [name]: { ...dataset, rows } } };
+    dirty = true;
     const result = { ok: true, document } as const;
     for (const notify of listeners) notify();
     return result;
@@ -175,6 +178,13 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
 
   return {
     getSnapshot: () => document,
+    isDirty: () => dirty,
+    // Browser download initiation is the checkpoint; this does not confirm a disk save.
+    markDownloaded(snapshot: MosaicDocument) {
+      if (snapshot !== document || !dirty) return;
+      dirty = false;
+      for (const notify of listeners) notify();
+    },
     getDataset,
     getRow,
     updateCell,

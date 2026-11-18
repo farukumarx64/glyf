@@ -13,6 +13,7 @@ export const DocumentView = memo(function DocumentView({
   fileName: string;
 }) {
   const document = useSyncExternalStore(store.subscribe, store.getSnapshot);
+  const dirty = useSyncExternalStore(store.subscribe, store.isDirty);
   const [view, setView] = useState<View>('Preview');
   const previewTab = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -43,7 +44,10 @@ export const DocumentView = memo(function DocumentView({
   return (
     <section className="document-view" aria-labelledby="document-title">
       <h1 id="document-title">{document.meta.title.trim() || fileName}</h1>
-      <p className="file-name">{fileName}</p>
+      <p className="file-name" aria-live="polite" aria-atomic="true">
+        {fileName}
+        {dirty && <span className="unsaved-status">Unsaved changes</span>}
+      </p>
       <div className="document-sheet">
         <div className="view-tabs" role="tablist" aria-label="Document view" onKeyDown={moveTab}>
           {views.map((name) => (
