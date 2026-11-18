@@ -623,6 +623,8 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 The [security audit](security-audit.md) records the covered cases, the Markdown renderer fix, and remaining boundaries. The full Phase 5 acceptance work is not yet complete.
 
+The [error recovery verification](error-recovery.md) exercises rejected files through Open File and drop in Preview and Source, exact byte boundaries, preservation of edits and drafts, failed/stale reads, and successful export/retry. No runtime change was needed for this verification.
+
 ---
 
 ## 11. Testing checklist and fixtures

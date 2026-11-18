@@ -73,6 +73,8 @@ The complete workflow tests edit cells and state, download real files, and reope
 
 The [security audit](docs/security-audit.md) records attack coverage, the Markdown nesting fix, and verification limits. Run its browser cases with `npm run test:viewer -- tests/browser/security.spec.ts`.
 
+The [error recovery report](docs/error-recovery.md) covers malformed, corrupt, over-limit and unreadable files, retained edits/drafts, stale reads, real downloads after failure, and successful retries. Run the browser cases with `npm run test:viewer -- tests/browser/error-recovery.spec.ts`.
+
 ## Contract and source layout
 
 ```text
