@@ -250,6 +250,12 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Reuse the cell editor's local draft handling and complete finite-decimal parser for numeric state inputs. A text field with `inputMode="decimal"` retains incomplete or invalid spelling for feedback across browsers. Empty fields do not become zero or null. Valid spelling normalizes on blur, and Escape restores the latest committed value. Drafts are UI state and disappear when their control unmounts.
 - Use a textarea for editable text inputs so multiline values remain representable without replacing the DOM control during typing. Toggles use native checkboxes. All changes pass through the existing store validation; the schema and node vocabulary remain unchanged.
 
+## Phase 4 download implementation choices
+
+- Read the store's current snapshot at the Download click and pass it through `serializeMosaic` before creating a Blob or object URL. Keep the final formatted UTF-8 byte guard in the serializer; export neither UI drafts nor viewer state.
+- Use a local `application/json` Blob and temporary download link. Remove the link immediately and revoke its URL after one second, allowing the browser to consume it. The browser owns the destination and collision handling; the viewer has no handle for overwriting the imported file. Preserve the input filename with a normalized or appended `.mosa` extension.
+- Reuse the focused error panel with an explicit open/download operation. Serialization failures retain their structured diagnostics; browser download-start failures get a separate retry message. Neither failure replaces the store or current tab. Disable Download while a new file is being read, and do not claim that starting a download confirms a completed disk save.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

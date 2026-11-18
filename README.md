@@ -27,6 +27,12 @@ A successful open selects **Preview**. **Source** displays the complete validate
 
 File contents are read and validated locally. When opening a replacement fails, the viewer keeps the current document and tab. The error panel identifies the attempted file and displays each validator message, error code, and JSON Pointer. An empty pointer appears as `""` (document root). A file read failure has a separate retry message.
 
+**Download** exports the current document from either tab, including committed dataset and state edits and hidden conditional content. It becomes available after a successful open and is disabled while a replacement is loading. The existing serializer revalidates the snapshot, writes two-space JSON with one final LF and no BOM, and enforces the inclusive **5 MiB (5,242,880 bytes)** limit on the final UTF-8 output. Invalid numeric drafts remain local; their last valid values are exported.
+
+Downloads use a local `application/json` Blob and a temporary object URL, released after the browser has had time to start the download. The suggested filename retains the opened name, normalizing or appending `.mosa`; for example, `report.MOSA` becomes `report.mosa`, and `report.json` becomes `report.json.mosa`. The browser manages the destination and any filename collisions. The viewer does not write to the original file.
+
+An export failure says **Could not download** and displays the serializer's original message, error code, and JSON Pointer. No download starts, and the current document, edits, drafts, and selected tab remain available. A compact file can open successfully but exceed the limit once formatted; reduce editable content and retry. Export never truncates content, silently minifies it, or increases the limit. Browser API failures have a separate retry message. Starting a download does not confirm that the browser saved it to disk.
+
 `npm ci` installs the committed lockfile exactly. `npm install` also works for initial setup or intentional dependency changes. Direct dependency versions are exact; do not update them automatically.
 
 ## Commands
@@ -104,7 +110,8 @@ src/
   render/markdown-policy.ts    Link destinations and document fragment targets
   app/App.tsx                  Demo, file picker, drop handling, and validated replacement
   app/DocumentView.tsx         Preview and formatted Source tabs
-  app/ErrorPanel.tsx           Import diagnostics and JSON Pointers
+  app/download.ts             Validated current-snapshot export and local Blob download
+  app/ErrorPanel.tsx           Import/export diagnostics and JSON Pointers
   main.tsx                    React entry point
   styles/global.css           Local stylesheet and system fonts
 tests/
@@ -119,6 +126,7 @@ tests/
   initial-state.test.tsx      Saved values, conditional content, and read-only controls
   state-controls.test.tsx     Reactive state controls, numeric drafts, and shared bindings
   file-workflow.test.tsx      File opening, replacement, recovery, and view switching
+  download.test.tsx           Export bytes, resource cleanup, limits, and failure recovery
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
