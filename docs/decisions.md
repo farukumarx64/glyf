@@ -263,6 +263,12 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Put one native confirmation check immediately before replacing the current store, after file reading and validation, for Open Demo, Open File, and drag-and-drop. Check the live store at that point to protect edits made during a pending read. Retain the existing request counter so stale reads cannot replace a document or trigger a second prompt after a newer request.
 - Cancel clears the incoming loading notice and preserves the current store and document view. Failed imports and file-picker cancellation do not ask for discard approval. Successful replacement creates a fresh clean store. Display the unsaved indicator next to the filename with a polite live announcement.
 
+## Phase 5 security audit implementation choices — 2026-11-18
+
+- Check the parsed Markdown AST iteratively before recursive rendering, with a viewer budget of 128 child edges from the root. Mosaic's node-depth and Markdown-length ceilings do not bound Markdown syntax depth. This budget is a renderer safeguard, not a new format rejection rule.
+- Catch Markdown rendering failures within the affected node and display escaped original text with an explanatory note. Preserve the original source for export and reset the boundary when that source changes. Retain raw-HTML/image blocking and the existing URL policy.
+- Add source, store, component and production-browser regressions for escaped reserved names, pollution payloads, legal shadow names, hostile values, malicious markup/URLs, deeply nested Markdown, and hostile diagnostic text. Keep packages, schema and format error codes unchanged. See [security-audit.md](security-audit.md) for findings, results and limitations.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

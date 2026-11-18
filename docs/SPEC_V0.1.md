@@ -612,14 +612,16 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 **Tasks**
 
-- [ ] Add malicious Markdown and prototype-key regression tests.
-- [ ] Test all malformed/corrupt/over-limit cases; make error UI understandable.
+- [x] Add malicious Markdown and prototype-key regression tests.
+- [x] Test the specified malformed/corrupt/over-limit cases; make error UI understandable.
 - [ ] Add keyboard/a11y smoke tests, narrow-screen browser test and E2E file open/edit/export/reopen.
 - [ ] Benchmark small/medium/large fixtures, production bundle size, document load, chart update, repeated open/close.
 - [ ] Profile and address actual bottlenecks, keeping features unchanged.
 - [ ] Document known limits, security choices, test results, and v0.1 compatibility contract.
 
 **Acceptance:** Definition of Done below is met; `docs/benchmarks.md` includes hardware, measured medians/p95, and any missed targets. Do not state "optimized" without numbers.
+
+The [security audit](security-audit.md) records the covered cases, the Markdown renderer fix, and remaining boundaries. The full Phase 5 acceptance work is not yet complete.
 
 ---
 

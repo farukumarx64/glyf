@@ -30,6 +30,8 @@ The same walk inspects object references throughout the input, including arrays 
 
 For direct calls, use JSON scalars, dense arrays and plain records with enumerable string-keyed data properties. Null-prototype records are supported. Class instances, custom prototypes and explicit `undefined` values fail the structural checks. Preflight uses property descriptors to inspect own values. It rejects own getters, setters, hidden properties, symbol keys, and extra array properties.
 
+Direct validation expects data from a trusted JavaScript caller. It is not a sandbox for executable Proxy traps or a compromised host realm: reflection itself can run a Proxy trap. Untrusted file contents should enter through the byte/text reader, which constructs data-only JSON values. See the [security audit](security-audit.md) for the reviewed boundary.
+
 ## Semantic validation
 
 - The root must be a `column`, `row`, `grid`, or `card`. Visit nodes in document order, including every child of a `when`. A repeated ID points to the later node’s `id`. Document and row IDs have separate scopes.

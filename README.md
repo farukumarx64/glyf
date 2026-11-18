@@ -71,6 +71,8 @@ The suite builds the app and serves it on `127.0.0.1:4174` for the duration of t
 
 The complete workflow tests edit cells and state, download real files, and reopen them in an independent viewer while both pages remain offline. They check hidden and visible chart states, numeric conditions, typed values, invalid draft exclusion, exact export bytes, and unsaved status. See the [Phase 4 verification report](docs/phase-4.md) for evidence and scope. Run just these scenarios with `npm run test:viewer -- tests/browser/complete-workflow.spec.ts`. Generated files, screenshots, and per-case JSON results are written under `test-results/`.
 
+The [security audit](docs/security-audit.md) records attack coverage, the Markdown nesting fix, and verification limits. Run its browser cases with `npm run test:viewer -- tests/browser/security.spec.ts`.
+
 ## Contract and source layout
 
 ```text
@@ -186,6 +188,8 @@ Columns stack children, rows wrap, and grids use the declared column count when 
 Opening a validated document applies its `theme` to the viewer. Mode defaults to `system` and follows live changes to the device color scheme. A document can also select `light` or `dark`. The accent is `blue` by default, with `teal` and `amber` alternatives for controls, links, and focus indicators. The default `comfortable` density uses a 0.75 rem layout gap. The `compact` density uses a 0.5 rem default gap and tighter card and panel padding. Explicit node gaps take precedence.
 
 Markdown uses CommonMark for paragraphs, emphasis, lists, quotations, code, and links. The renderer skips raw HTML and drops images before React creates DOM elements. Markup inside a code span or fence displays literally. These rules affect the preview only. The Markdown source stays in the document for serialization.
+
+Markdown syntax deeper than the viewer's 128-level AST budget, or another Markdown rendering failure, shows an explanatory note and escaped source text in that node. The rest of the document remains usable. This rendering safeguard leaves format validation and exported values unchanged; see the [audit report](docs/security-audit.md) for counting and scope.
 
 HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links use the user's mail handler. A fragment such as `#notes` targets the rendered element for the Mosaic node with ID `notes`. DOM targets have a viewer-owned prefix to avoid collisions with the app shell. Other destinations, including relative paths and protocol-relative URLs, display their link label as ordinary content.
 
