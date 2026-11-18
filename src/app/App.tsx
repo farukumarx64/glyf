@@ -1,13 +1,17 @@
 import { useRef, useState, type DragEvent } from 'react';
 import demoSource from '../../examples/mosaic-demo.mosa?raw';
 import { readMosaicFile } from '../core/file.ts';
+import { MosaicSerializationError } from '../core/serialize.ts';
 import { createDocumentStore, type DocumentStore } from '../core/store.ts';
 import { validateMosaic } from '../core/validate.ts';
 import { DocumentView } from './DocumentView.tsx';
-import { ErrorPanel, type OpenFailure } from './ErrorPanel.tsx';
+import { downloadMosaic } from './download.ts';
+import { ErrorPanel, type FileFailure } from './ErrorPanel.tsx';
 
 type OpenDocument = { store: DocumentStore; name: string; request: number };
-type Notice = { kind: 'loading'; name: string } | { kind: 'error'; failure: OpenFailure };
+type Notice =
+  | { kind: 'loading'; name: string }
+  | { kind: 'error'; operation: 'open' | 'download'; failure: FileFailure };
 
 export function App() {
   const [opened, setOpened] = useState<OpenDocument | null>(null);
@@ -27,6 +31,7 @@ export function App() {
       if (request === latestRequest.current) {
         setNotice({
           kind: 'error',
+          operation: 'open',
           failure: {
             name: file.name,
             message: 'The file could not be read. Choose it again to retry.',
@@ -39,11 +44,32 @@ export function App() {
     if (request !== latestRequest.current) return;
     const result = source.ok ? validateMosaic(source.value) : source;
     if (!result.ok) {
-      setNotice({ kind: 'error', failure: { name: file.name, errors: result.errors } });
+      setNotice({
+        kind: 'error',
+        operation: 'open',
+        failure: { name: file.name, errors: result.errors },
+      });
       return;
     }
     setOpened({ store: createDocumentStore(result), name: file.name, request });
     setNotice(null);
+  }
+
+  function download() {
+    if (!opened || notice?.kind === 'loading') return;
+    try {
+      downloadMosaic(opened.store.getSnapshot(), opened.name);
+      setNotice(null);
+    } catch (error) {
+      setNotice({
+        kind: 'error',
+        operation: 'download',
+        failure:
+          error instanceof MosaicSerializationError
+            ? { name: opened.name, errors: error.errors }
+            : { name: opened.name, message: 'The download could not be started. Try again.' },
+      });
+    }
   }
 
   function drop(event: DragEvent) {
@@ -53,7 +79,11 @@ export function App() {
     const files = event.dataTransfer.files;
     if (files.length > 1) {
       ++latestRequest.current;
-      setNotice({ kind: 'error', failure: { message: 'Drop one Mosaic document at a time.' } });
+      setNotice({
+        kind: 'error',
+        operation: 'open',
+        failure: { message: 'Drop one Mosaic document at a time.' },
+      });
     } else if (files[0]) {
       void openFile(files[0]);
     }
@@ -110,6 +140,13 @@ export function App() {
             >
               Open File
             </button>
+            <button
+              type="button"
+              disabled={!opened || notice?.kind === 'loading'}
+              onClick={download}
+            >
+              Download
+            </button>
             <input
               ref={picker}
               type="file"
@@ -131,7 +168,9 @@ export function App() {
             Opening {notice.name}…
           </p>
         )}
-        {notice?.kind === 'error' && <ErrorPanel failure={notice.failure} />}
+        {notice?.kind === 'error' && (
+          <ErrorPanel failure={notice.failure} operation={notice.operation} />
+        )}
         {opened ? (
           <DocumentView key={opened.request} store={opened.store} fileName={opened.name} />
         ) : (

@@ -1,10 +1,16 @@
 import { useEffect, useRef } from 'react';
 import type { MosaicErrors } from '../core/errors.ts';
 
-export type OpenFailure =
+export type FileFailure =
   { name: string; errors: MosaicErrors } | { name?: string; message: string };
 
-export function ErrorPanel({ failure }: { failure: OpenFailure }) {
+export function ErrorPanel({
+  failure,
+  operation,
+}: {
+  failure: FileFailure;
+  operation: 'open' | 'download';
+}) {
   const panel = useRef<HTMLElement>(null);
   useEffect(() => {
     panel.current?.focus();
@@ -14,11 +20,11 @@ export function ErrorPanel({ failure }: { failure: OpenFailure }) {
       ref={panel}
       className="error-panel"
       role="alert"
-      aria-labelledby="open-error"
+      aria-labelledby="file-error"
       tabIndex={-1}
     >
-      <h2 id="open-error">
-        {failure.name ? `Could not open ${failure.name}` : 'Could not open document'}
+      <h2 id="file-error">
+        Could not {operation} {failure.name || 'document'}
       </h2>
       {'errors' in failure ? (
         <ul>
