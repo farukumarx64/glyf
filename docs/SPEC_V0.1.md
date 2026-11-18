@@ -601,7 +601,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 - [x] Enable mutations for `toggle` and `input`, and reactive updates for `stateValue` and `when`, building on their Phase 2 read-only rendering; use typed state changes.
 - [x] Export current datasets and state via new `.mosa` download.
 - [x] Re-import exported file and verify structural equivalence and persisted edits.
-- [ ] Track unsaved changes; warn before replacing a modified document.
+- [x] Track unsaved changes; warn before replacing a modified document.
 - [x] Ensure open/download flows use local browser File/Blob APIs only.
 
 **Acceptance:** Controls update content immediately; edits survive export/reimport; zero document-related network requests.
@@ -646,7 +646,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 - [x] Toggle hides and restores conditional region.
 - [x] Text input updates state display; invalid number input cannot corrupt state.
 - [x] Downloaded file reopens with persistent edits.
-- [ ] Open-replace warns about unsaved edits.
+- [x] Open-replace warns about unsaved edits.
 
 ### Security / robustness
 

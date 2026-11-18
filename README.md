@@ -33,6 +33,10 @@ Downloads use a local `application/json` Blob and a temporary object URL, releas
 
 An export failure says **Could not download** and displays the serializer's original message, error code, and JSON Pointer. No download starts, and the current document, edits, drafts, and selected tab remain available. A compact file can open successfully but exceed the limit once formatted; reduce editable content and retry. Export never truncates content, silently minifies it, or increases the limit. Browser API failures have a separate retry message. Starting a download does not confirm that the browser saved it to disk.
 
+Changed, valid cell or state edits show **Unsaved changes** beside the filename. Open Demo, Open File, and drag-and-drop all ask for confirmation before replacing a modified document. The warning appears after the incoming file has passed validation, just before replacement, so it also protects edits made during file reading. Cancel keeps the current document, selected tab, controls, local drafts, and unsaved flag. Cancelling the file picker or choosing an unreadable/invalid file leaves the current document in place without a discard prompt.
+
+A successfully started Download clears the unsaved flag for the exported snapshot; a failed export keeps it set, and the next changed edit sets it again. This is a download-start checkpoint, not proof of a completed disk save. Reverting a value manually does not clear the flag. Identical edits and rejected numeric drafts do not set it; drafts are local UI text and are not part of the saved document.
+
 `npm ci` installs the committed lockfile exactly. `npm install` also works for initial setup or intentional dependency changes. Direct dependency versions are exact; do not update them automatically.
 
 ## Commands
@@ -127,6 +131,8 @@ tests/
   state-controls.test.tsx     Reactive state controls, numeric drafts, and shared bindings
   file-workflow.test.tsx      File opening, replacement, recovery, and view switching
   download.test.tsx           Export bytes, resource cleanup, limits, and failure recovery
+  store-dirty.test.ts         Dirty transitions, download checkpoints, and unchanged snapshots
+  unsaved-changes.test.tsx    Replacement confirmation, cancellation, and pending-file races
   schema.test.ts              Structural contract and regression tests
   errors.test.ts              Diagnostic/result contract tests
   json-pointer.test.ts        Escaping and path-construction tests
@@ -166,6 +172,8 @@ Row and column positions are indexed once per dataset. Each edit copies the affe
 `store.updateState('note', 'Updated report')` updates an existing state key and returns the same success/error result shape as `updateCell`. A successful change copies the state map and document and notifies subscribers once. Equal values reuse the current snapshot. Errors use `INVALID_BINDING` and the affected state key's JSON Pointer, such as `/state/note`.
 
 The store indexes control binding types when it opens the validated document, including hidden controls. Toggle bindings require booleans, text inputs require strings, and number inputs require finite numbers. Keys used only by `when` or `stateValue`, along with unbound keys, can change among strings, finite numbers, booleans, and null. Rejected edits preserve the current snapshot. State updates also compose with cell edits and survive serialization and reopening.
+
+`store.isDirty()` returns a boolean that starts false and becomes true before subscribers are notified of a changed edit. After a download starts, `store.markDownloaded(snapshot)` clears it only if the exported snapshot is still current. Passing an older or foreign snapshot leaves newer edits dirty. Clearing the flag notifies subscribers without copying or changing the document; unchanged checkpoints are silent. This constant-size bookkeeping is outside the `.mosa` model and is never serialized.
 
 ### Preview
 

@@ -256,6 +256,13 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Use a local `application/json` Blob and temporary download link. Remove the link immediately and revoke its URL after one second, allowing the browser to consume it. The browser owns the destination and collision handling; the viewer has no handle for overwriting the imported file. Preserve the input filename with a normalized or appended `.mosa` extension.
 - Reuse the focused error panel with an explicit open/download operation. Serialization failures retain their structured diagnostics; browser download-start failures get a separate retry message. Neither failure replaces the store or current tab. Disable Download while a new file is being read, and do not claim that starting a download confirms a completed disk save.
 
+## Phase 4 unsaved-change implementation choices
+
+- Keep a boolean dirty flag in the store, outside the document model. Set it before notifying subscribers of a changed, valid cell or state edit. Equal values and rejected edits leave it unchanged. Manual reversion does not clear it; this avoids retaining a second document or performing whole-document comparisons on each edit.
+- Clear the flag after a successful download start, only for the exact current snapshot. Failed exports and stale snapshot checkpoints cannot mark newer edits clean. The browser does not provide confirmation of a completed disk save; the checkpoint records download initiation. Dirty-only changes notify subscribers without changing the document snapshot.
+- Put one native confirmation check immediately before replacing the current store, after file reading and validation, for Open Demo, Open File, and drag-and-drop. Check the live store at that point to protect edits made during a pending read. Retain the existing request counter so stale reads cannot replace a document or trigger a second prompt after a newer request.
+- Cancel clears the incoming loading notice and preserves the current store and document view. Failed imports and file-picker cancellation do not ask for discard approval. Successful replacement creates a fresh clean store. Display the unsaved indicator next to the filename with a polite live announcement.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)
