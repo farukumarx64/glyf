@@ -606,6 +606,8 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 **Acceptance:** Controls update content immediately; edits survive export/reimport; zero document-related network requests.
 
+**Workflow verification:** The production viewer completes cell/state edits, real downloads, and reopening in independent preloaded viewers while offline in Chromium and WebKit. Both hidden and visible chart states, numeric conditions, typed cells, invalid draft exclusion, and exact export bytes are checked. See [the Phase 4 verification report](phase-4.md) for the tested scope and generated evidence.
+
 ### Phase 5 — Hardening, testing and benchmark report
 
 **Tasks**

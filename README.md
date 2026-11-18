@@ -69,6 +69,8 @@ npm run test:viewer
 
 The suite builds the app and serves it on `127.0.0.1:4174` for the duration of the run. The offline checks load the app assets, disable networking for that browser context, then open the bundled demo or a local file. They also count request attempts, including requests that would fail offline. The other checks cover malformed-file recovery, responsive layout at 320, 375, and 1280 CSS pixels, computed theme styles, keyboard focus, and the DOM produced by Markdown.
 
+The complete workflow tests edit cells and state, download real files, and reopen them in an independent viewer while both pages remain offline. They check hidden and visible chart states, numeric conditions, typed values, invalid draft exclusion, exact export bytes, and unsaved status. See the [Phase 4 verification report](docs/phase-4.md) for evidence and scope. Run just these scenarios with `npm run test:viewer -- tests/browser/complete-workflow.spec.ts`. Generated files, screenshots, and per-case JSON results are written under `test-results/`.
+
 ## Contract and source layout
 
 ```text
