@@ -153,7 +153,7 @@
   font: inherit;
   color: var(--ink, currentColor);
   background: var(--sheet, Canvas);
-  border: 1px solid var(--line, #788593);
+  border: 1px solid var(--control-border, #788593);
   border-radius: 0.3rem;
   padding: 0.35rem 0.5rem;
   min-inline-size: 0;

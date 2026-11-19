@@ -1,4 +1,12 @@
-import { memo, useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from 'react';
+import {
+  memo,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent,
+} from 'react';
 import type { DocumentStore } from '../core/store.ts';
 import { NodeRenderer } from '../render/NodeRenderer.tsx';
 
@@ -16,9 +24,25 @@ export const DocumentView = memo(function DocumentView({
   const dirty = useSyncExternalStore(store.subscribe, store.isDirty);
   const [view, setView] = useState<View>('Preview');
   const previewTab = useRef<HTMLButtonElement>(null);
+  const previewPanel = useRef<HTMLDivElement>(null);
+  const focusedPreview = useRef<HTMLElement | null>(null);
   useEffect(() => {
     previewTab.current?.focus();
   }, []);
+
+  useLayoutEffect(() => {
+    if (view !== 'Preview') {
+      focusedPreview.current = null;
+      return;
+    }
+    const panel = previewPanel.current;
+    // A valid edit can remove its own control through `when`. Keep keyboard
+    // navigation in the document, without moving focus from a surviving target.
+    if (focusedPreview.current && !focusedPreview.current.isConnected) {
+      focusedPreview.current = null;
+      if (panel && panel.ownerDocument.activeElement === panel.ownerDocument.body) panel.focus();
+    }
+  }, [document, view]);
 
   function moveTab(event: KeyboardEvent<HTMLDivElement>) {
     let next: View;
@@ -67,12 +91,16 @@ export const DocumentView = memo(function DocumentView({
           ))}
         </div>
         <div
+          ref={previewPanel}
           className="preview-panel"
           role="tabpanel"
           id="panel-Preview"
           aria-labelledby="tab-Preview"
           hidden={view !== 'Preview'}
           tabIndex={0}
+          onFocusCapture={(event) => {
+            focusedPreview.current = event.target;
+          }}
         >
           {view === 'Preview' && (
             <NodeRenderer

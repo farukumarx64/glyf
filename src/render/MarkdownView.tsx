@@ -1,12 +1,32 @@
-import { Component, type ReactNode } from 'react';
+import { Children, Component, isValidElement, type ReactNode } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import { remarkCheckDepth } from './markdown-depth.ts';
 import { markdownUrl } from './markdown-policy.ts';
 import type { NodeView } from './nodeRegistry.tsx';
 
+function hasLinkText(children: ReactNode): boolean {
+  const pending = Children.toArray(children);
+  while (pending.length) {
+    const child = pending.pop();
+    if (typeof child === 'number' || (typeof child === 'string' && child.trim())) return true;
+    if (isValidElement<{ children?: ReactNode }>(child)) {
+      pending.push(...Children.toArray(child.props.children));
+    }
+  }
+  return false;
+}
+
 const components: Components = {
+  pre({ children }) {
+    return (
+      <pre tabIndex={0} role="group" aria-label="Code block">
+        {children}
+      </pre>
+    );
+  },
   a({ href, title, children }) {
-    if (!href) return <>{children}</>;
+    // Images are disabled; an image-only link must not leave an unnamed tab stop.
+    if (!href || !hasLinkText(children)) return <>{children}</>;
     const webLink = /^https?:/i.test(href);
     return (
       <a

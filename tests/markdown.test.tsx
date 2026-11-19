@@ -11,6 +11,24 @@ function renderMarkdown(text: string): string {
 }
 
 describe('Mosaic Markdown', () => {
+  it.each([
+    '',
+    ' ',
+    '![hidden](https://example.org/image.png)',
+    '**![hidden](https://example.org/image.png)**',
+  ])('omits an unnamed link with label %j after image removal', (label) => {
+    expect(renderMarkdown(`[${label}](https://example.org/)`)).not.toContain('<a ');
+  });
+
+  it('retains a named link when an image beside its formatted text is removed', () => {
+    const html = renderMarkdown(
+      '[**Read** ![hidden](https://example.org/image.png)](https://example.org/)',
+    );
+    expect(html).toContain('<a href="https://example.org/"');
+    expect(html).toContain('<strong>Read</strong>');
+    expect(html).not.toContain('<img');
+  });
+
   it('renders CommonMark block and inline elements', () => {
     const html = renderMarkdown(
       [
@@ -37,7 +55,7 @@ describe('Mosaic Markdown', () => {
       '<blockquote>\n<p>A quote with <code>inline code</code>.</p>\n</blockquote>',
       '<ul>\n<li>one</li>\n<li>two</li>\n</ul>',
       '<ol start="3">\n<li>three</li>\n<li>four</li>\n</ol>',
-      '<pre><code class="language-html">&lt;b&gt;literal example&lt;/b&gt;\n</code></pre>',
+      '<pre tabindex="0" role="group" aria-label="Code block"><code class="language-html">&lt;b&gt;literal example&lt;/b&gt;\n</code></pre>',
     ])
       expect(html).toContain(fragment);
   });

@@ -75,7 +75,6 @@ test('contains malicious Markdown without execution, embeds, requests or documen
     { href: '#mosaic-node-constructor', target: null, rel: null },
     { href: 'https://example.org/', target: '_blank', rel: 'noopener noreferrer' },
     { href: 'mailto:team@example.org', target: null, rel: 'noopener noreferrer' },
-    { href: 'https://example.org/', target: '_blank', rel: 'noopener noreferrer' },
   ]);
   await markdown.getByRole('link', { name: 'Jump' }).click();
   await expect(page.locator(':target')).toHaveText('Heading');

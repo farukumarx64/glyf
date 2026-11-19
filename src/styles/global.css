@@ -11,6 +11,7 @@
   --ink: light-dark(#192538, #eaf0f8);
   --muted: light-dark(#516177, #b0bfd1);
   --line: light-dark(#d5dde7, #3c4c60);
+  --control-border: light-dark(#788593, #8192a8);
   --accent: light-dark(#2159ad, #97beff);
   --accent-fill: light-dark(#2459aa, #315fa8);
   --tint: light-dark(#edf3fb, #20334b);
@@ -119,7 +120,7 @@ p {
   padding: 0.55rem 0.85rem;
   background: var(--sheet);
   color: var(--ink);
-  border: 1px solid var(--line);
+  border: 1px solid var(--control-border);
   border-radius: 0.4rem;
   font-size: 0.875rem;
   font-weight: 600;
@@ -247,11 +248,13 @@ p {
   border-radius: 0.65rem;
 }
 .view-tabs {
+  flex-wrap: wrap;
   padding-inline: 1rem;
   gap: 0.4rem;
   border-bottom: 1px solid var(--line);
 }
 .view-tabs button {
+  white-space: nowrap;
   color: var(--muted);
   padding: 0.85rem 0.65rem;
   border: 0;
