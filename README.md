@@ -75,6 +75,8 @@ The [security audit](docs/security-audit.md) records attack coverage, the Markdo
 
 The [error recovery report](docs/error-recovery.md) covers malformed, corrupt, over-limit and unreadable files, retained edits/drafts, stale reads, real downloads after failure, and successful retries. Run the browser cases with `npm run test:viewer -- tests/browser/error-recovery.spec.ts`.
 
+The [accessibility report](docs/accessibility.md) records keyboard workflows, labels and live-region checks, conditional-focus recovery, Markdown keyboard access, enlarged-text layouts, theme contrast, and the tested browser scope. Run its browser cases with `npm run test:viewer -- tests/browser/accessibility.spec.ts`.
+
 ## Contract and source layout
 
 ```text
@@ -190,6 +192,8 @@ Columns stack children, rows wrap, and grids use the declared column count when 
 Opening a validated document applies its `theme` to the viewer. Mode defaults to `system` and follows live changes to the device color scheme. A document can also select `light` or `dark`. The accent is `blue` by default, with `teal` and `amber` alternatives for controls, links, and focus indicators. The default `comfortable` density uses a 0.75 rem layout gap. The `compact` density uses a 0.5 rem default gap and tighter card and panel padding. Explicit node gaps take precedence.
 
 Markdown uses CommonMark for paragraphs, emphasis, lists, quotations, code, and links. The renderer skips raw HTML and drops images before React creates DOM elements. Markup inside a code span or fence displays literally. These rules affect the preview only. The Markdown source stays in the document for serialization.
+
+Code blocks are named keyboard-focusable scroll regions. Links with no remaining text, including image-only links, create no unnamed tab stop. If a state edit hides its own focused control through `when`, focus returns to Preview so keyboard navigation can continue through the remaining content.
 
 Markdown syntax deeper than the viewer's 128-level AST budget, or another Markdown rendering failure, shows an explanatory note and escaped source text in that node. The rest of the document remains usable. This rendering safeguard leaves format validation and exported values unchanged; see the [audit report](docs/security-audit.md) for counting and scope.
 

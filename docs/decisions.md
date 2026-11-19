@@ -269,6 +269,13 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Catch Markdown rendering failures within the affected node and display escaped original text with an explanatory note. Preserve the original source for export and reset the boundary when that source changes. Retain raw-HTML/image blocking and the existing URL policy.
 - Add source, store, component and production-browser regressions for escaped reserved names, pollution payloads, legal shadow names, hostile values, malicious markup/URLs, deeply nested Markdown, and hostile diagnostic text. Keep packages, schema and format error codes unchanged. See [security-audit.md](security-audit.md) for findings, results and limitations.
 
+## Phase 5 accessibility implementation choices — 2026-11-19
+
+- Recover focus to the existing Preview panel only when its previously focused element has disappeared and focus has fallen to the page body. Preserve surviving/external focus; forget detached elements and clear the remembered element when leaving Preview.
+- Give Markdown code blocks a named keyboard focus target and remove unnamed anchors after disabled images are removed. Preserve source text, formatted link labels and the existing URL policy.
+- Separate control-border contrast from decorative rules using a trusted light/dark CSS token. Keep the format and dependency set unchanged.
+- Record actual keyboard, accessibility-tree, live-region relationship, reflow and computed-contrast checks in [accessibility.md](accessibility.md). Distinguish automated browser evidence from unperformed screen-reader speech testing.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)
