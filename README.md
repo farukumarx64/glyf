@@ -41,22 +41,23 @@ A successfully started Download clears the unsaved flag for the exported snapsho
 
 ## Commands
 
-| Command                    | Purpose                                                                   |
-| -------------------------- | ------------------------------------------------------------------------- |
-| `npm run dev`              | Start Vite on the loopback interface.                                     |
-| `npm run typecheck`        | Check strict TypeScript across source, scripts, tests, and configuration. |
-| `npm run lint`             | Run ESLint with zero warnings allowed.                                    |
-| `npm run test`             | Run format, renderer, and file workflow tests once.                       |
-| `npm run test:viewer`      | Build and run the production viewer smoke tests in Chromium and WebKit.   |
-| `npm run test:watch`       | Watch tests during development.                                           |
-| `npm run validate:example` | Run full v0.1 validation on the reference file.                           |
-| `npm run format:check`     | Check formatting without editing files.                                   |
-| `npm run format`           | Apply formatting; preserve supplied reference files.                      |
-| `npm run build`            | Typecheck and create the static production build in `dist/`.              |
-| `npm run preview`          | Serve the production build locally.                                       |
-| `npm run check`            | Run typechecking, lint, formatting, Vitest, demo validation, and build.   |
+| Command                    | Purpose                                                                                        |
+| -------------------------- | ---------------------------------------------------------------------------------------------- |
+| `npm run dev`              | Start Vite on the loopback interface.                                                          |
+| `npm run typecheck`        | Check strict TypeScript across source, scripts, tests, and configuration.                      |
+| `npm run lint`             | Run ESLint with zero warnings allowed.                                                         |
+| `npm run test`             | Run format, renderer, and file workflow tests once.                                            |
+| `npm run test:viewer`      | Build and run the production viewer smoke tests in Chromium and WebKit.                        |
+| `npm run benchmark`        | Build and measure production loading, rendering, edits, replacements, memory, and bundle size. |
+| `npm run test:watch`       | Watch tests during development.                                                                |
+| `npm run validate:example` | Run full v0.1 validation on the reference file.                                                |
+| `npm run format:check`     | Check formatting without editing files.                                                        |
+| `npm run format`           | Apply formatting; preserve supplied reference files.                                           |
+| `npm run build`            | Typecheck and create the static production build in `dist/`.                                   |
+| `npm run preview`          | Serve the production build locally.                                                            |
+| `npm run check`            | Run typechecking, lint, formatting, Vitest, demo validation, and build.                        |
 
-The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmark tooling is scheduled for Phase 5.
+The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmarks run separately in production Chromium so unit-test timing is not mistaken for browser performance.
 
 ### Verify the production viewer
 
@@ -76,6 +77,14 @@ The [security audit](docs/security-audit.md) records attack coverage, the Markdo
 The [error recovery report](docs/error-recovery.md) covers malformed, corrupt, over-limit and unreadable files, retained edits/drafts, stale reads, real downloads after failure, and successful retries. Run the browser cases with `npm run test:viewer -- tests/browser/error-recovery.spec.ts`.
 
 The [accessibility report](docs/accessibility.md) records keyboard workflows, labels and live-region checks, conditional-focus recovery, Markdown keyboard access, enlarged-text layouts, theme contrast, and the tested browser scope. Run its browser cases with `npm run test:viewer -- tests/browser/accessibility.spec.ts`.
+
+### Measure production performance
+
+After installing Playwright Chromium, run `npm run benchmark`. The runner uses loopback ports **4175** and **4176**, with one serial browser workload at a time. It generates validated 3 KiB, 100 KiB, and 1 MiB fixtures; takes 20 timing samples after three warmups; measures 10 loaded-memory samples per fixture; and runs 100 open/replacement cycles per fixture plus an idle memory control. Application assets load before the browser goes offline.
+
+Read [the benchmark report](docs/benchmarks.md) for the reference machine, measured medians/p95, budget comparisons, and memory limitations. Raw samples, heap/DOM checkpoints, hashes, and fixture metadata are written to `benchmark-results/results.json`; generated documents live in `benchmark-results/fixtures/`. This directory is ignored by Git. The separate production measurement harness is also generated there and is excluded from the shipped `dist/` bundle.
+
+Run benchmarks without other test suites or heavy work competing for the machine. The command fails on invalid fixtures, incorrect rendering, browser errors, or document-related requests. Timing targets are reported as measurements, not flaky CI assertions; memory trends require inspection.
 
 ## Contract and source layout
 

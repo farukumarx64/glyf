@@ -276,6 +276,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Separate control-border contrast from decorative rules using a trusted light/dark CSS token. Keep the format and dependency set unchanged.
 - Record actual keyboard, accessibility-tree, live-region relationship, reflow and computed-contrast checks in [accessibility.md](accessibility.md). Distinguish automated browser evidence from unperformed screen-reader speech testing.
 
+## Phase 5 performance measurement choices — 2026-11-19
+
+- Use the existing Playwright, Vite, and TypeScript development dependencies. Keep benchmark observers and the separate production core/render harness outside the shipped app. Measure normal file-change and cell-input handlers in the actual production viewer without exposing a runtime testing API.
+- Generate exact-size valid fixtures locally: 3 KiB/14 nodes, 100 KiB/300 nodes, and 1 MiB/2,000 nodes. Include Markdown, conditional content, editable tables, bar/line charts, negative values and null-skipped points; exercise the large document's 20,000-cell ceiling with 500 plotted points per chart. Keep generated large documents out of Git.
+- Record all 20 timing samples after three warmups, with median and nearest-rank p95. Distinguish read/parse, validation, store construction, initial rendering, actual viewer replacement, and cell-to-chart updates. A two-frame wait indicates a paint opportunity, not a GPU presentation timestamp; local File construction and automation transport are excluded.
+- Use 10 paired baseline/loaded memory samples, 100 open-to-baseline cycles per fixture, forced-GC checkpoints every 10 cycles, and an idle control. Report JavaScript heap, embedder heap, backing storage, DOM and listener counts with their scope. There is no Close action in v0.1, so a minimal valid replacement releases the previous document. Do not infer leak freedom from stable DOM counts alone.
+- Measure emitted production assets with gzip level 6, retain input/build hashes, and compare against the specification's budgets. Keep performance results separate from correctness assertions and leave profiling/fixes as the next explicit Phase 5 step. See [benchmarks.md](benchmarks.md).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)
