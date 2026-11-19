@@ -5,7 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  { ignores: ['dist/**', 'coverage/**', '.vitest/**'] },
+  { ignores: ['dist/**', 'coverage/**', '.vitest/**', 'benchmark-results/**'] },
   js.configs.recommended,
   tseslint.configs.recommended,
   {
