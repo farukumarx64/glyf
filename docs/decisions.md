@@ -291,6 +291,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Add an isolated production profiling command with source maps, 500 replacement cycles, raw heap snapshots and 100-edit CPU samples. Use snapshot field metadata and source-map/ancestor attribution when summarizing evidence; never equate self-size differences with retained sizes or profiler samples with end-to-end latency.
 - Report the observed edit-time improvement separately from unchanged frame-wait/loading timings. Classify most measured JS growth as VM code/warmup based on snapshots, while retaining the unresolved native style-engine growth as a release limitation. Do not add speculative application cleanup or weaken accessibility to hide browser retention. See [performance-improvements.md](performance-improvements.md).
 
+## Phase 5 release-readiness recording — 2026-11-19
+
+- Treat the ten §14 Definition of Done statements as an implementation checklist with an explicit evidence map, not as authority to publish or deploy. Keep the unconfirmed §7 memory target and host-specific constraints visible after checking the implementation items.
+- Make `docs/benchmarks.md` the current optimized results report and preserve the original measurements in `docs/benchmark-baseline.md`. Reuse measured timings only after confirming emitted asset hashes match the candidate; do not invent or relabel a new benchmark run for documentation changes.
+- Publish the exact v0.1 compatibility contract and remaining limitations in repository documentation. Preserve the schema, reference files, format limits and future-version boundaries.
+- Verify an isolated locked install, dev startup and production browser workflows. Refresh dependency audits without automatic upgrades: zero production findings and eight moderate development-tool findings at review time. Record cache/network conditions rather than claiming a clean-room online install.
+- Record the observed production CSP failure: runtime Ajv compilation is blocked when `script-src` excludes `unsafe-eval`. This is a deployment gate requiring a separate resolution; do not silently weaken a host policy or describe CSP compatibility as verified. See [release-readiness.md](release-readiness.md).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

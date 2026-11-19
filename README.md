@@ -2,9 +2,9 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-The Phase 1 core supports safe parsing, full v0.1 validation, and serialization. Run `npm run validate:example` to read the reference file and check its resource limits, schema, and semantics.
+The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by clean-checkout verification, 593 unit/integration tests and 66 Chromium/WebKit tests. Local evaluation is supported within that tested scope. Memory stability, strict-CSP startup compatibility and development-tool advisories remain explicit limitations; this is not public-deployment approval.
 
-Phase 0 is complete. See the [verification report](docs/phase-0.md) for results and the development dependency audit limitation.
+See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for current production measurements. Run `npm run validate:example` to check the reference document's resources, schema and semantics.
 
 See [core contracts](docs/core-contracts.md) for error classifications, pointer conventions, resource counting, examples, and the boundary between definitions and validation enforcement.
 
@@ -14,12 +14,16 @@ See [core contracts](docs/core-contracts.md) for error classifications, pointer 
 - No `.env` file, API key, database, account, or backend is needed.
 - Dependency installation requires npm registry access. Installed app code and assets are served locally; the foundation uses no remote fonts or assets.
 
-With an existing Node installation that satisfies `package.json`:
+With repository access and a Node installation that satisfies `package.json`:
 
 ```sh
+git clone https://github.com/farukumarx64/mosaic.git
+cd mosaic
 npm ci
 npm run dev
 ```
+
+If already in a checkout, start at `npm ci`. The clean-checkout review used cached packages after a registry timeout; a new machine normally needs registry access and must install the Playwright browsers separately for browser tests.
 
 If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL printed by Vite (normally `http://127.0.0.1:5173`). Choose **Open Demo** for the bundled reference document, choose **Open File**, or drop a single `.mosa` file anywhere in the viewer. Use Ctrl+C to stop the server.
 
@@ -85,9 +89,13 @@ After installing Playwright Chromium, run `npm run benchmark`. The runner uses l
 
 Read [the benchmark report](docs/benchmarks.md) for the reference machine, measured medians/p95, budget comparisons, and memory limitations. Raw samples, heap/DOM checkpoints, hashes, and fixture metadata are written to `benchmark-results/results.json`; generated documents live in `benchmark-results/fixtures/`. This directory is ignored by Git. The separate production measurement harness is also generated there and is excluded from the shipped `dist/` bundle.
 
+The [original benchmark baseline](docs/benchmark-baseline.md) is preserved separately; the main report reflects the optimized release candidate.
+
 Run benchmarks without other test suites or heavy work competing for the machine. The command fails on invalid fixtures, incorrect rendering, browser errors, or document-related requests. Timing targets are reported as measurements, not flaky CI assertions; memory trends require inspection.
 
 The [profiled improvement report](docs/performance-improvements.md) compares the optimized renderer with the original baseline. Unchanged Markdown now reuses its mounted content during cell/state edits, with no global cache. The report also distinguishes V8 warmup from native browser retention and records the unresolved memory-stability limitation. Use `npm run profile -- investigation small` to capture source-mapped production CPU samples and heap snapshots at 0, 100, 300 and 500 replacement cycles on loopback port **4177**. Generated evidence is written to `benchmark-results/profile-investigation/`.
+
+Before hosting, review the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates). The current Ajv schema compiler requires runtime code generation; a CSP that excludes `unsafe-eval` prevents production startup. Initial assets require HTTP(S); offline cold startup and `file://` are unsupported. No deployment or CSP change is performed by this repository's release review.
 
 ## Contract and source layout
 

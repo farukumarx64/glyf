@@ -1,6 +1,7 @@
 # Mosaic v0.1 — Technical Specification & Development Plan
 
-> **Status:** Proposed engineering specification · **Working name:** Mosaic · **File extension:** `.mosa` · **Format version:** `0.1.0`  
+> **Status:** Implemented v0.1; release readiness recorded with limitations · **Working name:** Mosaic · **File extension:** `.mosa` · **Format version:** `0.1.0`
+>
 > **Intended audience:** Codex / an implementing developer  
 > **Priority order:** Correctness and safety → small, portable files → fast loading/rendering → low memory usage → visual quality → extensibility.
 
@@ -617,17 +618,17 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 - [x] Add keyboard/a11y smoke tests, narrow-screen browser test and E2E file open/edit/export/reopen.
 - [x] Benchmark small/medium/large fixtures, production bundle size, document load, chart update, repeated open/close. The viewer has no Close action; benchmarks replace each document with a minimal valid baseline.
 - [x] Profile and address actual bottlenecks, keeping features unchanged. Reuse unchanged mounted Markdown during edits; record the native browser memory limitation without claiming leak freedom.
-- [ ] Document known limits, security choices, test results, and v0.1 compatibility contract.
+- [x] Document known limits, security choices, test results, and v0.1 compatibility contract.
 
 **Acceptance:** Definition of Done below is met; `docs/benchmarks.md` includes hardware, measured medians/p95, and any missed targets. Do not state "optimized" without numbers.
 
-The [security audit](security-audit.md) records the covered cases, the Markdown renderer fix, and remaining boundaries. The full Phase 5 acceptance work is not yet complete.
+The [security audit](security-audit.md) records the covered cases, the Markdown renderer fix, and remaining boundaries. The [release-readiness record](release-readiness.md) maps all ten Definition of Done items to evidence and lists the unresolved memory target, strict-CSP deployment incompatibility, development-tool advisories and other limitations. Implementation task completion does not approve public deployment or claim every engineering target is met.
 
 The [error recovery verification](error-recovery.md) exercises rejected files through Open File and drop in Preview and Source, exact byte boundaries, preservation of edits and drafts, failed/stale reads, and successful export/retry. No runtime change was needed for this verification.
 
 The [accessibility and browser report](accessibility.md) records complete keyboard workflows, semantic labels and error feedback, conditional-focus recovery, Markdown scrolling/link fixes, narrow-screen text resizing, theme contrast, and the limits of automated verification.
 
-The [production benchmark report](benchmarks.md) records the original reference hardware, fixture shapes, timing and memory samples, and bundle sizes. The [profiled improvement report](performance-improvements.md) records the targeted rendering change, before/after measurements, extended heap investigation, regression coverage, and remaining memory-stability limitation. The final release-report task remains outstanding.
+The [production benchmark report](benchmarks.md) consolidates the optimized release measurements, hardware, fixture shapes, timing and memory samples, bundle sizes and unconfirmed target. The [original baseline](benchmark-baseline.md) and [profiled improvement report](performance-improvements.md) preserve the comparison and extended heap investigation. The [compatibility contract](compatibility.md) defines the implemented v0.1 surface without adding future-version features.
 
 ---
 
@@ -649,7 +650,7 @@ The [production benchmark report](benchmarks.md) records the original reference 
 
 ### UI and editing
 
-- [ ] Heading hierarchy and Markdown look correct.
+- [x] Heading hierarchy and Markdown look correct. Authored h1–h4 levels are preserved; demo headings/Markdown were visually reviewed at desktop/mobile widths during release verification.
 - [x] Small screens show no accidental horizontal page overflow.
 - [x] Editable cells have accessible labels and honor type restrictions.
 - [x] Editing source data updates dependent chart without reloading entire file.
@@ -738,16 +739,18 @@ Future model-specific prompt engineering is deliberately outside the format spec
 
 **Mosaic v0.1 is ready when all statements below are true:**
 
-- [ ] A newcomer can clone repo, install dependencies, and run the app from README.
-- [ ] Schema, example document, and documented semantics agree.
-- [ ] Local `.mosa` import, safe validation, preview, controls, editing, and export work.
-- [ ] Demo includes Markdown, responsive layout, chart, editable table, input, toggle, and conditional rendering.
-- [ ] Exported changes persist on re-import.
-- [ ] Unknown/invalid/hostile documents fail with clear errors rather than crashes or execution.
-- [ ] No network, account, server, AI key, or external fonts are required for local document processing.
-- [ ] Unit/integration/browser smoke tests pass (actual results reported).
-- [ ] Bundle size and representative parse/render/edit timings are measured and documented.
-- [ ] Known limitations are plainly listed; no unsupported performance claims.
+- [x] A newcomer can clone repo, install dependencies, and run the app from README.
+- [x] Schema, example document, and documented semantics agree.
+- [x] Local `.mosa` import, safe validation, preview, controls, editing, and export work.
+- [x] Demo includes Markdown, responsive layout, chart, editable table, input, toggle, and conditional rendering.
+- [x] Exported changes persist on re-import.
+- [x] Unknown/invalid/hostile documents fail with clear errors rather than crashes or execution.
+- [x] No network, account, server, AI key, or external fonts are required for local document processing.
+- [x] Unit/integration/browser smoke tests pass (actual results reported).
+- [x] Bundle size and representative parse/render/edit timings are measured and documented.
+- [x] Known limitations are plainly listed; no unsupported performance claims.
+
+**Reviewed 2026-11-19 against candidate `0259136`.** [Evidence for each item](release-readiness.md#definition-of-done-evidence) includes a clean locked install, dev-server/demo review, 593 unit/integration tests and 66 Chromium/WebKit tests. Offline processing begins after app assets load. The §7 memory target remains unconfirmed; strict-CSP startup and development-tool advisory limitations remain recorded. These implementation checkboxes do not constitute public-launch or deployment clearance.
 
 ### Explicit future work, **not** in v0.1
 
