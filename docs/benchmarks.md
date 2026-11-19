@@ -1,6 +1,6 @@
 # Phase 5 — Production performance baseline
 
-Measured **2026-11-19**. All measured timing and bundle budgets passed on the reference machine. The memory experiment found small retained-heap growth during small/medium replacements, so the specification's **no persistent linear growth** criterion is **not yet confirmed**. Measurement is complete; profiling and any resulting fixes remain a separate Phase 5 task.
+Measured **2026-11-19**. All measured timing and bundle budgets passed on the reference machine. The memory experiment found small retained-heap growth during small/medium replacements, so the specification's **no persistent linear growth** criterion is **not yet confirmed**. This report preserves the original baseline. The subsequent [profiled improvement report](performance-improvements.md) records the completed investigation and rendering change, including the remaining native-memory limitation.
 
 ## Reproduce and inspect
 
@@ -142,4 +142,4 @@ The longest measured user-facing operation is opening the large fixture. Its rea
 
 This report does not establish cold application startup, physical disk speed, 5 MiB maximum-size latency, deeply nested/adversarial Markdown performance, many simultaneous charts, a fully expanded 1,000-row editable table, peak process/GPU memory, WebKit/Firefox performance, or mobile responsiveness under load. Earlier functional browser checks remain separate evidence. Warm-cache serial timings on one fast machine must not be treated as a universal latency guarantee.
 
-The benchmark task is checked off in the working specification. **Profile and address actual bottlenecks**, especially the unresolved memory trend, and the final compatibility/limitations/release report remain outstanding.
+The benchmark task is checked off in the working specification. The [profiling follow-up](performance-improvements.md) now records the targeted rendering improvement and extended memory investigation. The final compatibility/limitations/release report remains outstanding and must carry the unresolved browser-memory limitation.

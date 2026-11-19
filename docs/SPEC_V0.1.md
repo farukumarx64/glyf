@@ -616,7 +616,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 - [x] Test the specified malformed/corrupt/over-limit cases; make error UI understandable.
 - [x] Add keyboard/a11y smoke tests, narrow-screen browser test and E2E file open/edit/export/reopen.
 - [x] Benchmark small/medium/large fixtures, production bundle size, document load, chart update, repeated open/close. The viewer has no Close action; benchmarks replace each document with a minimal valid baseline.
-- [ ] Profile and address actual bottlenecks, keeping features unchanged.
+- [x] Profile and address actual bottlenecks, keeping features unchanged. Reuse unchanged mounted Markdown during edits; record the native browser memory limitation without claiming leak freedom.
 - [ ] Document known limits, security choices, test results, and v0.1 compatibility contract.
 
 **Acceptance:** Definition of Done below is met; `docs/benchmarks.md` includes hardware, measured medians/p95, and any missed targets. Do not state "optimized" without numbers.
@@ -627,7 +627,7 @@ The [error recovery verification](error-recovery.md) exercises rejected files th
 
 The [accessibility and browser report](accessibility.md) records complete keyboard workflows, semantic labels and error feedback, conditional-focus recovery, Markdown scrolling/link fixes, narrow-screen text resizing, theme contrast, and the limits of automated verification.
 
-The [production benchmark report](benchmarks.md) records reference hardware, fixture shapes, timing and memory samples, bundle sizes, and remaining profiling questions. Completing measurement does not mark the profiling or final release-report tasks complete.
+The [production benchmark report](benchmarks.md) records the original reference hardware, fixture shapes, timing and memory samples, and bundle sizes. The [profiled improvement report](performance-improvements.md) records the targeted rendering change, before/after measurements, extended heap investigation, regression coverage, and remaining memory-stability limitation. The final release-report task remains outstanding.
 
 ---
 

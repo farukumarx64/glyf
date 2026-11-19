@@ -284,6 +284,13 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Use 10 paired baseline/loaded memory samples, 100 open-to-baseline cycles per fixture, forced-GC checkpoints every 10 cycles, and an idle control. Report JavaScript heap, embedder heap, backing storage, DOM and listener counts with their scope. There is no Close action in v0.1, so a minimal valid replacement releases the previous document. Do not infer leak freedom from stable DOM counts alone.
 - Measure emitted production assets with gzip level 6, retain input/build hashes, and compare against the specification's budgets. Keep performance results separate from correctness assertions and leave profiling/fixes as the next explicit Phase 5 step. See [benchmarks.md](benchmarks.md).
 
+## Phase 5 profiled rendering implementation choices — 2026-11-19
+
+- Reuse Markdown's rendered subtree in a mounted `React.memo` component whose only prop is its text. CPU samples showed unchanged Markdown processing during cell edits; the optimization does not compare whole document snapshots or change state/dataset subscriptions. Keep the anchor wrapper responsive to its props and the error boundary keyed by text.
+- Keep reuse local to the component lifetime. Hidden/unmounted/replaced Markdown starts fresh, with no global string/AST cache and no retained document history. Preserve URL checks, raw HTML/image blocking, depth checking and rendering-error recovery.
+- Add an isolated production profiling command with source maps, 500 replacement cycles, raw heap snapshots and 100-edit CPU samples. Use snapshot field metadata and source-map/ancestor attribution when summarizing evidence; never equate self-size differences with retained sizes or profiler samples with end-to-end latency.
+- Report the observed edit-time improvement separately from unchanged frame-wait/loading timings. Classify most measured JS growth as VM code/warmup based on snapshots, while retaining the unresolved native style-engine growth as a release limitation. Do not add speculative application cleanup or weaken accessibility to hide browser retention. See [performance-improvements.md](performance-improvements.md).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)
