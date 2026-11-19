@@ -1,4 +1,4 @@
-import { Children, Component, isValidElement, type ReactNode } from 'react';
+import { Children, Component, isValidElement, memo, type ReactNode } from 'react';
 import Markdown, { type Components } from 'react-markdown';
 import { remarkCheckDepth } from './markdown-depth.ts';
 import { markdownUrl } from './markdown-policy.ts';
@@ -64,9 +64,11 @@ class MarkdownBoundary extends Component<{ text: string; children: ReactNode }> 
   }
 }
 
-export const MarkdownView: NodeView<'markdown'> = ({ node, anchorId }) => (
-  <div id={anchorId} className="mosaic-markdown">
-    <MarkdownBoundary key={node.text} text={node.text}>
+// Parsing depends only on this node's text, not dataset/state snapshots. Keep
+// reuse local to the mounted component so replacements release its entire tree.
+const MarkdownContent = memo(function MarkdownContent({ text }: { text: string }) {
+  return (
+    <MarkdownBoundary key={text} text={text}>
       <Markdown
         skipHtml
         disallowedElements={disabledElements}
@@ -74,8 +76,14 @@ export const MarkdownView: NodeView<'markdown'> = ({ node, anchorId }) => (
         components={components}
         remarkPlugins={remarkPlugins}
       >
-        {node.text}
+        {text}
       </Markdown>
     </MarkdownBoundary>
+  );
+});
+
+export const MarkdownView: NodeView<'markdown'> = ({ node, anchorId }) => (
+  <div id={anchorId} className="mosaic-markdown">
+    <MarkdownContent text={node.text} />
   </div>
 );
