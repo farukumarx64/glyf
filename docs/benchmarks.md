@@ -141,6 +141,8 @@ JavaScript gzip falls by **31,383 bytes (20.35%)**, from 150.60 to 119.95 KiB. V
 
 JavaScript SHA-256: `0c555579d6eece551ec3c9507ac82f5bfe1235a23f97e09229b68708605e2257`. Lockfile SHA-256: `54149516e1f5dd7e65be5c36718c3c7ebde2e8f7931226b77323bf718d7ce8ba`. Ajv moved to development dependencies; package versions, integrity hashes and resolutions are unchanged. See the [strict-CSP verification](release-readiness.md#strict-csp-follow-up--2026-11-20).
 
+The subsequent [development-dependency upgrade](release-readiness.md#development-dependency-follow-up--2026-11-20) changed the lockfile SHA-256 to `9ea1bb03381da85abc99b1618126afb66bb8c89d7b674d0f82e9c3c4b426065e`. A fresh install/build produced a byte-identical generated validator and JS/CSS assets, so the strict-CSP bundle sizes and asset hashes above still apply. This dependency-only update adds no new timing or memory measurements.
+
 ## Scope and release interpretation
 
 The optimized benchmark and profile completed with zero page exceptions and zero document-related request attempts. The [release-readiness report](release-readiness.md) records fresh-checkout validation, the browser suite and the current dependency audit. The original documentation review reused measurements after verifying matching hashes. The later strict-CSP build has different JavaScript and lockfile hashes; timing and memory measurements have not been rerun for that build.

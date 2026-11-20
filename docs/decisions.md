@@ -307,6 +307,13 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Guard compatibility with compiler-versus-standalone diagnostic tests and a production Chromium/WebKit workflow under the exact CSP that exposed the failure. Resolve R2 for that policy while retaining inline styles and the documented limits of host-policy coverage.
 - Record the new bundle size separately from prior latency/memory measurements; do not attribute unmeasured timing or memory improvements to precompilation.
 
+## Development-dependency audit follow-up — 2026-11-20
+
+- Refresh the audit before choosing versions. All eight moderate findings trace to minimatch's globparts-amplification advisory through ESLint and TypeScript ESLint; upgrade the direct consumers through their supported dependency ranges.
+- Pin ESLint 10.15.0 and typescript-eslint 8.73.0 exactly. Keep the existing Node/TypeScript requirements and lint rules. Resolve minimatch to one patched 11.0.9 instance without overrides or a forced audit fix.
+- Review the complete lockfile change: 14 development-only package entries change and one duplicate is removed; production package entries remain identical. Retain the aligned TypeScript ESLint family and the resolver's ignore patch update.
+- Record zero findings in both the complete and production-only audits, preserve the historical audit records, and verify the upgrade with a fresh locked install and the existing project/browser checks. See [release-readiness.md](release-readiness.md#development-dependency-follow-up--2026-11-20).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)
