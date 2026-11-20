@@ -299,6 +299,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Verify an isolated locked install, dev startup and production browser workflows. Refresh dependency audits without automatic upgrades: zero production findings and eight moderate development-tool findings at review time. Record cache/network conditions rather than claiming a clean-room online install.
 - Record the observed production CSP failure: runtime Ajv compilation is blocked when `script-src` excludes `unsafe-eval`. This is a deployment gate requiring a separate resolution; do not silently weaken a host policy or describe CSP compatibility as verified. See [release-readiness.md](release-readiness.md).
 
+## Strict-CSP startup follow-up — 2026-11-20
+
+- Precompile only the trusted repository schema with Ajv's standalone generator. Preserve Draft 2020-12 and every existing compiler option; leave resource preflight, semantic checks and public diagnostics unchanged.
+- Use the existing Vite dependency to bundle standalone CommonJS output and its Unicode-length helper into an import-free ES module. Track the generator and TypeScript declaration; ignore generated JavaScript. Regenerate before the supported build/dev/test commands and stop on generation failure, with no browser compilation fallback.
+- Move Ajv to development dependencies without changing any locked package version, resolution or integrity. No runtime dependency or later-version feature is added.
+- Guard compatibility with compiler-versus-standalone diagnostic tests and a production Chromium/WebKit workflow under the exact CSP that exposed the failure. Resolve R2 for that policy while retaining inline styles and the documented limits of host-policy coverage.
+- Record the new bundle size separately from prior latency/memory measurements; do not attribute unmeasured timing or memory improvements to precompilation.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

@@ -2,9 +2,9 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by clean-checkout verification, 593 unit/integration tests and 66 Chromium/WebKit tests. Local evaluation is supported within that tested scope. Memory stability, strict-CSP startup compatibility and development-tool advisories remain explicit limitations; this is not public-deployment approval.
+The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by the original clean-checkout review and current checks: 607 unit/integration tests and 68 Chromium/WebKit tests. Local evaluation is supported within that tested scope. The strict-CSP startup issue is resolved; memory stability and development-tool advisories remain explicit limitations; this is not public-deployment approval.
 
-See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for current production measurements. Run `npm run validate:example` to check the reference document's resources, schema and semantics.
+See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for recorded production measurements and the current bundle size. Run `npm run validate:example` to check the reference document's resources, schema and semantics.
 
 See [core contracts](docs/core-contracts.md) for error classifications, pointer conventions, resource counting, examples, and the boundary between definitions and validation enforcement.
 
@@ -47,6 +47,7 @@ A successfully started Download clears the unsaved flag for the exported snapsho
 
 | Command                                  | Purpose                                                                                        |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `npm run generate:validator`             | Precompile the trusted schema into the ignored standalone validator module.                    |
 | `npm run dev`                            | Start Vite on the loopback interface.                                                          |
 | `npm run typecheck`                      | Check strict TypeScript across source, scripts, tests, and configuration.                      |
 | `npm run lint`                           | Run ESLint with zero warnings allowed.                                                         |
@@ -95,7 +96,7 @@ Run benchmarks without other test suites or heavy work competing for the machine
 
 The [profiled improvement report](docs/performance-improvements.md) compares the optimized renderer with the original baseline. Unchanged Markdown now reuses its mounted content during cell/state edits, with no global cache. The report also distinguishes V8 warmup from native browser retention and records the unresolved memory-stability limitation. Use `npm run profile -- investigation small` to capture source-mapped production CPU samples and heap snapshots at 0, 100, 300 and 500 replacement cycles on loopback port **4177**. Generated evidence is written to `benchmark-results/profile-investigation/`.
 
-Before hosting, review the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates). The current Ajv schema compiler requires runtime code generation; a CSP that excludes `unsafe-eval` prevents production startup. Initial assets require HTTP(S); offline cold startup and `file://` are unsupported. No deployment or CSP change is performed by this repository's release review.
+Before hosting, review the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates). The production viewer uses a precompiled validator and is tested under a CSP that excludes `unsafe-eval` and inline scripts. The tested policy permits inline styles for existing theme/layout behavior; it is documented in the release record. Initial assets require HTTP(S); offline cold startup and `file://` are unsupported. No deployment or CSP change is performed by this repository's release review.
 
 ## Contract and source layout
 
@@ -111,13 +112,16 @@ examples/
   mosaic-demo.mosa              Unmodified reference document
   invalid/                     Format fixtures and literal Markdown sample
 scripts/
+  generate-validator.ts        Build-time Ajv compilation and standalone ESM bundling
+  validator-options.ts         Shared strict, non-mutating compiler settings
   schema-validator.ts          Schema conformance helper for tests
   validate-example.ts          Reference-document validation command
 src/
   core/types.ts                Portable types for all 14 node kinds
   core/file.ts                 Local File/Blob reading and byte guard
   core/preflight.ts            Iterative node limits and object cycle checks
-  core/schema.ts               Guarded, compiled Draft 2020-12 schema check
+  core/schema.ts               Guarded, precompiled Draft 2020-12 schema check
+  core/schema-validator.generated.js  Ignored build output with a typed declaration
   core/validate.ts             Full in-memory validation API
   core/semantics.ts            Dataset, state, node, and chart rules
   core/parse.ts                Parse and validate text into a typed document
@@ -173,7 +177,9 @@ Use `parseMosaic(text)` for JSON text or `validateMosaic(value)` for an in-memor
 
 Use `serializeMosaic(document)` to export the current model as two-space JSON with one final LF. It revalidates the document and enforces the inclusive 5 MiB limit on the formatted UTF-8 output. A failed export throws `MosaicSerializationError` with the same `errors` list used by validation. See the [serialization contract](docs/core-contracts.md#serializing-a-document) for boundary behavior.
 
-The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. The schema compiles once per core module instance.
+The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. Compilation happens in `scripts/generate-validator.ts`, using the trusted repository schema. Ajv is a development dependency; the shipped module contains static validator functions and the bundled Unicode-length helper, with no runtime compiler or imports.
+
+`npm run dev`, `typecheck`, `test`, `test:watch` and `validate:example` regenerate the ignored module first. Build, browser tests, benchmarks and profiling reach generation through those commands. Generation failures stop the command; there is no runtime compilation fallback. The typed declaration is tracked, while generated JavaScript is excluded from Git, lint and formatting. After editing the schema or compiler settings in an already-running dev/watch session, run `npm run generate:validator` or restart that session. Use the npm commands on a fresh checkout; direct tool invocations must generate the module first.
 
 ## Rendering a validated document
 

@@ -1,8 +1,8 @@
 # Mosaic v0.1 — Release performance report
 
-Consolidated **2026-11-19** for candidate commit **`0259136`**, using the optimized production measurements from **`2026-11-19T18:09:06.287Z`**. The measured renderer change was subsequently committed as `90c2723`; emitted JS/CSS SHA-256 hashes match the current production build. No application code changed during release reporting.
+Consolidated **2026-11-19** for candidate commit **`0259136`**, using the optimized production measurements from **`2026-11-19T18:09:06.287Z`**. The measured renderer change was subsequently committed as `90c2723`; emitted JS/CSS SHA-256 hashes matched that reviewed production build. **The 2026-11-20 strict-CSP change replaces runtime schema compilation, so these timing/memory samples describe the earlier build.** Its new bundle measurements are recorded separately below; no fresh timing or memory results are implied.
 
-**Timing and bundle budgets are met on the reference machine. Memory stability remains unconfirmed.** The [release-readiness report](release-readiness.md) records the Definition of Done and remaining limitations. The [original baseline](benchmark-baseline.md) and [profiling follow-up](performance-improvements.md) preserve the before/after evidence.
+**The recorded timing and bundle budgets were met on the reference machine. Memory stability remains unconfirmed.** The [release-readiness report](release-readiness.md) records the Definition of Done and remaining limitations. The [original baseline](benchmark-baseline.md) and [profiling follow-up](performance-improvements.md) preserve the before/after evidence.
 
 ## Reproduce and inspect
 
@@ -107,14 +107,14 @@ Every baseline checkpoint returns to **1 document, 68 DOM nodes, 36 elements and
 
 ## Production bundle and budgets
 
-Emitted assets are independently compressed with Node zlib **gzip level 6**. All JS chunks are conservatively counted, including any future lazy chunks; the current app emits one JS and one CSS file. The benchmark harness is excluded.
+The 2026-11-19 emitted assets were independently compressed with Node zlib **gzip level 6**. All JS chunks are conservatively counted, including any future lazy chunks; the current app emits one JS and one CSS file. The benchmark harness is excluded.
 
 | Asset      | Minified bytes | Gzip bytes | Gzip KiB |
 | ---------- | -------------: | ---------: | -------: |
 | JavaScript |        513,366 |    154,213 |   150.60 |
 | CSS        |         10,381 |      3,060 |     2.99 |
 
-Vite separately reports **513.36 kB / 155.82 kB gzip** for JS and **10.38 kB / 3.07 kB gzip** for CSS. Compressor implementation and decimal/binary units differ. Both JS gzip measurements fit the target. The **500 kB uncompressed chunk warning remains**; it is not the 250 KiB gzip budget.
+Vite separately reports **513.36 kB / 155.82 kB gzip** for JS and **10.38 kB / 3.07 kB gzip** for CSS. Compressor implementation and decimal/binary units differ. Both JS gzip measurements fit the target. That build emitted a **500 kB uncompressed chunk warning**; it is not the 250 KiB gzip budget.
 
 | Specification target                                    | Current measurement                                  | Status      |
 | ------------------------------------------------------- | ---------------------------------------------------- | ----------- |
@@ -126,10 +126,23 @@ Vite separately reports **513.36 kB / 155.82 kB gzip** for JS and **10.38 kB / 3
 | Local-document network requests =0                      | 0 attempted requests while offline                   | Met         |
 | 100 cycles: no persistent memory growth after GC        | JS warmup identified; native retention persists      | Unconfirmed |
 
-Current JavaScript SHA-256: `5f8602e443897a9617d239c6ca5d9bd0330875e22917715b2a460a1c90523bb4`. The lockfile SHA-256 is `52abb0620a3a698a393ee8ce85bbc215a46d1999fa5d1c76c3c4eb203a56502e`. These bind the recorded measurements to the tested build/dependency set.
+Recorded 2026-11-19 JavaScript SHA-256: `5f8602e443897a9617d239c6ca5d9bd0330875e22917715b2a460a1c90523bb4`. The lockfile SHA-256 is `52abb0620a3a698a393ee8ce85bbc215a46d1999fa5d1c76c3c4eb203a56502e`. These bind the recorded measurements to the tested build/dependency set.
+
+## Strict-CSP bundle follow-up — 2026-11-20
+
+Build-time Ajv compilation removes the schema compiler from the shipped application. Using the same Node zlib gzip level 6 measurement, the resulting assets are:
+
+| Asset      | Minified bytes | Gzip bytes | Gzip KiB |
+| ---------- | -------------: | ---------: | -------: |
+| JavaScript |        450,314 |    122,830 |   119.95 |
+| CSS        |         10,381 |      3,060 |     2.99 |
+
+JavaScript gzip falls by **31,383 bytes (20.35%)**, from 150.60 to 119.95 KiB. Vite reports 450.31 kB raw / 123.94 kB gzip for JavaScript; the 500 kB chunk warning no longer occurs. CSS is unchanged. This is a measured bundle reduction; loading, editing and memory have not been rebenchmarked for this change.
+
+JavaScript SHA-256: `0c555579d6eece551ec3c9507ac82f5bfe1235a23f97e09229b68708605e2257`. Lockfile SHA-256: `54149516e1f5dd7e65be5c36718c3c7ebde2e8f7931226b77323bf718d7ce8ba`. Ajv moved to development dependencies; package versions, integrity hashes and resolutions are unchanged. See the [strict-CSP verification](release-readiness.md#strict-csp-follow-up--2026-11-20).
 
 ## Scope and release interpretation
 
-The optimized benchmark and profile completed with zero page exceptions and zero document-related request attempts. The [release-readiness report](release-readiness.md) records fresh-checkout validation, the browser suite and the current dependency audit. Measurements were reused for this documentation step because application and asset hashes are unchanged; the workload was not rerun merely to refresh a timestamp.
+The optimized benchmark and profile completed with zero page exceptions and zero document-related request attempts. The [release-readiness report](release-readiness.md) records fresh-checkout validation, the browser suite and the current dependency audit. The original documentation review reused measurements after verifying matching hashes. The later strict-CSP build has different JavaScript and lockfile hashes; timing and memory measurements have not been rerun for that build.
 
 Unmeasured areas include cold startup, physical disk latency, a 5 MiB maximum-size workload, adversarial Markdown CPU time, many simultaneous charts, a fully expanded 1,000-row editable table, total process/GPU peak memory, Firefox/WebKit performance and physical mobile devices. Battery/thermal conditions and unrelated OS activity were not controlled. Results from this fast reference machine are not universal guarantees. The functional Definition of Done does not turn an unconfirmed engineering memory target into a pass.

@@ -451,7 +451,7 @@ A compressed container can come in v0.2+ if real measurements show text JSON is 
 | Language         | TypeScript (strict mode)                                | Tagged node unions, safer data updates            |
 | App shell        | Vite + React                                            | Fast development, static production build         |
 | Schema           | JSON Schema Draft 2020-12                               | Portable, machine-readable generation contract    |
-| Schema validator | Ajv (2020-12-compatible configuration)                  | Runtime validation; compile validator once        |
+| Schema validator | Ajv (2020-12-compatible configuration)                  | Build-time compilation; static runtime validation |
 | Markdown         | `react-markdown`                                        | Component-based rendering, no raw HTML by default |
 | Charts           | Handwritten minimal SVG renderer                        | Avoid a large chart dependency in first release   |
 | State            | React state/context or tiny store                       | No Redux required                                 |
@@ -622,7 +622,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 **Acceptance:** Definition of Done below is met; `docs/benchmarks.md` includes hardware, measured medians/p95, and any missed targets. Do not state "optimized" without numbers.
 
-The [security audit](security-audit.md) records the covered cases, the Markdown renderer fix, and remaining boundaries. The [release-readiness record](release-readiness.md) maps all ten Definition of Done items to evidence and lists the unresolved memory target, strict-CSP deployment incompatibility, development-tool advisories and other limitations. Implementation task completion does not approve public deployment or claim every engineering target is met.
+The [security audit](security-audit.md) records the covered cases, the Markdown renderer fix, and remaining boundaries. The [release-readiness record](release-readiness.md) maps all ten Definition of Done items to evidence and lists the unresolved memory target, development-tool advisories and other limitations. The 2026-11-20 follow-up resolves strict-CSP startup through build-time validator compilation. Implementation task completion does not approve public deployment or claim every engineering target is met.
 
 The [error recovery verification](error-recovery.md) exercises rejected files through Open File and drop in Preview and Source, exact byte boundaries, preservation of edits and drafts, failed/stale reads, and successful export/retry. No runtime change was needed for this verification.
 
@@ -750,7 +750,7 @@ Future model-specific prompt engineering is deliberately outside the format spec
 - [x] Bundle size and representative parse/render/edit timings are measured and documented.
 - [x] Known limitations are plainly listed; no unsupported performance claims.
 
-**Reviewed 2026-11-19 against candidate `0259136`.** [Evidence for each item](release-readiness.md#definition-of-done-evidence) includes a clean locked install, dev-server/demo review, 593 unit/integration tests and 66 Chromium/WebKit tests. Offline processing begins after app assets load. The §7 memory target remains unconfirmed; strict-CSP startup and development-tool advisory limitations remain recorded. These implementation checkboxes do not constitute public-launch or deployment clearance.
+**Reviewed 2026-11-19 against candidate `0259136`.** [Evidence for each item](release-readiness.md#definition-of-done-evidence) includes a clean locked install, dev-server/demo review, 593 unit/integration tests and 66 Chromium/WebKit tests. Offline processing begins after app assets load. The §7 memory target remains unconfirmed; development-tool advisory limitations remain recorded. The 2026-11-20 follow-up resolves the original strict-CSP startup finding with build-time precompilation and production browser regressions; its checks pass 607 unit/integration tests and 68 Chromium/WebKit tests. These implementation checkboxes do not constitute public-launch or deployment clearance.
 
 ### Explicit future work, **not** in v0.1
 
