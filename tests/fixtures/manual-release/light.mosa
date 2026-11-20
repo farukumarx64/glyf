@@ -1,0 +1,573 @@
+{
+  "mosaic": "0.1.0",
+  "id": "manual-release-check",
+  "meta": {
+    "title": "Manual release check"
+  },
+  "theme": {
+    "mode": "light",
+    "accent": "blue",
+    "density": "comfortable"
+  },
+  "state": {
+    "note": "Initial note",
+    "count": 0,
+    "show": true
+  },
+  "datasets": {
+    "values": {
+      "columns": [
+        {
+          "key": "label",
+          "label": "Label",
+          "kind": "string",
+          "editable": true
+        },
+        {
+          "key": "amount",
+          "label": "Amount",
+          "kind": "number",
+          "editable": true
+        },
+        {
+          "key": "active",
+          "label": "Enabled",
+          "kind": "boolean",
+          "editable": true
+        }
+      ],
+      "rows": [
+        {
+          "id": "first",
+          "label": "First",
+          "amount": -2.5,
+          "active": false
+        },
+        {
+          "id": "second",
+          "label": "Second",
+          "amount": 3,
+          "active": true
+        },
+        {
+          "id": "third",
+          "label": "Third",
+          "amount": null,
+          "active": null
+        }
+      ]
+    },
+    "progressive": {
+      "columns": [
+        {
+          "key": "label",
+          "label": "Label",
+          "kind": "string"
+        }
+      ],
+      "rows": [
+        {
+          "id": "r1",
+          "label": "Progressive row 1"
+        },
+        {
+          "id": "r2",
+          "label": "Progressive row 2"
+        },
+        {
+          "id": "r3",
+          "label": "Progressive row 3"
+        },
+        {
+          "id": "r4",
+          "label": "Progressive row 4"
+        },
+        {
+          "id": "r5",
+          "label": "Progressive row 5"
+        },
+        {
+          "id": "r6",
+          "label": "Progressive row 6"
+        },
+        {
+          "id": "r7",
+          "label": "Progressive row 7"
+        },
+        {
+          "id": "r8",
+          "label": "Progressive row 8"
+        },
+        {
+          "id": "r9",
+          "label": "Progressive row 9"
+        },
+        {
+          "id": "r10",
+          "label": "Progressive row 10"
+        },
+        {
+          "id": "r11",
+          "label": "Progressive row 11"
+        },
+        {
+          "id": "r12",
+          "label": "Progressive row 12"
+        },
+        {
+          "id": "r13",
+          "label": "Progressive row 13"
+        },
+        {
+          "id": "r14",
+          "label": "Progressive row 14"
+        },
+        {
+          "id": "r15",
+          "label": "Progressive row 15"
+        },
+        {
+          "id": "r16",
+          "label": "Progressive row 16"
+        },
+        {
+          "id": "r17",
+          "label": "Progressive row 17"
+        },
+        {
+          "id": "r18",
+          "label": "Progressive row 18"
+        },
+        {
+          "id": "r19",
+          "label": "Progressive row 19"
+        },
+        {
+          "id": "r20",
+          "label": "Progressive row 20"
+        },
+        {
+          "id": "r21",
+          "label": "Progressive row 21"
+        },
+        {
+          "id": "r22",
+          "label": "Progressive row 22"
+        },
+        {
+          "id": "r23",
+          "label": "Progressive row 23"
+        },
+        {
+          "id": "r24",
+          "label": "Progressive row 24"
+        },
+        {
+          "id": "r25",
+          "label": "Progressive row 25"
+        },
+        {
+          "id": "r26",
+          "label": "Progressive row 26"
+        },
+        {
+          "id": "r27",
+          "label": "Progressive row 27"
+        },
+        {
+          "id": "r28",
+          "label": "Progressive row 28"
+        },
+        {
+          "id": "r29",
+          "label": "Progressive row 29"
+        },
+        {
+          "id": "r30",
+          "label": "Progressive row 30"
+        },
+        {
+          "id": "r31",
+          "label": "Progressive row 31"
+        },
+        {
+          "id": "r32",
+          "label": "Progressive row 32"
+        },
+        {
+          "id": "r33",
+          "label": "Progressive row 33"
+        },
+        {
+          "id": "r34",
+          "label": "Progressive row 34"
+        },
+        {
+          "id": "r35",
+          "label": "Progressive row 35"
+        },
+        {
+          "id": "r36",
+          "label": "Progressive row 36"
+        },
+        {
+          "id": "r37",
+          "label": "Progressive row 37"
+        },
+        {
+          "id": "r38",
+          "label": "Progressive row 38"
+        },
+        {
+          "id": "r39",
+          "label": "Progressive row 39"
+        },
+        {
+          "id": "r40",
+          "label": "Progressive row 40"
+        },
+        {
+          "id": "r41",
+          "label": "Progressive row 41"
+        },
+        {
+          "id": "r42",
+          "label": "Progressive row 42"
+        },
+        {
+          "id": "r43",
+          "label": "Progressive row 43"
+        },
+        {
+          "id": "r44",
+          "label": "Progressive row 44"
+        },
+        {
+          "id": "r45",
+          "label": "Progressive row 45"
+        },
+        {
+          "id": "r46",
+          "label": "Progressive row 46"
+        },
+        {
+          "id": "r47",
+          "label": "Progressive row 47"
+        },
+        {
+          "id": "r48",
+          "label": "Progressive row 48"
+        },
+        {
+          "id": "r49",
+          "label": "Progressive row 49"
+        },
+        {
+          "id": "r50",
+          "label": "Progressive row 50"
+        },
+        {
+          "id": "r51",
+          "label": "Progressive row 51"
+        },
+        {
+          "id": "r52",
+          "label": "Progressive row 52"
+        },
+        {
+          "id": "r53",
+          "label": "Progressive row 53"
+        },
+        {
+          "id": "r54",
+          "label": "Progressive row 54"
+        },
+        {
+          "id": "r55",
+          "label": "Progressive row 55"
+        },
+        {
+          "id": "r56",
+          "label": "Progressive row 56"
+        },
+        {
+          "id": "r57",
+          "label": "Progressive row 57"
+        },
+        {
+          "id": "r58",
+          "label": "Progressive row 58"
+        },
+        {
+          "id": "r59",
+          "label": "Progressive row 59"
+        },
+        {
+          "id": "r60",
+          "label": "Progressive row 60"
+        },
+        {
+          "id": "r61",
+          "label": "Progressive row 61"
+        },
+        {
+          "id": "r62",
+          "label": "Progressive row 62"
+        },
+        {
+          "id": "r63",
+          "label": "Progressive row 63"
+        },
+        {
+          "id": "r64",
+          "label": "Progressive row 64"
+        },
+        {
+          "id": "r65",
+          "label": "Progressive row 65"
+        },
+        {
+          "id": "r66",
+          "label": "Progressive row 66"
+        },
+        {
+          "id": "r67",
+          "label": "Progressive row 67"
+        },
+        {
+          "id": "r68",
+          "label": "Progressive row 68"
+        },
+        {
+          "id": "r69",
+          "label": "Progressive row 69"
+        },
+        {
+          "id": "r70",
+          "label": "Progressive row 70"
+        },
+        {
+          "id": "r71",
+          "label": "Progressive row 71"
+        },
+        {
+          "id": "r72",
+          "label": "Progressive row 72"
+        },
+        {
+          "id": "r73",
+          "label": "Progressive row 73"
+        },
+        {
+          "id": "r74",
+          "label": "Progressive row 74"
+        },
+        {
+          "id": "r75",
+          "label": "Progressive row 75"
+        },
+        {
+          "id": "r76",
+          "label": "Progressive row 76"
+        },
+        {
+          "id": "r77",
+          "label": "Progressive row 77"
+        },
+        {
+          "id": "r78",
+          "label": "Progressive row 78"
+        },
+        {
+          "id": "r79",
+          "label": "Progressive row 79"
+        },
+        {
+          "id": "r80",
+          "label": "Progressive row 80"
+        },
+        {
+          "id": "r81",
+          "label": "Progressive row 81"
+        },
+        {
+          "id": "r82",
+          "label": "Progressive row 82"
+        },
+        {
+          "id": "r83",
+          "label": "Progressive row 83"
+        },
+        {
+          "id": "r84",
+          "label": "Progressive row 84"
+        },
+        {
+          "id": "r85",
+          "label": "Progressive row 85"
+        },
+        {
+          "id": "r86",
+          "label": "Progressive row 86"
+        },
+        {
+          "id": "r87",
+          "label": "Progressive row 87"
+        },
+        {
+          "id": "r88",
+          "label": "Progressive row 88"
+        },
+        {
+          "id": "r89",
+          "label": "Progressive row 89"
+        },
+        {
+          "id": "r90",
+          "label": "Progressive row 90"
+        },
+        {
+          "id": "r91",
+          "label": "Progressive row 91"
+        },
+        {
+          "id": "r92",
+          "label": "Progressive row 92"
+        },
+        {
+          "id": "r93",
+          "label": "Progressive row 93"
+        },
+        {
+          "id": "r94",
+          "label": "Progressive row 94"
+        },
+        {
+          "id": "r95",
+          "label": "Progressive row 95"
+        },
+        {
+          "id": "r96",
+          "label": "Progressive row 96"
+        },
+        {
+          "id": "r97",
+          "label": "Progressive row 97"
+        },
+        {
+          "id": "r98",
+          "label": "Progressive row 98"
+        },
+        {
+          "id": "r99",
+          "label": "Progressive row 99"
+        },
+        {
+          "id": "r100",
+          "label": "Progressive row 100"
+        },
+        {
+          "id": "r101",
+          "label": "Progressive row 101"
+        }
+      ]
+    }
+  },
+  "root": {
+    "id": "root",
+    "type": "column",
+    "children": [
+      {
+        "id": "heading",
+        "type": "heading",
+        "level": 2,
+        "text": "Controls and data"
+      },
+      {
+        "id": "note",
+        "type": "input",
+        "kind": "text",
+        "bind": "note",
+        "label": "Note"
+      },
+      {
+        "id": "count",
+        "type": "input",
+        "kind": "number",
+        "bind": "count",
+        "label": "Count"
+      },
+      {
+        "id": "count-value",
+        "type": "stateValue",
+        "bind": "count",
+        "prefix": "Count: "
+      },
+      {
+        "id": "note-value",
+        "type": "stateValue",
+        "bind": "note",
+        "prefix": "Note: "
+      },
+      {
+        "id": "toggle",
+        "type": "toggle",
+        "bind": "show",
+        "label": "Show conditional content"
+      },
+      {
+        "id": "condition",
+        "type": "when",
+        "bind": "show",
+        "equals": true,
+        "children": [
+          {
+            "id": "conditional-text",
+            "type": "text",
+            "text": "Conditional content is visible."
+          }
+        ]
+      },
+      {
+        "id": "values-table",
+        "type": "table",
+        "dataset": "values",
+        "editable": true
+      },
+      {
+        "id": "bar-chart",
+        "type": "chart",
+        "kind": "bar",
+        "dataset": "values",
+        "x": "label",
+        "y": "amount",
+        "title": "bar chart"
+      },
+      {
+        "id": "line-chart",
+        "type": "chart",
+        "kind": "line",
+        "dataset": "values",
+        "x": "label",
+        "y": "amount",
+        "title": "line chart"
+      },
+      {
+        "id": "markdown",
+        "type": "markdown",
+        "text": "**Safe Markdown** and [Details](#details).\n\n![Disabled image](https://example.invalid/image.png)\n\n<img src=\"https://example.invalid/raw.png\" onerror=\"alert(1)\">\n\n[Rejected link](javascript:alert(1))\n\n```text\nWide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample Wide code sample \n```"
+      },
+      {
+        "id": "progressive-table",
+        "type": "table",
+        "dataset": "progressive"
+      },
+      {
+        "id": "details",
+        "type": "heading",
+        "level": 2,
+        "text": "Details"
+      }
+    ]
+  }
+}

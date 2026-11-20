@@ -8,3 +8,5 @@ package-lock.json
 # Preserve the supplied reference material byte for byte.
 docs/reference/
 examples/mosaic-demo.mosa
+# Intentionally malformed JSON used for manual error-recovery verification.
+tests/fixtures/manual-release/malformed.mosa
