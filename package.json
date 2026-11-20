@@ -18,6 +18,8 @@
     "test:viewer": "npm run build && playwright test",
     "benchmark": "npm run build && node --import tsx scripts/benchmark.ts",
     "profile": "npm run typecheck && node --import tsx scripts/profile.ts",
+    "memory": "npm run build && node --import tsx scripts/memory.ts",
+    "memory:native": "node --import tsx scripts/memory-native.ts",
     "test:watch": "npm run generate:validator && vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
