@@ -2,7 +2,7 @@
 
 Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
 
-The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by the original clean-checkout review and current checks: 607 unit/integration tests and 68 Chromium/WebKit tests. Local evaluation is supported within that tested scope. The strict-CSP startup issue and recorded development-tool advisories are resolved; memory stability remains unconfirmed. Full and production-only dependency audits report zero known vulnerabilities as of 2026-11-20. This is not public-deployment approval.
+The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by the original clean-checkout review and current checks: 609 unit/integration tests and 68 Chromium/WebKit tests. Local evaluation is supported within that tested scope. The strict-CSP startup issue and recorded development-tool advisories are resolved; memory stability remains unconfirmed. Full and production-only dependency audits report zero known vulnerabilities as of 2026-11-20. This is not public-deployment approval.
 
 See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for recorded production measurements and the current bundle size. Run `npm run validate:example` to check the reference document's resources, schema and semantics.
 
@@ -45,23 +45,24 @@ A successfully started Download clears the unsaved flag for the exported snapsho
 
 ## Commands
 
-| Command                                  | Purpose                                                                                        |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `npm run generate:validator`             | Precompile the trusted schema into the ignored standalone validator module.                    |
-| `npm run dev`                            | Start Vite on the loopback interface.                                                          |
-| `npm run typecheck`                      | Check strict TypeScript across source, scripts, tests, and configuration.                      |
-| `npm run lint`                           | Run ESLint with zero warnings allowed.                                                         |
-| `npm run test`                           | Run format, renderer, and file workflow tests once.                                            |
-| `npm run test:viewer`                    | Build and run the production viewer smoke tests in Chromium and WebKit.                        |
-| `npm run benchmark`                      | Build and measure production loading, rendering, edits, replacements, memory, and bundle size. |
-| `npm run profile -- investigation small` | Capture a production CPU profile and heap snapshots across 500 replacement cycles.             |
-| `npm run test:watch`                     | Watch tests during development.                                                                |
-| `npm run validate:example`               | Run full v0.1 validation on the reference file.                                                |
-| `npm run format:check`                   | Check formatting without editing files.                                                        |
-| `npm run format`                         | Apply formatting; preserve supplied reference files.                                           |
-| `npm run build`                          | Typecheck and create the static production build in `dist/`.                                   |
-| `npm run preview`                        | Serve the production build locally.                                                            |
-| `npm run check`                          | Run typechecking, lint, formatting, Vitest, demo validation, and build.                        |
+| Command                                         | Purpose                                                                                        |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `npm run generate:validator`                    | Precompile the trusted schema into the ignored standalone validator module.                    |
+| `npm run dev`                                   | Start Vite on the loopback interface.                                                          |
+| `npm run typecheck`                             | Check strict TypeScript across source, scripts, tests, and configuration.                      |
+| `npm run lint`                                  | Run ESLint with zero warnings allowed.                                                         |
+| `npm run test`                                  | Run format, renderer, and file workflow tests once.                                            |
+| `npm run test:viewer`                           | Build and run the production viewer smoke tests in Chromium and WebKit.                        |
+| `npm run benchmark`                             | Build and measure production loading, rendering, edits, replacements, memory, and bundle size. |
+| `npm run memory -- investigation chromium 1000` | Compare idle/small/large replacement memory over 1,000 cycles per workload.                    |
+| `npm run profile -- investigation small`        | Capture a production CPU profile and heap snapshots across 500 replacement cycles.             |
+| `npm run test:watch`                            | Watch tests during development.                                                                |
+| `npm run validate:example`                      | Run full v0.1 validation on the reference file.                                                |
+| `npm run format:check`                          | Check formatting without editing files.                                                        |
+| `npm run format`                                | Apply formatting; preserve supplied reference files.                                           |
+| `npm run build`                                 | Typecheck and create the static production build in `dist/`.                                   |
+| `npm run preview`                               | Serve the production build locally.                                                            |
+| `npm run check`                                 | Run typechecking, lint, formatting, Vitest, demo validation, and build.                        |
 
 The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmarks run separately in production Chromium so unit-test timing is not mistaken for browser performance.
 
@@ -95,6 +96,8 @@ The [original benchmark baseline](docs/benchmark-baseline.md) is preserved separ
 Run benchmarks without other test suites or heavy work competing for the machine. The command fails on invalid fixtures, incorrect rendering, browser errors, or document-related requests. Timing targets are reported as measurements, not flaky CI assertions; memory trends require inspection.
 
 The [profiled improvement report](docs/performance-improvements.md) compares the optimized renderer with the original baseline. Unchanged Markdown now reuses its mounted content during cell/state edits, with no global cache. The report also distinguishes V8 warmup from native browser retention and records the unresolved memory-stability limitation. Use `npm run profile -- investigation small` to capture source-mapped production CPU samples and heap snapshots at 0, 100, 300 and 500 replacement cycles on loopback port **4177**. Generated evidence is written to `benchmark-results/profile-investigation/`.
+
+The [memory follow-up](docs/memory-stability.md) extends replacements to 1,000 cycles in Chromium 159, Chromium 157 (Brave), and WebKit 27.2. Use `npm run memory -- investigation chromium 1000` on macOS/Linux; select `webkit` for WebKit or supply a local Chromium executable as the final argument. Each workload uses a fresh browser process on loopback port **4178**. The report distinguishes weak-reference observations, native retention and the incomplete macOS WebKit process-memory scope. `npm run memory:native -- investigation 100` reproduces the native retention with plain HTML tables and a div control, without loading Mosaic. Replacement results are saved under `benchmark-results/memory-investigation/`, and the native-only probe uses `benchmark-results/memory-native-investigation/`. Use a new label for each run.
 
 Before hosting, review the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates). The production viewer uses a precompiled validator and is tested under a CSP that excludes `unsafe-eval` and inline scripts. The tested policy permits inline styles for existing theme/layout behavior; it is documented in the release record. Initial assets require HTTP(S); offline cold startup and `file://` are unsupported. No deployment or CSP change is performed by this repository's release review.
 

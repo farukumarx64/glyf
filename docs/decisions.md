@@ -314,6 +314,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Review the complete lockfile change: 14 development-only package entries change and one duplicate is removed; production package entries remain identical. Retain the aligned TypeScript ESLint family and the resolver's ignore patch update.
 - Record zero findings in both the complete and production-only audits, preserve the historical audit records, and verify the upgrade with a fresh locked install and the existing project/browser checks. See [release-readiness.md](release-readiness.md#development-dependency-follow-up--2026-11-20).
 
+## Memory-stability follow-up — 2026-11-20
+
+- Measure idle, small and large workloads for 1,000 cycles each in separate fresh browser processes, serially across two Chromium versions and WebKit. Record exact versions and production hashes; do not relabel historical timing measurements.
+- Use measurement-only weak references to distinguish retained document/view objects from native browser structures. Count every expected fixture parse and prune dead references; ship no instrumentation or runtime dependency.
+- Preserve raw Chromium snapshots and report JavaScript/code groups, native media-query counts and process RSS separately. Mark WebKit CDP measurements unavailable and its macOS PID-tree RSS incomplete because launchd owns the renderer/GPU/network XPC processes.
+- Preserve a standalone plain-HTML table/div probe: both tested Chromium versions reproduce native retention without Mosaic or React. Keep semantic table accessibility and application behavior unchanged; no application workaround is justified by this evidence.
+- Keep the no-persistent-growth target unconfirmed where native growth persists. Base any application change on demonstrated application ownership, not a rising process-memory total. See [memory-stability.md](memory-stability.md) for the completed investigation and disposition.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)
