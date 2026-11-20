@@ -3,6 +3,7 @@ dist/
 coverage/
 test-results/
 benchmark-results/
+src/core/schema-validator.generated.js
 .vitest/
 *.tsbuildinfo
 *.log

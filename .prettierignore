@@ -3,6 +3,7 @@ dist/
 coverage/
 .vitest/
 benchmark-results/
+src/core/schema-validator.generated.js
 package-lock.json
 # Preserve the supplied reference material byte for byte.
 docs/reference/

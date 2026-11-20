@@ -8,23 +8,23 @@
     "npm": ">=10"
   },
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
+    "generate:validator": "node --import tsx scripts/generate-validator.ts",
+    "dev": "npm run generate:validator && vite --host 127.0.0.1",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run generate:validator && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "test": "vitest run",
+    "test": "npm run generate:validator && vitest run",
     "test:viewer": "npm run build && playwright test",
     "benchmark": "npm run build && node --import tsx scripts/benchmark.ts",
     "profile": "npm run typecheck && node --import tsx scripts/profile.ts",
-    "test:watch": "vitest",
+    "test:watch": "npm run generate:validator && vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "validate:example": "node --import tsx scripts/validate-example.ts",
+    "validate:example": "npm run generate:validator && node --import tsx scripts/validate-example.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run validate:example && npm run build"
   },
   "dependencies": {
-    "ajv": "8.20.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-markdown": "10.1.0"
@@ -38,6 +38,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.3.0",
+    "ajv": "8.20.0",
     "eslint": "10.14.0",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.7",
