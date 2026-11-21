@@ -4,6 +4,8 @@ Mosaic is a local-first visual document format and viewer. A `.mosa` document is
 
 The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by the original clean-checkout review and current checks: 609 unit/integration tests and 68 Chromium/WebKit tests. Local evaluation is supported within that tested scope. The strict-CSP startup issue and recorded development-tool advisories are resolved; memory stability remains unconfirmed. Full and production-only dependency audits report zero known vulnerabilities as of 2026-11-20. This is not public-deployment approval.
 
+The [public-release checks](docs/public-release-checks.md) found close existing uses of the Mosaic name, including declarative visualization software. Manual browser/screen-reader verification remains incomplete because native input is unreliable, and trademark/extension registry coverage remains incomplete. Public release is not cleared; the [manual checklist and fixtures](docs/manual-release-checklist.md) record the remaining work.
+
 See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for recorded production measurements and the current bundle size. Run `npm run validate:example` to check the reference document's resources, schema and semantics.
 
 See [core contracts](docs/core-contracts.md) for error classifications, pointer conventions, resource counting, examples, and the boundary between definitions and validation enforcement.

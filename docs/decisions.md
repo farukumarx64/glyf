@@ -322,6 +322,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Preserve a standalone plain-HTML table/div probe: both tested Chromium versions reproduce native retention without Mosaic or React. Keep semantic table accessibility and application behavior unchanged; no application workaround is justified by this evidence.
 - Keep the no-persistent-growth target unconfirmed where native growth persists. Base any application change on demonstrated application ownership, not a rising process-memory total. See [memory-stability.md](memory-stability.md) for the completed investigation and disposition.
 
+## Public-release check boundaries — 2026-11-20
+
+- Separate direct manual screen-reader/browser observations from automated accessibility assertions. Record native control failures without an implied VoiceOver/Safari pass; provide concrete fixtures and a checklist. The 2026-11-21 Brave capture/demo recovery is partial evidence only: M01 remains incomplete, and no screen-reader output was observed.
+- Extend automated coverage using the existing installed Brave executable and isolated test profiles. Preserve its 34-test result separately from the existing 68 Chromium/WebKit tests and from manual native-dialog/speech coverage.
+- Keep Mosaic provisional after identifying closely related declarative visualization software and other existing uses. Treat public-use and npm namespace evidence as collision findings, not trademark status or legal clearance.
+- Record the user-confirmed worldwide launch scope and unavailable USPTO/WIPO/PRONOM/extension-directory checks explicitly. Worldwide distribution does not imply worldwide trademark clearance; document national/regional search coverage and unresolved gaps. A missing accessible result does not establish availability. Keep `.mosa` working/unregistered and preserve the format marker/schema until a separately approved identity/compatibility decision.
+- Do not prepare or publish a public release while these gates are open. See [public-release-checks.md](public-release-checks.md).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

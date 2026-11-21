@@ -91,3 +91,9 @@ npm run check
 The ignored `test-results/` directories contain screenshots, actual `.mosa` downloads, `accessibility-tree.yml`, `workflow-results.json`, and `contrast-results.json`. Workflow exports were byte-identical between engines: **3,210 bytes** for the light fixture and **3,205 bytes** for the dark fixture. Subsequent Playwright runs can replace these artifacts.
 
 The tested targets are the two Playwright engines above. Branded Safari/Chrome, Firefox, physical mobile browsers, operating-system file-dialog navigation, and actual VoiceOver/NVDA speech were not manually verified. This establishes the v0.1 keyboard and semantic-HTML smoke coverage; it is not a full accessibility certification. Production benchmarks and final release reporting remain separate Phase 5 work.
+
+## Public-release follow-up — 2026-11-20
+
+The existing complete production suite also passed **34/34 automated tests in Brave 157.1.99.55** with a fresh headless test profile. This adds branded-browser automation coverage, not manual or speech verification. Native UI access failed while selecting Safari; after a connection reset, a bounded inventory retry also timed out. No screen-reader output or native file-dialog workflow was observed.
+
+The [public-release report](public-release-checks.md) records this blocker, and the [manual checklist](manual-release-checklist.md) supplies concrete cases, expected results and synthetic fixtures. On the 2026-11-21 retry, native Brave capture and Open Demo worked, but keyboard/file-dialog operations remained unverified and a coordinate click failed with `noWindowsAvailable`; Safari selection timed out. M01 is **incomplete**, M02–M13 remain **Not run**, and no VoiceOver speech or captions were observed. Historical automated coverage above remains valid within its original scope and cannot substitute for those observations.

@@ -758,7 +758,7 @@ Future model-specific prompt engineering is deliberately outside the format spec
 - v0.3: true canvas/whiteboard, richer chart libraries (conditionally loaded), richer tables, document migrations and richer exports.
 - Later: sandboxed programmable components, collaborative editing, 3D, plugins, cloud synchronization, AI-driven UI regeneration and partial updates with explicit permissions.
 
-Future versions need a published compatibility policy, conformance tests, and an extension mechanism. The working name **Mosaic** and `.mosa` extension also require collision/trademark checks before public launch.
+Future versions need a published compatibility policy, conformance tests, and an extension mechanism. The working name **Mosaic** and `.mosa` extension also require collision/trademark checks before public launch. The [2026-11-20 public-release review](public-release-checks.md) found close existing Mosaic software uses; the name is not cleared. Trademark/extension registry coverage and manual screen-reader/browser evidence remain incomplete. No format identity or release approval is changed by that preliminary review.
 
 ---
 
