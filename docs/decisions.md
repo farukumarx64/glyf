@@ -353,6 +353,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Keep package dependencies and browser installations fresh rather than introducing caches that could obscure clean-install failures. Bun's setup action may cache its versioned executable. Cancel superseded runs for the same event/ref.
 - Record local CI-mode checks separately from an actual GitHub-hosted run. Branch protection, public deployment, native screen-reader verification and performance acceptance remain separate work. See [CI operation and verification](ci.md).
 
+## User documentation — 2026-11-21
+
+- Put local setup and a route into the first document near the top of README. Link the pinned Node/Bun installation sources, verify executable versions, distinguish the development server from a built production preview, and keep contributor/API details available below.
+- Add a separate [user guide](user-guide.md) with a demo walkthrough, typed editing rules, progressive table rows, download/reopen steps, replacement behavior, keyboard use and offline-after-load scope. Explain that accepted edits update immediately, invalid drafts are excluded from saved data, Download creates a new browser-managed file, and refresh/close has no autosave or navigation guard.
+- Add [troubleshooting](troubleshooting.md) for installation/ports, structured error codes and JSON Pointers, failed edits, Markdown policy and export-size failures. Explain No value versus empty text, the formatted-export byte limit, and the limits of recovery after a browser refresh. Keep code-generation and hosting details in setup/troubleshooting rather than ordinary editing instructions.
+- Present current limitations and browser evidence without implying manual screen-reader, physical-mobile or hosted-CI verification. User documentation is prepared; final release wording still depends on the existing identity/release decisions. No runtime, format or dependency change is included.
+- Verification: checked 108 local file/heading links, 41 package-command references and shell-block syntax; formatting and the documented production build/preview passed. The exact demo walkthrough passed in automated Chromium and WebKit, including invalid-draft restoration, cancelled replacement, offline download/reopen, malformed-file recovery, No value behavior and lack of reload recovery. This is browser automation, not native file-dialog or screen-reader evidence. Local logs/results are in ignored `benchmark-results/user-docs/`.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

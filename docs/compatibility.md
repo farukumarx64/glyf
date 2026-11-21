@@ -2,6 +2,8 @@
 
 This describes the implemented **`0.1.0`** format and viewer. It summarizes [SPEC_V0.1.md](SPEC_V0.1.md), [the approved decisions](decisions.md), and [the core API contracts](core-contracts.md); it does not introduce new format rules.
 
+For opening, editing and saving documents, start with the [user guide](user-guide.md). For actionable error recovery, see [troubleshooting](troubleshooting.md).
+
 ## Contract sources and version handling
 
 The authoritative structural contract is [schema/mosaic-v0.1.schema.json](../schema/mosaic-v0.1.schema.json), JSON Schema Draft 2020-12. The working schema contains the approved D003 amendment forbidding `id` as a declared column key. The supplied original schema/specification remain unchanged under `docs/reference/`. The reference document is [examples/mosaic-demo.mosa](../examples/mosaic-demo.mosa), preserved as supplied. Tests check the schema amendment, schema/resource-constant agreement, the demo, and all 14 typed node kinds.

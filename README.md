@@ -1,55 +1,63 @@
 # Mosaic
 
-Mosaic is a local-first visual document format and viewer. A `.mosa` document is UTF-8 JSON with a closed component vocabulary and exact format version `0.1.0`.
+Mosaic is a local-first visual document format and viewer. Open a `.mosa` file, read its layouts and charts, edit the controls its author enabled, and download the updated document. Files use UTF-8 JSON and the exact format version `0.1.0`.
 
-The v0.1 implementation and release review are recorded in [release-readiness.md](docs/release-readiness.md). The ten implementation Definition of Done items are supported by the original clean-checkout review and current checks: 609 unit/integration tests and 68 Chromium/WebKit tests. Local evaluation is supported within that tested scope. The strict-CSP startup issue and recorded development-tool advisories are resolved; memory stability remains unconfirmed. Full and production-only dependency audits report zero known vulnerabilities as of 2026-11-20. This is not public-deployment approval.
+**Current status: a local preview for evaluation.** Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). The existing verification includes 609 unit/integration tests and 68 Chromium/WebKit browser tests; see [CI verification](docs/ci.md) for the tested environment and pending first hosted run.
 
-The [public-release checks](docs/public-release-checks.md) found close existing uses of the Mosaic name, including declarative visualization software. Manual browser/screen-reader verification remains incomplete because native input is unreliable, and trademark/extension registry coverage remains incomplete. Public release is not cleared; the [manual checklist and fixtures](docs/manual-release-checklist.md) record the remaining work.
-
-The [pre-release work list](docs/release-readiness.md#pre-release-work-list--2026-11-21) tracks the remaining independent tasks. Package management now uses **Bun 1.3.14**; see the [migration report](docs/bun-migration.md) for verification and scope.
-
-See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for recorded production measurements and the current bundle size. Run `bun run validate:example` to check the reference document's resources, schema and semantics.
-
-See [core contracts](docs/core-contracts.md) for error classifications, pointer conventions, resource counting, examples, and the boundary between definitions and validation enforcement.
+- [Set up the local viewer](#development-environment).
+- [Follow the demo and learn editing/downloads](docs/user-guide.md).
+- [Resolve setup and document errors](docs/troubleshooting.md).
+- [Check known limitations](docs/user-guide.md#known-limitations) or the detailed [format compatibility contract](docs/compatibility.md).
 
 ## Development environment
 
-- Node.js **22.13+ on the 22.x line**, **24.x**, or **26+**; Bun **1.3.14**, pinned in `packageManager` and checked during installation. The combined toolchain determines this minimum. `.nvmrc` pins the locally verified Node version, **22.18.0**.
-- No `.env` file, API key, database, account, or backend is needed.
-- Dependency installation requires npm registry access. Installed app code and assets are served locally; the foundation uses no remote fonts or assets.
+To run this checkout, install **Git**, **Node.js** and **Bun**, and obtain access to this repository. No account inside Mosaic, `.env` file, API key, database or backend is required. Internet access is needed to clone and install packages; the viewer processes documents locally once its assets have loaded.
 
-With repository access, [Bun 1.3.14](https://github.com/oven-sh/bun/releases/tag/bun-v1.3.14), and a Node installation that satisfies `package.json`:
+- **Node:** the locally verified version is **22.18.0**, pinned in `.nvmrc`. The declared range also accepts 22.x from 22.13, 24.x, and 26+. Use the [official Node 22.18.0 downloads](https://nodejs.org/en/download/archive/v22.18.0), or, if you already use nvm, run `nvm install` and `nvm use` inside the checkout.
+- **Bun:** use **1.3.14**, pinned in `package.json`. Follow Bun's [specific-version installation instructions](https://bun.sh/docs/installation#installing-older-versions) or use its [1.3.14 release assets](https://github.com/oven-sh/bun/releases/tag/bun-v1.3.14). For a script-based installation on macOS/Linux, the version-specific command is:
+
+```sh
+curl -fsSL https://bun.com/install | bash -s "bun-v1.3.14"
+```
+
+Reopen the terminal after installation if needed. Check `node --version` and `bun --version`; Bun must print `1.3.14`. An existing installation managed by another tool should be adjusted through that tool so the intended executable is on PATH. [Troubleshooting](docs/troubleshooting.md#setup-and-startup) covers version and PATH failures. Fresh setup has been verified on macOS arm64; other installation environments remain outside that local verification.
+
+From a terminal, clone and enter the project:
 
 ```sh
 git clone https://github.com/farukumarx64/mosaic.git
 cd mosaic
+```
+
+If already in a checkout, open its folder in the terminal. After selecting the supported Node and Bun versions, run:
+
+```sh
 bun install --frozen-lockfile
 bun run dev
 ```
 
-If already in a checkout, start at `bun install --frozen-lockfile`. A new machine needs registry access and must install the Playwright browsers separately for browser tests. Both Bun and Node must be on PATH; Bun manages packages and scripts while the existing tools run on Node.
+Open the **Local** URL printed by Vite, normally `http://127.0.0.1:5173`, and choose **Open Demo**. Leave the terminal server running while using the viewer; Ctrl+C stops it. Playwright browser installation is only needed for automated browser tests, not to open the viewer in your own browser.
 
-If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL printed by Vite (normally `http://127.0.0.1:5173`). Choose **Open Demo** for the bundled reference document, choose **Open File**, or drop a single `.mosa` file anywhere in the viewer. Use Ctrl+C to stop the server.
+For a local preview of the production build instead of the development server:
 
-A successful open selects **Preview**. **Source** displays the complete validated document as read-only, two-space-indented JSON. Formatting happens when you select the tab, so a compact file that fits the import limit can still be inspected if indentation takes its displayed source past 5 MiB. The arrow keys, Home, and End switch between focused tabs.
+```sh
+bun run build
+bun run preview --port 4180 --strictPort
+```
 
-File contents are read and validated locally. When opening a replacement fails, the viewer keeps the current document and tab. The error panel identifies the attempted file and displays each validator message, error code, and JSON Pointer. An empty pointer appears as `""` (document root). A file read failure has a separate retry message.
+Open `http://127.0.0.1:4180`. Build before preview and rebuild after changing application code. Serve the app over HTTP(S); opening `dist/index.html` directly with `file://` is unsupported. Public hosting remains subject to the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates).
 
-**Download** exports the current document from either tab, including committed dataset and state edits and hidden conditional content. It becomes available after a successful open and is disabled while a replacement is loading. The existing serializer revalidates the snapshot, writes two-space JSON with one final LF and no BOM, and enforces the inclusive **5 MiB (5,242,880 bytes)** limit on the final UTF-8 output. Invalid numeric drafts remain local; their last valid values are exported.
+## First document
 
-Downloads use a local `application/json` Blob and a temporary object URL, released after the browser has had time to start the download. The suggested filename retains the opened name, normalizing or appending `.mosa`; for example, `report.MOSA` becomes `report.mosa`, and `report.json` becomes `report.json.mosa`. The browser manages the destination and any filename collisions. The viewer does not write to the original file.
+Choose **Open Demo**, select **Open File**, or drop one `.mosa` file into the viewer. **Preview** shows the document; **Source** shows its current accepted values as read-only JSON. The [user guide](docs/user-guide.md#try-the-demo) walks through changing a table cell, updating a note, hiding a chart, downloading and reopening the result.
 
-An export failure says **Could not download** and displays the serializer's original message, error code, and JSON Pointer. No download starts, and the current document, edits, drafts, and selected tab remain available. A compact file can open successfully but exceed the limit once formatted; reduce editable content and retry. Export never truncates content, silently minifies it, or increases the limit. Browser API failures have a separate retry message. Starting a download does not confirm that the browser saved it to disk.
+Use **Download** to keep accepted edits. It creates a new browser-managed file and does not overwrite the original. Check that the download finished before closing or refreshing: there is no autosave or session recovery. Replacement warnings cover Open Demo, Open File and drop; they do not guard tab closure or navigation. Invalid numeric drafts are not included in the downloaded file. See [saving and replacement](docs/user-guide.md#download-and-reopen) for the details.
 
-Changed, valid cell or state edits show **Unsaved changes** beside the filename. Open Demo, Open File, and drag-and-drop all ask for confirmation before replacing a modified document. The warning appears after the incoming file has passed validation, just before replacement, so it also protects edits made during file reading. Cancel keeps the current document, selected tab, controls, local drafts, and unsaved flag. Cancelling the file picker or choosing an unreadable/invalid file leaves the current document in place without a discard prompt.
+## Dependency maintenance
 
-A successfully started Download clears the unsaved flag for the exported snapshot; a failed export keeps it set, and the next changed edit sets it again. This is a download-start checkpoint, not proof of a completed disk save. Reverting a value manually does not clear the flag. Identical edits and rejected numeric drafts do not set it; drafts are local UI text and are not part of the saved document.
+`bun install --frozen-lockfile` uses `bun.lock` and rejects changes that require rewriting it. Keep install scripts enabled: the installation checks the required tool versions and permits esbuild's dependency setup. For intentional dependency changes, use `bun add <package>@<version>` or `bun add --dev <package>@<version>` and review both manifest and lockfile. `bunfig.toml` saves exact direct versions. Use one authoritative lockfile; do not generate an npm lockfile. The [Bun migration report](docs/bun-migration.md) records the verified setup.
 
-`bun install --frozen-lockfile` installs from `bun.lock` and rejects dependency changes that would require rewriting it. Use `bun add <package>@<version>` (or `bun add --dev <package>@<version>`) for intentional dependency changes, then review both `package.json` and `bun.lock`. `bunfig.toml` saves exact direct versions. Only esbuild is allowed dependency lifecycle scripts. Do not generate a second package-manager lockfile.
-
-The install-time toolchain check replaces npm’s `engine-strict` behavior: unsupported Node versions or a different Bun version fail with setup instructions. Keep install scripts enabled. If switching an existing npm checkout, stop its dev/test processes, remove its disposable `node_modules` directory, and run the frozen install above. The generated Ajv validator is rebuilt automatically by the normal commands.
-
-Use **`bun run test`**, which invokes the existing Vitest suite; `bun test` selects Bun’s separate test runner. Pass arguments directly, for example `bun run test tests/store.test.ts`. Use the pinned local Playwright binary through `bun run playwright`; this does not fetch an unpinned CLI.
+When switching an existing npm checkout, stop its dev/test processes, remove only its disposable `node_modules` directory, then run the frozen Bun install. The normal commands regenerate the validator automatically. Use **`bun run test`** for the project's Vitest suite; `bun test` selects a different runner. Pass arguments directly, such as `bun run test tests/store.test.ts`. `bun run playwright` uses the pinned local CLI.
 
 ## Commands
 
@@ -119,6 +127,8 @@ Before hosting, review the [deployment gates](docs/release-readiness.md#remainin
 
 ```text
 docs/
+  user-guide.md               Opening, editing, saving, offline use and limitations
+  troubleshooting.md          Setup, file errors, drafts and download recovery
   SPEC_V0.1.md                 Working specification with approved amendments
   decisions.md                 Accepted decisions and implementation status
   core-contracts.md             Errors, pointers, resource budgets, and counting rules
