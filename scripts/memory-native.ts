@@ -7,7 +7,7 @@ import { summarizeHeap, type HeapSnapshot } from './benchmarks/profile-summary.t
 const [label = 'latest', count = '100', executablePath] = process.argv.slice(2);
 const cycles = Number(count);
 if (!/^[a-z0-9-]+$/.test(label) || !Number.isInteger(cycles) || cycles < 100 || cycles > 5000) {
-  throw new Error('Usage: npm run memory:native -- <label> <100..5000> [Chromium executable]');
+  throw new Error('Usage: bun run memory:native <label> <100..5000> [Chromium executable]');
 }
 const output = path.resolve('benchmark-results', `memory-native-${label}`);
 await mkdir(path.dirname(output), { recursive: true });

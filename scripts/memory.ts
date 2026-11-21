@@ -28,7 +28,7 @@ if (
   !['darwin', 'linux'].includes(process.platform)
 ) {
   throw new Error(
-    'Usage (macOS/Linux): npm run memory -- <label> <chromium|webkit> <100..5000, by 100> [Chromium executable]',
+    'Usage (macOS/Linux): bun run memory <label> <chromium|webkit> <100..5000, by 100> [Chromium executable]',
   );
 }
 const output = path.resolve('benchmark-results', `memory-${label}`);
@@ -66,8 +66,9 @@ const environment = {
   engine,
   executablePath: executablePath ?? null,
   assets,
+  lockfile: 'bun.lock',
   lockfileSha256: createHash('sha256')
-    .update(await readFile('package-lock.json'))
+    .update(await readFile('bun.lock'))
     .digest('hex'),
   cycles,
   warmups: 10,

@@ -14,7 +14,7 @@ export default defineConfig({
     { name: 'webkit', use: { browserName: 'webkit' } },
   ],
   webServer: {
-    command: 'npm run preview -- --port 4174 --strictPort',
+    command: 'bun run preview --port 4174 --strictPort',
     url: baseURL,
     reuseExistingServer: false,
   },

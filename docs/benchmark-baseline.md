@@ -6,6 +6,8 @@ Measured **2026-11-19**. All measured timing and bundle budgets passed on the re
 
 ## Reproduce and inspect
 
+These are the historical npm commands used for this baseline. For the current Bun checkout, use the [current reproduction commands](benchmarks.md#reproduce-and-inspect).
+
 ```sh
 npm ci
 npx playwright install --only-shell chromium

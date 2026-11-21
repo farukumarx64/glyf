@@ -15,8 +15,8 @@ Use a fresh browser profile where possible. Note any settings changed and restor
 Start with **Safari + VoiceOver on macOS**, then a supported Chromium browser. If Windows users are in the supported audience, also run **NVDA with Chrome or Firefox on Windows**. Installed Safari/VoiceOver version metadata alone is not a completed test. Record unavailable combinations explicitly rather than silently reducing the supported scope.
 
 ```sh
-npm run build
-npm run preview -- --port 4180 --strictPort
+bun run build
+bun run preview --port 4180 --strictPort
 ```
 
 Open `http://127.0.0.1:4180` in the actual browser. Use its normal UI and native file dialogs; do not inject JavaScript, programmatically focus controls, or substitute a headless run. Have the screen reader running before opening files. After assets load, exercise an actual offline mode if available and record exactly how it was established. If it cannot be established, leave the manual offline check pending; the automated suite already covers offline contexts.

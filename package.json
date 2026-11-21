@@ -3,28 +3,33 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "packageManager": "bun@1.3.14",
   "engines": {
     "node": "^22.13.0 || ^24.0.0 || >=26.0.0",
-    "npm": ">=10"
+    "bun": "1.3.14"
   },
+  "trustedDependencies": [
+    "esbuild"
+  ],
   "scripts": {
+    "preinstall": "bun scripts/check-toolchain.mjs",
     "generate:validator": "node --import tsx scripts/generate-validator.ts",
-    "dev": "npm run generate:validator && vite --host 127.0.0.1",
-    "build": "npm run typecheck && vite build",
+    "dev": "bun run generate:validator && vite --host 127.0.0.1",
+    "build": "bun run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "typecheck": "npm run generate:validator && tsc --noEmit",
+    "typecheck": "bun run generate:validator && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
-    "test": "npm run generate:validator && vitest run",
-    "test:viewer": "npm run build && playwright test",
-    "benchmark": "npm run build && node --import tsx scripts/benchmark.ts",
-    "profile": "npm run typecheck && node --import tsx scripts/profile.ts",
-    "memory": "npm run build && node --import tsx scripts/memory.ts",
+    "test": "bun run generate:validator && vitest run",
+    "test:viewer": "bun run build && playwright test",
+    "benchmark": "bun run build && node --import tsx scripts/benchmark.ts",
+    "profile": "bun run typecheck && node --import tsx scripts/profile.ts",
+    "memory": "bun run build && node --import tsx scripts/memory.ts",
     "memory:native": "node --import tsx scripts/memory-native.ts",
-    "test:watch": "npm run generate:validator && vitest",
+    "test:watch": "bun run generate:validator && vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "validate:example": "npm run generate:validator && node --import tsx scripts/validate-example.ts",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run validate:example && npm run build"
+    "validate:example": "bun run generate:validator && node --import tsx scripts/validate-example.ts",
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run validate:example && bun run build"
   },
   "dependencies": {
     "react": "19.3.1",

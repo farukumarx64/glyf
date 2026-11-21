@@ -38,15 +38,15 @@ New test sources are [security.test.ts](../tests/security.test.ts), [markdown-re
 To reproduce all checks:
 
 ```sh
-npm run check
+bun run check
 ./node_modules/.bin/playwright test
 ```
 
 To run just the new/expanded security cases with a fresh production build:
 
 ```sh
-npm test -- tests/security.test.ts tests/markdown-recovery.test.tsx tests/markdown.test.tsx tests/store.test.ts
-npm run test:viewer -- tests/browser/security.spec.ts
+bun run test tests/security.test.ts tests/markdown-recovery.test.tsx tests/markdown.test.tsx tests/store.test.ts
+bun run test:viewer tests/browser/security.spec.ts
 ```
 
 ## Boundaries and remaining Phase 5 work

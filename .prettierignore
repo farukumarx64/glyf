@@ -4,7 +4,7 @@ coverage/
 .vitest/
 benchmark-results/
 src/core/schema-validator.generated.js
-package-lock.json
+bun.lock
 # Preserve the supplied reference material byte for byte.
 docs/reference/
 examples/mosaic-demo.mosa

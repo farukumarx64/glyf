@@ -7,11 +7,11 @@ Consolidated **2026-11-19** for candidate commit **`0259136`**, using the optimi
 ## Reproduce and inspect
 
 ```sh
-npm ci
-npx playwright install --only-shell chromium
-npm run benchmark
+bun install --frozen-lockfile
+bun run playwright install --only-shell chromium
+bun run benchmark
 # Optional extended heap/CPU investigation:
-npm run profile -- investigation small
+bun run profile investigation small
 ```
 
 Run one workload at a time without competing heavy work. The benchmark builds the real app into `dist/`, then a separate production core/render harness into the ignored `benchmark-results/harness/`. Loopback servers use ports **4175** and **4176**; profiling uses **4177**. The harness and profiling source maps do not ship in the app.

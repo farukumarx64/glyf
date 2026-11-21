@@ -19,7 +19,7 @@ import type {} from './benchmarks/viewer.ts';
 const label = process.argv[2] ?? 'latest';
 const fixture = process.argv[3] ?? 'small';
 if (!/^[a-z0-9-]+$/.test(label) || !fixtureProfiles.some((item) => item.name === fixture)) {
-  throw new Error('Usage: npm run profile -- <label: a-z, 0-9, hyphen> <small|medium|large>');
+  throw new Error('Usage: bun run profile <label: a-z, 0-9, hyphen> <small|medium|large>');
 }
 const output = path.resolve('benchmark-results', `profile-${label}`);
 await mkdir(output, { recursive: true });

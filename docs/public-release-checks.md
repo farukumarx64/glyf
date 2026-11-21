@@ -90,8 +90,8 @@ export default defineConfig({
 ```
 
 ```sh
-npm run build
-npx playwright test --config benchmark-results/public-release-checks/playwright.brave.config.ts
+bun run build
+bun run playwright test --config benchmark-results/public-release-checks/playwright.brave.config.ts
 ```
 
 The [manual checklist](manual-release-checklist.md) contains thirteen cases with expected outcomes and an evidence template: M01 has partial native observations, and none is a completed manual pass. Three [fixtures](../tests/fixtures/manual-release/) make the work concrete: light/dark valid documents and intentionally malformed JSON. They cover numeric draft errors, editable typed cells, chart summaries, conditional content, a 101-row progressive table, safe Markdown, native replacement dialogs and download/reopen. The two valid files pass `parseMosaic` and preserve their values through parse–serialize–parse checks; the malformed file returns `INVALID_JSON` with the empty root pointer. Fixture validation is distinct from interaction testing.

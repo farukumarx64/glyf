@@ -259,8 +259,9 @@ try {
     warmups,
     cyclesPerFixture: cycles,
     memorySamplesPerFixture: memorySamples,
+    lockfile: 'bun.lock',
     lockfileSha256: createHash('sha256')
-      .update(await readFile('package-lock.json'))
+      .update(await readFile('bun.lock'))
       .digest('hex'),
     percentiles: 'median averages middle pair; p95 uses nearest rank ceil(0.95 × n)',
   };

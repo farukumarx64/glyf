@@ -1,0 +1,7 @@
+[install]
+# Preserve exact direct versions when adding or updating packages.
+exact = true
+
+[run]
+# Keep Node-based tools on Node, including their executable shebangs.
+bun = false

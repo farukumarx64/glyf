@@ -6,26 +6,28 @@ The v0.1 implementation and release review are recorded in [release-readiness.md
 
 The [public-release checks](docs/public-release-checks.md) found close existing uses of the Mosaic name, including declarative visualization software. Manual browser/screen-reader verification remains incomplete because native input is unreliable, and trademark/extension registry coverage remains incomplete. Public release is not cleared; the [manual checklist and fixtures](docs/manual-release-checklist.md) record the remaining work.
 
-See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for recorded production measurements and the current bundle size. Run `npm run validate:example` to check the reference document's resources, schema and semantics.
+The [pre-release work list](docs/release-readiness.md#pre-release-work-list--2026-11-21) tracks the remaining independent tasks. Package management now uses **Bun 1.3.14**; see the [migration report](docs/bun-migration.md) for verification and scope.
+
+See the [compatibility contract](docs/compatibility.md) for the exact supported format and [benchmarks](docs/benchmarks.md) for recorded production measurements and the current bundle size. Run `bun run validate:example` to check the reference document's resources, schema and semantics.
 
 See [core contracts](docs/core-contracts.md) for error classifications, pointer conventions, resource counting, examples, and the boundary between definitions and validation enforcement.
 
 ## Development environment
 
-- Node.js **22.13+ on the 22.x line**, **24.x**, or **26+**; npm **10+**. The combined toolchain determines this minimum. `.nvmrc` pins the locally verified Node version, **22.18.0**.
+- Node.js **22.13+ on the 22.x line**, **24.x**, or **26+**; Bun **1.3.14**, pinned in `packageManager` and checked during installation. The combined toolchain determines this minimum. `.nvmrc` pins the locally verified Node version, **22.18.0**.
 - No `.env` file, API key, database, account, or backend is needed.
 - Dependency installation requires npm registry access. Installed app code and assets are served locally; the foundation uses no remote fonts or assets.
 
-With repository access and a Node installation that satisfies `package.json`:
+With repository access, [Bun 1.3.14](https://github.com/oven-sh/bun/releases/tag/bun-v1.3.14), and a Node installation that satisfies `package.json`:
 
 ```sh
 git clone https://github.com/farukumarx64/mosaic.git
 cd mosaic
-npm ci
-npm run dev
+bun install --frozen-lockfile
+bun run dev
 ```
 
-If already in a checkout, start at `npm ci`. The clean-checkout review used cached packages after a registry timeout; a new machine normally needs registry access and must install the Playwright browsers separately for browser tests.
+If already in a checkout, start at `bun install --frozen-lockfile`. A new machine needs registry access and must install the Playwright browsers separately for browser tests. Both Bun and Node must be on PATH; Bun manages packages and scripts while the existing tools run on Node.
 
 If you use nvm, run `nvm install` and `nvm use` first. Open the localhost URL printed by Vite (normally `http://127.0.0.1:5173`). Choose **Open Demo** for the bundled reference document, choose **Open File**, or drop a single `.mosa` file anywhere in the viewer. Use Ctrl+C to stop the server.
 
@@ -43,53 +45,57 @@ Changed, valid cell or state edits show **Unsaved changes** beside the filename.
 
 A successfully started Download clears the unsaved flag for the exported snapshot; a failed export keeps it set, and the next changed edit sets it again. This is a download-start checkpoint, not proof of a completed disk save. Reverting a value manually does not clear the flag. Identical edits and rejected numeric drafts do not set it; drafts are local UI text and are not part of the saved document.
 
-`npm ci` installs the committed lockfile exactly. `npm install` also works for initial setup or intentional dependency changes. Direct dependency versions are exact; do not update them automatically.
+`bun install --frozen-lockfile` installs from `bun.lock` and rejects dependency changes that would require rewriting it. Use `bun add <package>@<version>` (or `bun add --dev <package>@<version>`) for intentional dependency changes, then review both `package.json` and `bun.lock`. `bunfig.toml` saves exact direct versions. Only esbuild is allowed dependency lifecycle scripts. Do not generate a second package-manager lockfile.
+
+The install-time toolchain check replaces npm’s `engine-strict` behavior: unsupported Node versions or a different Bun version fail with setup instructions. Keep install scripts enabled. If switching an existing npm checkout, stop its dev/test processes, remove its disposable `node_modules` directory, and run the frozen install above. The generated Ajv validator is rebuilt automatically by the normal commands.
+
+Use **`bun run test`**, which invokes the existing Vitest suite; `bun test` selects Bun’s separate test runner. Pass arguments directly, for example `bun run test tests/store.test.ts`. Use the pinned local Playwright binary through `bun run playwright`; this does not fetch an unpinned CLI.
 
 ## Commands
 
-| Command                                         | Purpose                                                                                        |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `npm run generate:validator`                    | Precompile the trusted schema into the ignored standalone validator module.                    |
-| `npm run dev`                                   | Start Vite on the loopback interface.                                                          |
-| `npm run typecheck`                             | Check strict TypeScript across source, scripts, tests, and configuration.                      |
-| `npm run lint`                                  | Run ESLint with zero warnings allowed.                                                         |
-| `npm run test`                                  | Run format, renderer, and file workflow tests once.                                            |
-| `npm run test:viewer`                           | Build and run the production viewer smoke tests in Chromium and WebKit.                        |
-| `npm run benchmark`                             | Build and measure production loading, rendering, edits, replacements, memory, and bundle size. |
-| `npm run memory -- investigation chromium 1000` | Compare idle/small/large replacement memory over 1,000 cycles per workload.                    |
-| `npm run profile -- investigation small`        | Capture a production CPU profile and heap snapshots across 500 replacement cycles.             |
-| `npm run test:watch`                            | Watch tests during development.                                                                |
-| `npm run validate:example`                      | Run full v0.1 validation on the reference file.                                                |
-| `npm run format:check`                          | Check formatting without editing files.                                                        |
-| `npm run format`                                | Apply formatting; preserve supplied reference files.                                           |
-| `npm run build`                                 | Typecheck and create the static production build in `dist/`.                                   |
-| `npm run preview`                               | Serve the production build locally.                                                            |
-| `npm run check`                                 | Run typechecking, lint, formatting, Vitest, demo validation, and build.                        |
+| Command                                      | Purpose                                                                                        |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `bun run generate:validator`                 | Precompile the trusted schema into the ignored standalone validator module.                    |
+| `bun run dev`                                | Start Vite on the loopback interface.                                                          |
+| `bun run typecheck`                          | Check strict TypeScript across source, scripts, tests, and configuration.                      |
+| `bun run lint`                               | Run ESLint with zero warnings allowed.                                                         |
+| `bun run test`                               | Run format, renderer, and file workflow tests once.                                            |
+| `bun run test:viewer`                        | Build and run the production viewer smoke tests in Chromium and WebKit.                        |
+| `bun run benchmark`                          | Build and measure production loading, rendering, edits, replacements, memory, and bundle size. |
+| `bun run memory investigation chromium 1000` | Compare idle/small/large replacement memory over 1,000 cycles per workload.                    |
+| `bun run profile investigation small`        | Capture a production CPU profile and heap snapshots across 500 replacement cycles.             |
+| `bun run test:watch`                         | Watch tests during development.                                                                |
+| `bun run validate:example`                   | Run full v0.1 validation on the reference file.                                                |
+| `bun run format:check`                       | Check formatting without editing files.                                                        |
+| `bun run format`                             | Apply formatting; preserve supplied reference files.                                           |
+| `bun run build`                              | Typecheck and create the static production build in `dist/`.                                   |
+| `bun run preview`                            | Serve the production build locally.                                                            |
+| `bun run check`                              | Run typechecking, lint, formatting, Vitest, demo validation, and build.                        |
 
 The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmarks run separately in production Chromium so unit-test timing is not mistaken for browser performance.
 
 ### Verify the production viewer
 
-After `npm ci`, install the Playwright browsers once, then run the suite:
+After `bun install --frozen-lockfile`, install the Playwright browsers once, then run the suite:
 
 ```sh
-npx playwright install --only-shell chromium webkit
-npm run test:viewer
+bun run playwright install --only-shell chromium webkit
+bun run test:viewer
 ```
 
 The suite builds the app and serves it on `127.0.0.1:4174` for the duration of the run. The offline checks load the app assets, disable networking for that browser context, then open the bundled demo or a local file. They also count request attempts, including requests that would fail offline. The other checks cover malformed-file recovery, responsive layout at 320, 375, and 1280 CSS pixels, computed theme styles, keyboard focus, and the DOM produced by Markdown.
 
-The complete workflow tests edit cells and state, download real files, and reopen them in an independent viewer while both pages remain offline. They check hidden and visible chart states, numeric conditions, typed values, invalid draft exclusion, exact export bytes, and unsaved status. See the [Phase 4 verification report](docs/phase-4.md) for evidence and scope. Run just these scenarios with `npm run test:viewer -- tests/browser/complete-workflow.spec.ts`. Generated files, screenshots, and per-case JSON results are written under `test-results/`.
+The complete workflow tests edit cells and state, download real files, and reopen them in an independent viewer while both pages remain offline. They check hidden and visible chart states, numeric conditions, typed values, invalid draft exclusion, exact export bytes, and unsaved status. See the [Phase 4 verification report](docs/phase-4.md) for evidence and scope. Run just these scenarios with `bun run test:viewer tests/browser/complete-workflow.spec.ts`. Generated files, screenshots, and per-case JSON results are written under `test-results/`.
 
-The [security audit](docs/security-audit.md) records attack coverage, the Markdown nesting fix, and verification limits. Run its browser cases with `npm run test:viewer -- tests/browser/security.spec.ts`.
+The [security audit](docs/security-audit.md) records attack coverage, the Markdown nesting fix, and verification limits. Run its browser cases with `bun run test:viewer tests/browser/security.spec.ts`.
 
-The [error recovery report](docs/error-recovery.md) covers malformed, corrupt, over-limit and unreadable files, retained edits/drafts, stale reads, real downloads after failure, and successful retries. Run the browser cases with `npm run test:viewer -- tests/browser/error-recovery.spec.ts`.
+The [error recovery report](docs/error-recovery.md) covers malformed, corrupt, over-limit and unreadable files, retained edits/drafts, stale reads, real downloads after failure, and successful retries. Run the browser cases with `bun run test:viewer tests/browser/error-recovery.spec.ts`.
 
-The [accessibility report](docs/accessibility.md) records keyboard workflows, labels and live-region checks, conditional-focus recovery, Markdown keyboard access, enlarged-text layouts, theme contrast, and the tested browser scope. Run its browser cases with `npm run test:viewer -- tests/browser/accessibility.spec.ts`.
+The [accessibility report](docs/accessibility.md) records keyboard workflows, labels and live-region checks, conditional-focus recovery, Markdown keyboard access, enlarged-text layouts, theme contrast, and the tested browser scope. Run its browser cases with `bun run test:viewer tests/browser/accessibility.spec.ts`.
 
 ### Measure production performance
 
-After installing Playwright Chromium, run `npm run benchmark`. The runner uses loopback ports **4175** and **4176**, with one serial browser workload at a time. It generates validated 3 KiB, 100 KiB, and 1 MiB fixtures; takes 20 timing samples after three warmups; measures 10 loaded-memory samples per fixture; and runs 100 open/replacement cycles per fixture plus an idle memory control. Application assets load before the browser goes offline.
+After installing Playwright Chromium, run `bun run benchmark`. The runner uses loopback ports **4175** and **4176**, with one serial browser workload at a time. It generates validated 3 KiB, 100 KiB, and 1 MiB fixtures; takes 20 timing samples after three warmups; measures 10 loaded-memory samples per fixture; and runs 100 open/replacement cycles per fixture plus an idle memory control. Application assets load before the browser goes offline.
 
 Read [the benchmark report](docs/benchmarks.md) for the reference machine, measured medians/p95, budget comparisons, and memory limitations. Raw samples, heap/DOM checkpoints, hashes, and fixture metadata are written to `benchmark-results/results.json`; generated documents live in `benchmark-results/fixtures/`. This directory is ignored by Git. The separate production measurement harness is also generated there and is excluded from the shipped `dist/` bundle.
 
@@ -97,9 +103,9 @@ The [original benchmark baseline](docs/benchmark-baseline.md) is preserved separ
 
 Run benchmarks without other test suites or heavy work competing for the machine. The command fails on invalid fixtures, incorrect rendering, browser errors, or document-related requests. Timing targets are reported as measurements, not flaky CI assertions; memory trends require inspection.
 
-The [profiled improvement report](docs/performance-improvements.md) compares the optimized renderer with the original baseline. Unchanged Markdown now reuses its mounted content during cell/state edits, with no global cache. The report also distinguishes V8 warmup from native browser retention and records the unresolved memory-stability limitation. Use `npm run profile -- investigation small` to capture source-mapped production CPU samples and heap snapshots at 0, 100, 300 and 500 replacement cycles on loopback port **4177**. Generated evidence is written to `benchmark-results/profile-investigation/`.
+The [profiled improvement report](docs/performance-improvements.md) compares the optimized renderer with the original baseline. Unchanged Markdown now reuses its mounted content during cell/state edits, with no global cache. The report also distinguishes V8 warmup from native browser retention and records the unresolved memory-stability limitation. Use `bun run profile investigation small` to capture source-mapped production CPU samples and heap snapshots at 0, 100, 300 and 500 replacement cycles on loopback port **4177**. Generated evidence is written to `benchmark-results/profile-investigation/`.
 
-The [memory follow-up](docs/memory-stability.md) extends replacements to 1,000 cycles in Chromium 159, Chromium 157 (Brave), and WebKit 27.2. Use `npm run memory -- investigation chromium 1000` on macOS/Linux; select `webkit` for WebKit or supply a local Chromium executable as the final argument. Each workload uses a fresh browser process on loopback port **4178**. The report distinguishes weak-reference observations, native retention and the incomplete macOS WebKit process-memory scope. `npm run memory:native -- investigation 100` reproduces the native retention with plain HTML tables and a div control, without loading Mosaic. Replacement results are saved under `benchmark-results/memory-investigation/`, and the native-only probe uses `benchmark-results/memory-native-investigation/`. Use a new label for each run.
+The [memory follow-up](docs/memory-stability.md) extends replacements to 1,000 cycles in Chromium 159, Chromium 157 (Brave), and WebKit 27.2. Use `bun run memory investigation chromium 1000` on macOS/Linux; select `webkit` for WebKit or supply a local Chromium executable as the final argument. Each workload uses a fresh browser process on loopback port **4178**. The report distinguishes weak-reference observations, native retention and the incomplete macOS WebKit process-memory scope. `bun run memory:native investigation 100` reproduces the native retention with plain HTML tables and a div control, without loading Mosaic. Replacement results are saved under `benchmark-results/memory-investigation/`, and the native-only probe uses `benchmark-results/memory-native-investigation/`. Use a new label for each run.
 
 Before hosting, review the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates). The production viewer uses a precompiled validator and is tested under a CSP that excludes `unsafe-eval` and inline scripts. The tested policy permits inline styles for existing theme/layout behavior; it is documented in the release record. Initial assets require HTTP(S); offline cold startup and `file://` are unsupported. No deployment or CSP change is performed by this repository's release review.
 
@@ -184,7 +190,7 @@ Use `serializeMosaic(document)` to export the current model as two-space JSON wi
 
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. Compilation happens in `scripts/generate-validator.ts`, using the trusted repository schema. Ajv is a development dependency; the shipped module contains static validator functions and the bundled Unicode-length helper, with no runtime compiler or imports.
 
-`npm run dev`, `typecheck`, `test`, `test:watch` and `validate:example` regenerate the ignored module first. Build, browser tests, benchmarks and profiling reach generation through those commands. Generation failures stop the command; there is no runtime compilation fallback. The typed declaration is tracked, while generated JavaScript is excluded from Git, lint and formatting. After editing the schema or compiler settings in an already-running dev/watch session, run `npm run generate:validator` or restart that session. Use the npm commands on a fresh checkout; direct tool invocations must generate the module first.
+`bun run dev`, `typecheck`, `test`, `test:watch` and `validate:example` regenerate the ignored module first. Build, browser tests, benchmarks and profiling reach generation through those commands. Generation failures stop the command; there is no runtime compilation fallback. The typed declaration is tracked, while generated JavaScript is excluded from Git, lint and formatting. After editing the schema or compiler settings in an already-running dev/watch session, run `bun run generate:validator` or restart that session. Use the package scripts on a fresh checkout; direct tool invocations must generate the module first.
 
 ## Rendering a validated document
 
@@ -254,7 +260,7 @@ Bars occupy equally spaced categories in file order, including numeric x labels,
 
 Both chart kinds skip any row with null x or y. Empty strings and zero remain valid points. An empty or entirely skipped dataset displays an explanatory message. Axis labels are capped at five x ticks and six y ticks, including zero when it is in range. Long string labels are abbreviated to fit, while the document retains their complete values. Chart colors follow the document theme, and committed store edits refresh both geometry and summaries.
 
-Run `npm test -- tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx tests/cell-editing.test.tsx tests/state-controls.test.tsx` to exercise rendering, table interactions, cell and state editing, and chart geometry.
+Run `bun run test tests/rendering.test.tsx tests/markdown.test.tsx tests/initial-state.test.tsx tests/table.test.tsx tests/charts.test.tsx tests/cell-editing.test.tsx tests/state-controls.test.tsx` to exercise rendering, table interactions, cell and state editing, and chart geometry.
 
 ## Phase boundaries
 

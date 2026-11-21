@@ -172,7 +172,7 @@ Callers supply the measured count. Byte measurement runs on input and on formatt
 
 ## Verification scope
 
-Run `npm test` for the automated format suite. Run `npm run check` to include type checking, linting, formatting, reference-document validation, and the production build.
+Run `bun run test` for the automated format suite. Run `bun run check` to include type checking, linting, formatting, reference-document validation, and the production build.
 
 | Contract                        | Automated checks                                                                                                                                                                                                                                                                                                                                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

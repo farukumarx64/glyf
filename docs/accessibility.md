@@ -77,14 +77,14 @@ The assertions require at least 4.5:1 for sampled text and 3:1 for sampled borde
 Run the focused checks:
 
 ```sh
-npm test -- tests/accessibility.test.tsx tests/markdown.test.tsx
-npm run test:viewer -- tests/browser/accessibility.spec.ts
+bun run test tests/accessibility.test.tsx tests/markdown.test.tsx
+bun run test:viewer tests/browser/accessibility.spec.ts
 ```
 
 Run the complete verification:
 
 ```sh
-npm run check
+bun run check
 ./node_modules/.bin/playwright test
 ```
 

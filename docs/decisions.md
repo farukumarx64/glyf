@@ -328,7 +328,22 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Extend automated coverage using the existing installed Brave executable and isolated test profiles. Preserve its 34-test result separately from the existing 68 Chromium/WebKit tests and from manual native-dialog/speech coverage.
 - Keep Mosaic provisional after identifying closely related declarative visualization software and other existing uses. Treat public-use and npm namespace evidence as collision findings, not trademark status or legal clearance.
 - Record the user-confirmed worldwide launch scope and unavailable USPTO/WIPO/PRONOM/extension-directory checks explicitly. Worldwide distribution does not imply worldwide trademark clearance; document national/regional search coverage and unresolved gaps. A missing accessible result does not establish availability. Keep `.mosa` working/unregistered and preserve the format marker/schema until a separately approved identity/compatibility decision.
-- Do not prepare or publish a public release while these gates are open. See [public-release-checks.md](public-release-checks.md).
+- Keep public release uncleared while these gates are open. Independent pre-release preparation can continue; publishing remains a separate action. See [public-release-checks.md](public-release-checks.md).
+
+## Pre-release task planning — 2026-11-21
+
+- The native capture failure can be deferred while independent work proceeds. Preserve the manual checklist's incomplete status and the outstanding naming, extension and memory decisions.
+- Record the user's request to adopt **Bun instead of npm as the package manager** as a later pre-release task, not an instruction to migrate immediately. Preserve the current npm setup until the migration is implemented and verified.
+- Scope the migration to dependency installation, lockfile management and project commands. Keep existing Node-based tooling where required; runtime, bundler and test-runner replacement are separate decisions. Validate fresh installs, dependency versions, install-script trust, generated validators and all existing checks.
+- Track proposed CI, documentation and candidate-packaging work alongside the existing release decisions in the [pre-release work list](release-readiness.md#pre-release-work-list--2026-11-21). Preparation does not grant public-release clearance or expand v0.1 format scope.
+
+## Bun package-management migration — 2026-11-21
+
+- The subsequent explicit request implements the planned migration. Pin **Bun 1.3.14**, retain the existing Node engine range and `.nvmrc`, and replace `package-lock.json` with `bun.lock` after checking every locked package version, integrity and dependency requirement against the original graph.
+- Keep Vite, Vitest, Playwright and existing Node scripts. Use `bun run test` for Vitest, pass script arguments directly, and invoke local package binaries through `bun run`. Do not enable Bun's Node alias.
+- Replace `.npmrc` exact-save configuration with `bunfig.toml`. Bun 1.3.14 does not enforce the old `engine-strict` setting; a dependency-free root preinstall guard checks the actual Bun version and Node executable against `package.json`.
+- Allow dependency lifecycle scripts only for esbuild. The locked fsevents package already supplies its native binary and needs no install hook. A clean installation reports zero untrusted dependencies with scripts.
+- Update current setup/reproduction commands and benchmark lockfile fingerprints; preserve dated npm results and the supplied reference specification. This does not upgrade dependencies or change the v0.1 format or viewer behavior. See [verification and limits](bun-migration.md).
 
 ## Supporting references
 

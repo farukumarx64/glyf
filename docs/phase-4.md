@@ -50,13 +50,13 @@ Each test writes its real `.mosa` downloads, a screenshot of the reopened viewer
 Run only these scenarios, including a fresh production build:
 
 ```sh
-npm run test:viewer -- tests/browser/complete-workflow.spec.ts
+bun run test:viewer tests/browser/complete-workflow.spec.ts
 ```
 
 Run all project checks and all browser tests:
 
 ```sh
-npm run check
+bun run check
 ./node_modules/.bin/playwright test
 ```
 

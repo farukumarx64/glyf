@@ -75,13 +75,13 @@ These tests control only the pending file's `arrayBuffer()` result and the nativ
 Run the component tests:
 
 ```sh
-npm test -- tests/error-recovery.test.tsx
+bun run test tests/error-recovery.test.tsx
 ```
 
 Build and run the focused browser suite:
 
 ```sh
-npm run test:viewer -- tests/browser/error-recovery.spec.ts
+bun run test:viewer tests/browser/error-recovery.spec.ts
 ```
 
 Each edited-document browser scenario writes `preserved-error-320.png`, `preserved-edits.mosa`, and `recovery-results.json` beneath its ignored `test-results/` directory. The JSON records browser version, route, view, each rejected file's size and diagnostic, export size, and request/error/dialog observations. A later Playwright run may replace these generated artifacts; rerun the focused suite to recreate them.

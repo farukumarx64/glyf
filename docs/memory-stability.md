@@ -80,16 +80,16 @@ On macOS, WebKit's WebContent/GPU/network XPC services are parented to launchd r
 Run one browser workload at a time on macOS or Linux, after installing the selected Playwright browser. Choose a fresh label; the runner refuses to overwrite earlier results.
 
 ```sh
-npm run memory -- chromium-159 chromium 1000
-npm run memory -- brave-157 chromium 1000 "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
-npm run memory -- webkit-27 webkit 1000
+bun run memory chromium-159 chromium 1000
+bun run memory brave-157 chromium 1000 "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+bun run memory webkit-27 webkit 1000
 ```
 
 The native-only comparison needs no app server or production build:
 
 ```sh
-npm run memory:native -- chromium-159 100
-npm run memory:native -- brave-157 100 "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+bun run memory:native chromium-159 100
+bun run memory:native brave-157 100 "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
 ```
 
 It writes summaries and before/after snapshots to `benchmark-results/memory-native-<label>/`, using fresh labels and 100–5,000 iterations. The fixed HTML and create/layout/remove loop are in the script, so the reproduction does not depend on ignored diagnostic files.

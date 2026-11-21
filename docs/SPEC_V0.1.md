@@ -459,7 +459,7 @@ A compressed container can come in v0.2+ if real measurements show text JSON is 
 | Tests            | Vitest + React Testing Library + Playwright smoke tests | Unit, component, browser coverage                 |
 | Accessibility    | Semantic HTML and keyboard tests                        | Basic inclusive usability                         |
 
-Pin compatible package versions in `package-lock.json`/equivalent lockfile, not hard-coded guesses in this document. Use the minimum supported Node version required by the selected Vite release. Do not introduce large dependencies without a brief size/performance justification.
+Pin compatible package versions in `bun.lock`, not hard-coded guesses in this document. Use the minimum supported Node version required by the selected Vite release. Do not introduce large dependencies without a brief size/performance justification.
 
 ### Reference documentation
 
@@ -479,7 +479,7 @@ Keep a **single app repository** in v0.1; modularize directories instead of crea
 mosaic/
 ├── README.md
 ├── package.json
-├── package-lock.json
+├── bun.lock
 ├── tsconfig.json
 ├── vite.config.ts
 ├── index.html
@@ -541,11 +541,11 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 
 - [x] Create Vite React/TypeScript project with strict TS config, ESLint and formatting.
 - [x] Copy the schema and example into `schema/` and `examples/`.
-- [x] Add `README.md`, `docs/decisions.md`, and npm scripts for development, build, typecheck, lint, test, and format check.
+- [x] Add `README.md`, `docs/decisions.md`, and package scripts for development, build, typecheck, lint, test, and format check.
 - [x] Run JSON Schema validation on `mosaic-demo.mosa` before adding UI code.
 - [x] Define the type unions in `src/core/types.ts` aligned with the schema.
 
-**Acceptance:** `npm install`, `npm run dev`, `npm run build`, and typecheck pass; the example validates; README describes how to start.
+**Acceptance:** `bun install --frozen-lockfile`, `bun run dev`, `bun run build`, and typecheck pass; the example validates; README describes how to start.
 
 **Completed:** 2026-11-13. See [Phase 0 verification](phase-0.md) for commands, results, and the dependency-audit limitation. No Phase 1 implementation is included.
 
@@ -686,14 +686,14 @@ The [production benchmark report](benchmarks.md) consolidates the optimized rele
 Set up these scripts (implementation may name the validation script slightly differently, but document any change):
 
 ```bash
-npm install
-npm run dev
-npm run typecheck
-npm run lint
-npm run test
-npm run build
-npm run validate:example
-npm run benchmark
+bun install --frozen-lockfile
+bun run dev
+bun run typecheck
+bun run lint
+bun run test
+bun run build
+bun run validate:example
+bun run benchmark
 ```
 
 CLI tool for arbitrary input files (`mosaic validate file.mosa`) is **optional** in v0.1. Do not block shipping the browser viewer to build a standalone CLI.

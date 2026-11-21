@@ -55,9 +55,9 @@ Snapshot comparison explains much of the earlier ambiguity:
 The new command uses existing Vite, Playwright, TypeScript and Node libraries:
 
 ```sh
-npm run profile -- investigation small
+bun run profile investigation small
 # Optional different replacement fixture; the CPU workload always edits the large fixture:
-npm run profile -- large-investigation large
+bun run profile large-investigation large
 ```
 
 Labels accept lowercase letters, digits and hyphens. The runner serves an isolated production build with source maps on loopback port **4177**, preloads assets, and performs document operations offline. It writes `benchmark-results/profile-<label>/` containing:
