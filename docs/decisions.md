@@ -345,6 +345,14 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Allow dependency lifecycle scripts only for esbuild. The locked fsevents package already supplies its native binary and needs no install hook. A clean installation reports zero untrusted dependencies with scripts.
 - Update current setup/reproduction commands and benchmark lockfile fingerprints; preserve dated npm results and the supplied reference specification. This does not upgrade dependencies or change the v0.1 format or viewer behavior. See [verification and limits](bun-migration.md).
 
+## Continuous integration — 2026-11-21
+
+- Add one GitHub Actions job on Ubuntu 24.04 for pull requests, pushes to `main` and manual dispatch. Reuse `bun run check`, then run Playwright against its production build; avoid rebuilding the same viewer for browser tests.
+- Read Node and Bun versions from `.nvmrc` and `package.json`, install from the frozen Bun lockfile and generate the ignored Ajv validator from source. Pin external actions to reviewed full commit SHAs; give the job only repository read permission and disable persisted checkout credentials.
+- Install the pinned Playwright package's Chromium/WebKit browsers and Linux dependencies. Run one browser worker in CI, reject focused tests, bound the suite duration and upload available reports plus failure screenshots/traces for seven days. Keep local browser parallelism unchanged and retain the existing zero-retry behavior.
+- Keep package dependencies and browser installations fresh rather than introducing caches that could obscure clean-install failures. Bun's setup action may cache its versioned executable. Cancel superseded runs for the same event/ref.
+- Record local CI-mode checks separately from an actual GitHub-hosted run. Branch protection, public deployment, native screen-reader verification and performance acceptance remain separate work. See [CI operation and verification](ci.md).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

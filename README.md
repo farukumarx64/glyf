@@ -74,6 +74,12 @@ Use **`bun run test`**, which invokes the existing Vitest suite; `bun test` sele
 
 The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmarks run separately in production Chromium so unit-test timing is not mistaken for browser performance.
 
+### Continuous integration
+
+[GitHub Actions CI](.github/workflows/ci.yml) runs on pull requests, pushes to `main`, and manual dispatch. A single Ubuntu 24.04 job installs Node from `.nvmrc` and Bun from `package.json`, performs a frozen install, and runs `bun run check` followed by the production Chromium/WebKit suite. This regenerates the standalone validator, checks TypeScript/ESLint/formatting, runs the format and component tests, validates the reference demo, and builds the viewer before browser testing.
+
+Browser checks run with one worker and reject focused `test.only` cases. Available HTML reports and test artifacts are uploaded as **browser-results** for seven days, including failure screenshots and traces. Newer runs cancel superseded runs for the same event/ref. See [CI operation and verification](docs/ci.md) for failure diagnosis, local reproduction and the boundary between automated checks and release approval.
+
 ### Verify the production viewer
 
 After `bun install --frozen-lockfile`, install the Playwright browsers once, then run the suite:

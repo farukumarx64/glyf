@@ -10,6 +10,7 @@ export default defineConfig([
       'dist/**',
       'coverage/**',
       '.vitest/**',
+      'playwright-report/**',
       'benchmark-results/**',
       'src/core/schema-validator.generated.js',
     ],
