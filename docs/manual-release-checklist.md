@@ -2,6 +2,10 @@
 
 **Status: incomplete; no completed manual passes.** The 2026-11-21 retry recovered Brave capture and opened the demo through an accessibility-button action. M01 remains incomplete because keyboard operation, a native file dialog and screen-reader output were not verified. M02–M13 remain not run. Native input failures and Safari timeouts are recorded in [the release-check report](public-release-checks.md#native-retry--2026-11-21). Automated accessibility-tree assertions do not verify screen-reader speech or native dialogs.
 
+A subsequent attempt at revision `158b307` failed before interaction: inventory timed out, then direct Brave selection returned ScreenCaptureKit `-3811`. The same capture failure recurred after the user confirmed both relevant permissions were enabled. Server readiness was verified during preparation, but no additional manual evidence was obtained. See [the attempt record](public-release-checks.md#subsequent-manual-check-attempt--2026-11-21), including the corrected permission name for macOS 27.2.1.
+
+The later [Stage Manager off / helper-restart attempt](public-release-checks.md#stage-manager-off-and-helper-restart--2026-11-21) also failed. Capture logs showed an invalid target/display association before and after helper replacement, and no new manual case passed.
+
 ## Record a real test session
 
 Record the tester, date, commit, OS/version, exact browser/version, screen reader/version, keyboard-navigation settings, zoom and window width. Record whether output was actually heard, read from the screen reader's own caption panel, or only inspected in an accessibility tree. Only the first two are direct screen-reader output; caption inspection does not certify audio timing or intelligibility.
