@@ -8,6 +8,7 @@ export default defineConfig([
   {
     ignores: [
       'dist/**',
+      'release/**',
       'coverage/**',
       '.vitest/**',
       'playwright-report/**',

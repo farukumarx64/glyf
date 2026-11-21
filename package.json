@@ -1,7 +1,7 @@
 {
   "name": "mosaic",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.0-rc.1",
   "type": "module",
   "packageManager": "bun@1.3.14",
   "engines": {
@@ -17,6 +17,7 @@
     "dev": "bun run generate:validator && vite --host 127.0.0.1",
     "build": "bun run typecheck && vite build",
     "preview": "vite preview --host 127.0.0.1",
+    "release:prepare": "node --import tsx scripts/prepare-release.ts",
     "typecheck": "bun run generate:validator && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "bun run generate:validator && vitest run",

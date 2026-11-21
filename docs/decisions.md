@@ -367,6 +367,15 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Give only the two maximum-size hostile Markdown recovery cases a 30-second allowance. Preserve every input and assertion, the ordinary depth-boundary timeouts, and the absence of retries. These cases establish safe recovery and immutability, not a five-second parsing target; synchronous Markdown parsing remains a documented limitation.
 - Keep the first hosted failure separate from local correction verification. Update the setup/release evidence without claiming a hosted browser pass before the correction is pushed and run. See [the CI incident record](ci.md#first-hosted-run-and-timeout-correction--2026-11-21).
 
+## Pre-release candidate preparation — 2026-11-21
+
+- Define the app's first candidate as **`0.1.0-rc.1`** in `package.json`. Keep `private: true`, the schema, document marker `0.1.0`, `.mosa` extension and all format limits unchanged. The candidate label means local evaluation, not public-release clearance.
+- Add a dependency-free Node packaging command around the existing production build. Require the exact `.nvmrc` Node version and pinned Bun, reject dotenv/Vite environment overrides, and rebuild instead of trusting an existing `dist/`.
+- Package the static site, draft notes, hosting/evaluation instructions, demo, schema, source-input fingerprints, a manifest and SHA-256 checksums. Use a narrowly scoped regular-file ustar/gzip writer with sorted paths and fixed metadata; generated outputs stay in ignored `release/`.
+- Use Vite's existing license output for bundled dependencies and include Ajv's license separately for its precompiled helper. No package dependency or application feature is introduced, and no project license is chosen on the user's behalf.
+- Compare independent fresh source snapshots and exercise the extracted candidate. Preserve the measured platform scope and exact artifact hashes in [pre-release.md](pre-release.md). Keep the successful predecessor Ubuntu CI run separate from this candidate's verification.
+- Draft public-facing limitations explicitly: native/manual accessibility, memory disposition, naming/extension checks, offline/save boundaries and synchronous Markdown. No publication, tag or deployment is part of preparation.
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

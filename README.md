@@ -2,12 +2,13 @@
 
 Mosaic is a local-first visual document format and viewer. Open a `.mosa` file, read its layouts and charts, edit the controls its author enabled, and download the updated document. Files use UTF-8 JSON and the exact format version `0.1.0`.
 
-**Current status: a local preview for evaluation.** Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). The existing verification includes 609 unit/integration tests and 68 Chromium/WebKit browser tests; see [CI verification](docs/ci.md) for the tested environment, the hosted test-timeout fix and the pending hosted pass.
+**Current app candidate: `0.1.0-rc.1`, for local evaluation.** Document format stays `0.1.0`. Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). See [candidate preparation](docs/pre-release.md) for artifacts, checksums and reproducibility, and [CI verification](docs/ci.md) for the successful hosted run of the preceding implementation.
 
 - [Set up the local viewer](#development-environment).
 - [Follow the demo and learn editing/downloads](docs/user-guide.md).
 - [Resolve setup and document errors](docs/troubleshooting.md).
 - [Check known limitations](docs/user-guide.md#known-limitations) or the detailed [format compatibility contract](docs/compatibility.md).
+- [Read draft candidate release notes](docs/releases/0.1.0-rc.1.md).
 
 ## Development environment
 
@@ -78,9 +79,12 @@ When switching an existing npm checkout, stop its dev/test processes, remove onl
 | `bun run format`                             | Apply formatting; preserve supplied reference files.                                           |
 | `bun run build`                              | Typecheck and create the static production build in `dist/`.                                   |
 | `bun run preview`                            | Serve the production build locally.                                                            |
+| `bun run release:prepare`                    | Rebuild and package the candidate with manifests, licenses and SHA-256 checksums.              |
 | `bun run check`                              | Run typechecking, lint, formatting, Vitest, demo validation, and build.                        |
 
 The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmarks run separately in production Chromium so unit-test timing is not mistaken for browser performance.
+
+Candidate packaging requires the exact Node version in `.nvmrc` and the pinned Bun version, even when normal development permits a broader Node range. Run a frozen install first. Artifacts go to ignored `release/0.1.0-rc.1/`; preparing them does not run every test or publish a release. Follow the [candidate verification procedure](docs/pre-release.md) before distributing a build.
 
 ### Continuous integration
 
