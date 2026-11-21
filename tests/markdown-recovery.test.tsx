@@ -60,5 +60,8 @@ describe('Markdown renderer failure isolation', () => {
       expect(container.querySelector('strong')?.textContent).toBe('Recovered');
       expect(screen.queryByRole('note')).toBeNull();
     },
+    // Full-size hostile syntax took 8.9s on the hosted Ubuntu runner. These
+    // assertions test safe recovery, not a five-second performance target.
+    30_000,
   );
 });

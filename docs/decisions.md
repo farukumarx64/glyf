@@ -361,6 +361,12 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Present current limitations and browser evidence without implying manual screen-reader, physical-mobile or hosted-CI verification. User documentation is prepared; final release wording still depends on the existing identity/release decisions. No runtime, format or dependency change is included.
 - Verification: checked 108 local file/heading links, 41 package-command references and shell-block syntax; formatting and the documented production build/preview passed. The exact demo walkthrough passed in automated Chromium and WebKit, including invalid-draft restoration, cancelled replacement, offline download/reopen, malformed-file recovery, No value behavior and lack of reload recovery. This is browser automation, not native file-dialog or screen-reader evidence. Local logs/results are in ignored `benchmark-results/user-docs/`.
 
+## First hosted CI failure — 2026-11-21
+
+- Inspect the actual GitHub Actions log before changing configuration. The first Ubuntu run installed successfully and passed typecheck, lint, formatting and 608 tests; one full-size nested-emphasis recovery test took 8.910 seconds and hit the default five-second timeout.
+- Give only the two maximum-size hostile Markdown recovery cases a 30-second allowance. Preserve every input and assertion, the ordinary depth-boundary timeouts, and the absence of retries. These cases establish safe recovery and immutability, not a five-second parsing target; synchronous Markdown parsing remains a documented limitation.
+- Keep the first hosted failure separate from local correction verification. Update the setup/release evidence without claiming a hosted browser pass before the correction is pushed and run. See [the CI incident record](ci.md#first-hosted-run-and-timeout-correction--2026-11-21).
+
 ## Supporting references
 
 - [RFC 8259, section 4: duplicate object-member interoperability](https://www.rfc-editor.org/rfc/rfc8259.html#section-4)

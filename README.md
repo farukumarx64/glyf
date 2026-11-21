@@ -2,7 +2,7 @@
 
 Mosaic is a local-first visual document format and viewer. Open a `.mosa` file, read its layouts and charts, edit the controls its author enabled, and download the updated document. Files use UTF-8 JSON and the exact format version `0.1.0`.
 
-**Current status: a local preview for evaluation.** Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). The existing verification includes 609 unit/integration tests and 68 Chromium/WebKit browser tests; see [CI verification](docs/ci.md) for the tested environment and pending first hosted run.
+**Current status: a local preview for evaluation.** Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). The existing verification includes 609 unit/integration tests and 68 Chromium/WebKit browser tests; see [CI verification](docs/ci.md) for the tested environment, the hosted test-timeout fix and the pending hosted pass.
 
 - [Set up the local viewer](#development-environment).
 - [Follow the demo and learn editing/downloads](docs/user-guide.md).

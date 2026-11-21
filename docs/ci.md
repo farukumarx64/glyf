@@ -20,6 +20,8 @@ The workflow uses full commit SHAs for checkout, Node/Bun setup and artifact upl
 
 When `CI` is set, Playwright rejects `test.only`, uses **one worker**, stops the suite after **10 minutes**, writes a line log plus a non-opening HTML report, and retains traces/screenshots for failed tests. Tests retain the existing default of zero retries: a failure remains a failure. Local runs retain the usual worker count and avoid automatic trace capture.
 
+Vitest keeps its default **five-second** per-test timeout except for the two maximum-size hostile Markdown recovery cases in [markdown-recovery.test.tsx](../tests/markdown-recovery.test.tsx), which allow **30 seconds** each. They exercise the complete 20,000-character inputs and every existing recovery/immutability assertion. This is a correctness-test allowance for expensive parsing on shared runners, not a viewer responsiveness guarantee. The ordinary depth-boundary cases retain the default timeout.
+
 The job has a **25-minute** limit, leaving room for setup, browser installation and artifact upload around the browser-suite timeout. A newer run cancels an older run for the same workflow/event/ref. Cancelling does not affect unrelated pull requests or branches.
 
 Open a failed Actions run and inspect its first failing step. For browser failures, download **browser-results** and inspect the HTML report or open a trace with the pinned local CLI:
@@ -60,6 +62,14 @@ Verification used a fresh snapshot of the working tree based on `135f41d`, witho
 
 The probes verify the failure-handling configuration; they are not failures in the product suite and are not committed tests. Logs, fingerprints, successful-suite reports and negative-probe artifacts are retained locally under ignored `benchmark-results/ci/`. No new package dependency was needed.
 
-The workflow must be committed and pushed before GitHub can run it. Its first hosted Ubuntu run has not yet been observed. Local Docker was unavailable because its daemon was stopped, so no Linux/container run is claimed. The macOS checks establish the command/configuration behavior, not successful Linux browser execution or GitHub artifact uploads. The browser installation and serial-worker choices follow [Playwright's CI guidance](https://playwright.dev/docs/ci).
+The browser installation and serial-worker choices follow [Playwright's CI guidance](https://playwright.dev/docs/ci). Local Docker was unavailable because its daemon was stopped; local verification used macOS. The hosted result below records Ubuntu evidence separately.
+
+### First hosted run and timeout correction — 2026-11-21
+
+[GitHub Actions run 44919364725](https://github.com/farukumarx64/mosaic/actions/runs/44919364725), for commit `1013c10`, failed in `bun run check` on Ubuntu 24.04. Node/Bun setup, the frozen install (286 platform-applicable packages), validator generation, typecheck, lint and formatting passed. **608 of 609 tests passed**; the maximum-size nested-emphasis recovery case took **8.910 seconds** and exceeded Vitest's default **5,000 ms** timeout. The log reported a timeout, with no assertion mismatch. Demo validation, the production build and browser steps were not reached. No browser report existed to upload.
+
+The same case passed locally before the fix in **3.829 seconds**. The correction gives only the two maximum-size hostile Markdown cases a **30,000 ms** timeout. No test is skipped or retried, the fixtures/assertions are unchanged, and application code, format limits, dependencies and global test timeouts are unchanged. Markdown parsing remains synchronous; see the [security audit's boundaries](security-audit.md#boundaries-and-remaining-phase-5-work).
+
+After the correction, local `CI=true bun run check` passed all **609 tests across 30 files**, typecheck, lint, formatting, demo validation and the production build. `CI=true bun run playwright test` passed **68/68 Chromium/WebKit tests in 48.1 seconds**, with one worker. The browser run required local sandbox permission to bind the preview server to loopback. Logs are retained under ignored `benchmark-results/ci-timeout-fix/`. A new hosted run of the correction is still required; this does not establish successful Ubuntu browser execution or artifact upload.
 
 Required-check enforcement is separate from running CI: repository branch protection/rulesets must require **Validation and browser checks** if merges should be blocked on it. This task adds the workflow without changing repository protection or publishing the application. The existing naming, extension, memory and manual-accessibility release gates remain open.
