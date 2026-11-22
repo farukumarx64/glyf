@@ -1,11 +1,11 @@
 import { useRef, useState, type DragEvent } from 'react';
-import demoSource from '../../examples/mosaic-demo.mosa?raw';
-import { readMosaicFile } from '../core/file.ts';
-import { MosaicSerializationError } from '../core/serialize.ts';
+import demoSource from '../../examples/glyf-demo.glyf?raw';
+import { readGlyfFile } from '../core/file.ts';
+import { GlyfSerializationError } from '../core/serialize.ts';
 import { createDocumentStore, type DocumentStore } from '../core/store.ts';
-import { validateMosaic } from '../core/validate.ts';
+import { validateGlyf } from '../core/validate.ts';
 import { DocumentView } from './DocumentView.tsx';
-import { downloadMosaic } from './download.ts';
+import { downloadGlyf } from './download.ts';
 import { ErrorPanel, type FileFailure } from './ErrorPanel.tsx';
 
 type OpenDocument = { store: DocumentStore; name: string; request: number };
@@ -24,9 +24,9 @@ export function App() {
   async function openFile(file: File) {
     const request = ++latestRequest.current;
     setNotice({ kind: 'loading', name: file.name });
-    let source: Awaited<ReturnType<typeof readMosaicFile>>;
+    let source: Awaited<ReturnType<typeof readGlyfFile>>;
     try {
-      source = await readMosaicFile(file);
+      source = await readGlyfFile(file);
     } catch {
       if (request === latestRequest.current) {
         setNotice({
@@ -42,7 +42,7 @@ export function App() {
     }
 
     if (request !== latestRequest.current) return;
-    const result = source.ok ? validateMosaic(source.value) : source;
+    const result = source.ok ? validateGlyf(source.value) : source;
     if (!result.ok) {
       setNotice({
         kind: 'error',
@@ -67,7 +67,7 @@ export function App() {
     if (!opened || notice?.kind === 'loading') return;
     try {
       const snapshot = opened.store.getSnapshot();
-      downloadMosaic(snapshot, opened.name);
+      downloadGlyf(snapshot, opened.name);
       opened.store.markDownloaded(snapshot);
       setNotice(null);
     } catch (error) {
@@ -75,7 +75,7 @@ export function App() {
         kind: 'error',
         operation: 'download',
         failure:
-          error instanceof MosaicSerializationError
+          error instanceof GlyfSerializationError
             ? { name: opened.name, errors: error.errors }
             : { name: opened.name, message: 'The download could not be started. Try again.' },
       });
@@ -92,7 +92,7 @@ export function App() {
       setNotice({
         kind: 'error',
         operation: 'open',
-        failure: { message: 'Drop one Mosaic document at a time.' },
+        failure: { message: 'Drop one Glyf document at a time.' },
       });
     } else if (files[0]) {
       void openFile(files[0]);
@@ -128,18 +128,18 @@ export function App() {
       <header className="viewer-header">
         <div className="viewer-bar">
           <div className="brand">
-            <span className="mosaic-mark" aria-hidden="true">
+            <span className="glyf-mark" aria-hidden="true">
               <i />
               <i />
               <i />
               <i />
             </span>
-            Mosaic
+            Glyf
           </div>
           <div className="file-actions">
             <button
               type="button"
-              onClick={() => void openFile(new File([demoSource], 'mosaic-demo.mosa'))}
+              onClick={() => void openFile(new File([demoSource], 'glyf-demo.glyf'))}
             >
               Open Demo
             </button>
@@ -160,8 +160,8 @@ export function App() {
             <input
               ref={picker}
               type="file"
-              accept=".mosa"
-              aria-label="Choose a Mosaic file"
+              accept=".glyf"
+              aria-label="Choose a Glyf file"
               hidden
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0];
@@ -185,15 +185,15 @@ export function App() {
           <DocumentView key={opened.request} store={opened.store} fileName={opened.name} />
         ) : (
           <section className="start-screen">
-            <h1>Open a document</h1>
-            <p>Preview a Mosaic document and inspect its source. Your file stays on this device.</p>
+            <h1>One format. Infinite expressions.</h1>
+            <p>Preview a Glyf document and inspect its source. Your file stays on this device.</p>
             <button type="button" className="drop-target" onClick={() => picker.current?.click()}>
               <span className="file-symbol" aria-hidden="true">
                 <i />
                 <i />
                 <i />
               </span>
-              <strong>Drop a .mosa file here</strong>
+              <strong>Drop a .glyf file here</strong>
               <span>or choose a file · up to 5 MiB</span>
             </button>
           </section>

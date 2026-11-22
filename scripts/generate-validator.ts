@@ -4,13 +4,13 @@ import { fileURLToPath } from 'node:url';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import standaloneCode from 'ajv/dist/standalone/index.js';
 import { build } from 'vite';
-import schema from '../schema/mosaic-v0.1.schema.json' with { type: 'json' };
+import schema from '../schema/glyf-v0.1.schema.json' with { type: 'json' };
 import { validatorOptions } from './validator-options.ts';
 
 const ajv = new Ajv2020({ ...validatorOptions, code: { source: true, lines: true } });
 const source = standaloneCode(ajv, ajv.compile(schema));
 const target = new URL('../src/core/schema-validator.generated.js', import.meta.url);
-const cache = new URL('../node_modules/.cache/mosaic/', import.meta.url);
+const cache = new URL('../node_modules/.cache/glyf/', import.meta.url);
 await mkdir(cache, { recursive: true });
 const scratch = await mkdtemp(path.join(fileURLToPath(cache), 'validator-'));
 
@@ -51,7 +51,7 @@ try {
   });
   // Avoid unnecessary dev-server reloads when the schema and compiler are unchanged.
   if (previous !== generated) await writeFile(target, generated);
-  console.log('Generated the standalone Mosaic schema validator.');
+  console.log('Generated the standalone Glyf schema validator.');
 } finally {
   await rm(scratch, { recursive: true, force: true });
 }

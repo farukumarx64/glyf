@@ -11,7 +11,7 @@ export function installMemoryObserver(ids: string[]) {
     if (
       value &&
       typeof value === 'object' &&
-      'mosaic' in value &&
+      'glyf' in value &&
       'id' in value &&
       typeof value.id === 'string' &&
       watchedIds.has(value.id)
@@ -21,7 +21,7 @@ export function installMemoryObserver(ids: string[]) {
     }
     return value;
   };
-  window.mosaicMemoryObserver = {
+  window.glyfMemoryObserver = {
     captureView() {
       const view = document.querySelector('.document-view');
       if (!view) throw new Error('Expected a rendered fixture document.');
@@ -43,12 +43,12 @@ export function installMemoryObserver(ids: string[]) {
   };
 }
 
-window.installMosaicMemoryObserver = installMemoryObserver;
+window.installGlyfMemoryObserver = installMemoryObserver;
 
 declare global {
   interface Window {
-    installMosaicMemoryObserver: typeof installMemoryObserver;
-    mosaicMemoryObserver: {
+    installGlyfMemoryObserver: typeof installMemoryObserver;
+    glyfMemoryObserver: {
       captureView(): void;
       counts(): {
         documentsSeen: number;

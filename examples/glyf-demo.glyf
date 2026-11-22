@@ -1,0 +1,120 @@
+{
+  "glyf": "0.1.0",
+  "id": "sample_overview",
+  "meta": {
+    "title": "Glyf Demo",
+    "description": "An offline interactive visual document",
+    "locale": "en"
+  },
+  "theme": {
+    "mode": "system",
+    "accent": "blue",
+    "density": "comfortable"
+  },
+  "datasets": {
+    "revenue": {
+      "columns": [
+        {
+          "key": "month",
+          "label": "Month",
+          "kind": "string",
+          "editable": false
+        },
+        {
+          "key": "amount",
+          "label": "Revenue (NGN)",
+          "kind": "number",
+          "editable": true
+        }
+      ],
+      "rows": [
+        {
+          "id": "jan",
+          "month": "Jan",
+          "amount": 1200
+        },
+        {
+          "id": "feb",
+          "month": "Feb",
+          "amount": 1800
+        },
+        {
+          "id": "mar",
+          "month": "Mar",
+          "amount": 2500
+        }
+      ]
+    }
+  },
+  "state": {
+    "showChart": true,
+    "note": "First report"
+  },
+  "root": {
+    "id": "root",
+    "type": "column",
+    "gap": 3,
+    "children": [
+      {
+        "id": "title",
+        "type": "heading",
+        "level": 1,
+        "text": "Glyf: First Interactive Document"
+      },
+      {
+        "id": "intro",
+        "type": "markdown",
+        "text": "A compact, **offline-first** document with a shared dataset. Edit a number in the table; the chart updates."
+      },
+      {
+        "id": "summaryCard",
+        "type": "card",
+        "title": "Notes",
+        "children": [
+          {
+            "id": "noteInput",
+            "type": "input",
+            "kind": "text",
+            "label": "Document note",
+            "bind": "note"
+          },
+          {
+            "id": "noteDisplay",
+            "type": "stateValue",
+            "bind": "note",
+            "prefix": "Current note: "
+          }
+        ]
+      },
+      {
+        "id": "chartToggle",
+        "type": "toggle",
+        "bind": "showChart",
+        "label": "Show revenue chart"
+      },
+      {
+        "id": "conditionalChart",
+        "type": "when",
+        "bind": "showChart",
+        "equals": true,
+        "children": [
+          {
+            "id": "revenueChart",
+            "type": "chart",
+            "kind": "bar",
+            "dataset": "revenue",
+            "x": "month",
+            "y": "amount",
+            "title": "Revenue by month"
+          }
+        ]
+      },
+      {
+        "id": "revenueTable",
+        "type": "table",
+        "dataset": "revenue",
+        "editable": true
+      }
+    ]
+  }
+}

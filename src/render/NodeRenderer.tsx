@@ -1,4 +1,4 @@
-import type { MosaicDocument, MosaicNode } from '../core/types.ts';
+import type { GlyfDocument, GlyfNode } from '../core/types.ts';
 import type { DocumentStore } from '../core/store.ts';
 import { CellEditingContext } from './cell-editing-context.ts';
 import { StateEditingContext } from './state-editing-context.ts';
@@ -11,8 +11,8 @@ function ChildNodes({
   nodes,
   document,
 }: {
-  readonly nodes: readonly MosaicNode[];
-  readonly document: MosaicDocument;
+  readonly nodes: readonly GlyfNode[];
+  readonly document: GlyfDocument;
 }) {
   return nodes.map((child) => <RenderNode key={child.id} node={child} document={document} />);
 }
@@ -23,7 +23,7 @@ function RenderNode<Kind extends keyof NodesByType>({
   document,
 }: {
   readonly node: NodesByType[Kind] & { readonly type: Kind };
-  readonly document: MosaicDocument;
+  readonly document: GlyfDocument;
 }) {
   const Component: NodeView<Kind> = nodeRegistry[node.type];
   return (
@@ -33,13 +33,13 @@ function RenderNode<Kind extends keyof NodesByType>({
   );
 }
 
-/** Pass the document from a successful parseMosaic or validateMosaic result. */
+/** Pass the document from a successful parseGlyf or validateGlyf result. */
 export function NodeRenderer({
   document,
   onCellEdit,
   onStateEdit,
 }: {
-  readonly document: MosaicDocument;
+  readonly document: GlyfDocument;
   readonly onCellEdit?: DocumentStore['updateCell'];
   readonly onStateEdit?: DocumentStore['updateState'];
 }) {

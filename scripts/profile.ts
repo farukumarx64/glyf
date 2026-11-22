@@ -49,9 +49,9 @@ try {
       compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
     }).outputText,
   });
-  await page.waitForFunction(() => typeof window.installMosaicViewerBenchmark === 'function');
+  await page.waitForFunction(() => typeof window.installGlyfViewerBenchmark === 'function');
   await page.evaluate(
-    (sources) => window.installMosaicViewerBenchmark(sources),
+    (sources) => window.installGlyfViewerBenchmark(sources),
     [{ name: 'baseline', source: baselineSource }, ...fixtureProfiles.map(generateFixture)],
   );
   context.on('request', (request) => requests.push(request.url()));
@@ -60,7 +60,7 @@ try {
   await cdp.send('HeapProfiler.enable');
   let previous: ReturnType<typeof summarizeHeap> | undefined;
   async function snapshot(cycle: number) {
-    await page.evaluate(() => window.mosaicViewerBench.settle());
+    await page.evaluate(() => window.glyfViewerBench.settle());
     await cdp.send('HeapProfiler.collectGarbage');
     const usage = await cdp.send('Runtime.getHeapUsage');
     const dom = await cdp.send('Memory.getDOMCounters');
@@ -83,23 +83,23 @@ try {
     return { cycle, ...usage, ...dom, changes };
   }
   for (let i = 0; i < 3; i++) {
-    await page.evaluate((name) => window.mosaicViewerBench.open(name), fixture);
-    await page.evaluate(() => window.mosaicViewerBench.open('baseline'));
+    await page.evaluate((name) => window.glyfViewerBench.open(name), fixture);
+    await page.evaluate(() => window.glyfViewerBench.open('baseline'));
   }
   const checkpoints = [await snapshot(0)];
   for (let cycle = 1; cycle <= 500; cycle++) {
-    await page.evaluate((name) => window.mosaicViewerBench.open(name), fixture);
-    await page.evaluate(() => window.mosaicViewerBench.open('baseline'));
+    await page.evaluate((name) => window.glyfViewerBench.open(name), fixture);
+    await page.evaluate(() => window.glyfViewerBench.open('baseline'));
     if ([100, 300, 500].includes(cycle)) checkpoints.push(await snapshot(cycle));
   }
-  await page.evaluate(() => window.mosaicViewerBench.open('large'));
+  await page.evaluate(() => window.glyfViewerBench.open('large'));
   for (let i = 0; i < 10; i++)
-    await page.evaluate((value) => window.mosaicViewerBench.edit(value), 1000 + i);
+    await page.evaluate((value) => window.glyfViewerBench.edit(value), 1000 + i);
   await cdp.send('Profiler.enable');
   await cdp.send('Profiler.setSamplingInterval', { interval: 100 });
   await cdp.send('Profiler.start');
   for (let i = 0; i < 100; i++)
-    await page.evaluate((value) => window.mosaicViewerBench.edit(value), 1100 + i);
+    await page.evaluate((value) => window.glyfViewerBench.edit(value), 1100 + i);
   const { profile } = (await cdp.send('Profiler.stop')) as { profile: CpuProfile };
   await writeFile(path.join(output, 'edits.cpuprofile'), JSON.stringify(profile));
   const jsUrl = await page.locator('script[src]').first().getAttribute('src');

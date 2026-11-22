@@ -21,7 +21,7 @@ const output = path.resolve('benchmark-results');
 const fixtures = fixtureProfiles.map(generateFixture);
 await mkdir(path.join(output, 'fixtures'), { recursive: true });
 for (const fixture of fixtures) {
-  await writeFile(path.join(output, 'fixtures', `${fixture.name}.mosa`), fixture.source);
+  await writeFile(path.join(output, 'fixtures', `${fixture.name}.glyf`), fixture.source);
 }
 
 async function bundleSizes() {
@@ -42,7 +42,7 @@ async function bundleSizes() {
     javascriptGzipBytes: assets
       .filter((item) => item.name.endsWith('.js'))
       .reduce((sum, item) => sum + item.gzipBytes, 0),
-    exampleBytes: (await readFile('examples/mosaic-demo.mosa')).length,
+    exampleBytes: (await readFile('examples/glyf-demo.glyf')).length,
   };
 }
 
@@ -54,12 +54,12 @@ function summarizeRows<T extends Record<string, number>>(rows: T[]) {
 
 async function heap(page: Page, cdp: CDPSession, collect: boolean) {
   if (collect) {
-    await page.evaluate(() => window.mosaicViewerBench.settle());
+    await page.evaluate(() => window.glyfViewerBench.settle());
     await cdp.send('HeapProfiler.collectGarbage');
   }
   const usage = await cdp.send('Runtime.getHeapUsage');
   const dom = await cdp.send('Memory.getDOMCounters');
-  const visible = await page.evaluate(() => window.mosaicViewerBench.counts());
+  const visible = await page.evaluate(() => window.glyfViewerBench.counts());
   return { ...usage, ...dom, ...visible };
 }
 
@@ -92,7 +92,7 @@ try {
   await app.goto('http://127.0.0.1:4175');
   await app.getByRole('button', { name: 'Open Demo' }).waitFor();
   await harness.goto('http://127.0.0.1:4176');
-  await harness.waitForFunction(() => typeof window.mosaicCoreBench === 'function');
+  await harness.waitForFunction(() => typeof window.glyfCoreBench === 'function');
   // Compile the browser-only observer without tsx's Node-side function-name helpers.
   const observerSource = await readFile('scripts/benchmarks/viewer.ts', 'utf8');
   await app.addScriptTag({
@@ -101,9 +101,9 @@ try {
       compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ES2022 },
     }).outputText,
   });
-  await app.waitForFunction(() => typeof window.installMosaicViewerBenchmark === 'function');
+  await app.waitForFunction(() => typeof window.installGlyfViewerBenchmark === 'function');
   await app.evaluate(
-    (sources) => window.installMosaicViewerBenchmark(sources),
+    (sources) => window.installGlyfViewerBenchmark(sources),
     [
       { name: 'baseline', source: baselineSource },
       ...fixtures.map(({ name, source }) => ({ name, source })),
@@ -126,36 +126,33 @@ try {
     await harness.bringToFront();
     for (let i = 0; i < warmups + samples; i++) {
       const result = await harness.evaluate(
-        (source) => window.mosaicCoreBench(source),
+        (source) => window.glyfCoreBench(source),
         fixture.source,
       );
       if (i >= warmups) core.push(result);
     }
     await app.bringToFront();
-    await app.evaluate(() => window.mosaicViewerBench.open('baseline'));
+    await app.evaluate(() => window.glyfViewerBench.open('baseline'));
     for (let i = 0; i < warmups + samples; i++) {
-      const result = await app.evaluate(
-        (name) => window.mosaicViewerBench.open(name),
-        fixture.name,
-      );
-      const counts = await app.evaluate(() => window.mosaicViewerBench.counts());
+      const result = await app.evaluate((name) => window.glyfViewerBench.open(name), fixture.name);
+      const counts = await app.evaluate(() => window.glyfViewerBench.counts());
       assert.equal(counts.tableRows, fixture.initiallyVisibleRows);
       assert.equal(counts.barPoints, fixture.pointsPerChart);
       assert.equal(counts.linePoints, fixture.pointsPerChart);
       if (i >= warmups) opened.push(result);
       if (fixture.rows > 100) {
-        const next = await app.evaluate(() => window.mosaicViewerBench.nextRows());
+        const next = await app.evaluate(() => window.glyfViewerBench.nextRows());
         if (i >= warmups) progressive.push(next);
       }
     }
     // Chart updates use the normal initial 100-row table, not the expanded one.
-    await app.evaluate((name) => window.mosaicViewerBench.open(name), fixture.name);
+    await app.evaluate((name) => window.glyfViewerBench.open(name), fixture.name);
     for (let i = 0; i < warmups + samples; i++) {
-      const result = await app.evaluate((value) => window.mosaicViewerBench.edit(value), 1000 + i);
+      const result = await app.evaluate((value) => window.glyfViewerBench.edit(value), 1000 + i);
       if (i >= warmups) edits.push(result);
     }
     // Discard the measured edits before beginning clean replacement/memory loops.
-    await app.evaluate(() => window.mosaicViewerBench.open('baseline'));
+    await app.evaluate(() => window.glyfViewerBench.open('baseline'));
     timingResults.push({
       name: fixture.name,
       core: summarizeRows(core),
@@ -171,9 +168,9 @@ try {
     console.log(`Measuring ${memorySamples} baseline/loaded heap pairs for ${fixture.name}.`);
     const snapshots = [];
     for (let i = 0; i < memorySamples; i++) {
-      await app.evaluate(() => window.mosaicViewerBench.open('baseline'));
+      await app.evaluate(() => window.glyfViewerBench.open('baseline'));
       const baseline = await heap(app, cdp, true);
-      await app.evaluate((name) => window.mosaicViewerBench.open(name), fixture.name);
+      await app.evaluate((name) => window.glyfViewerBench.open(name), fixture.name);
       const liveBeforeGC = await heap(app, cdp, false);
       const liveAfterGC = await heap(app, cdp, true);
       assert.equal(liveAfterGC.tableRows, fixture.initiallyVisibleRows);
@@ -190,22 +187,22 @@ try {
       snapshots,
     });
   }
-  await app.evaluate(() => window.mosaicViewerBench.open('baseline'));
+  await app.evaluate(() => window.glyfViewerBench.open('baseline'));
   const replacementResults = [];
   for (const fixture of fixtures) {
     console.log(
       `Measuring 100 ${fixture.name} open → baseline replacement cycles with GC checkpoints.`,
     );
     for (let i = 0; i < warmups; i++) {
-      await app.evaluate((name) => window.mosaicViewerBench.open(name), fixture.name);
-      await app.evaluate(() => window.mosaicViewerBench.open('baseline'));
+      await app.evaluate((name) => window.glyfViewerBench.open(name), fixture.name);
+      await app.evaluate(() => window.glyfViewerBench.open('baseline'));
     }
     const checkpoints = [{ cycle: 0, ...(await heap(app, cdp, true)) }];
     const open = [];
     const reset = [];
     for (let cycle = 1; cycle <= cycles; cycle++) {
-      open.push(await app.evaluate((name) => window.mosaicViewerBench.open(name), fixture.name));
-      reset.push(await app.evaluate(() => window.mosaicViewerBench.open('baseline')));
+      open.push(await app.evaluate((name) => window.glyfViewerBench.open(name), fixture.name));
+      reset.push(await app.evaluate(() => window.glyfViewerBench.open('baseline')));
       if (cycle % 10 === 0) {
         checkpoints.push({ cycle, ...(await heap(app, cdp, true)) });
         if (cycle % 50 === 0) console.log(`  ${fixture.name}: ${cycle}/100 cycles complete.`);
@@ -226,8 +223,8 @@ try {
   console.log('Measuring 100 idle control cycles for memory interpretation.');
   const controlCheckpoints = [{ cycle: 0, ...(await heap(app, cdp, true)) }];
   for (let cycle = 1; cycle <= cycles; cycle++) {
-    await app.evaluate(() => window.mosaicViewerBench.settle());
-    await app.evaluate(() => window.mosaicViewerBench.settle());
+    await app.evaluate(() => window.glyfViewerBench.settle());
+    await app.evaluate(() => window.glyfViewerBench.settle());
     if (cycle % 10 === 0) controlCheckpoints.push({ cycle, ...(await heap(app, cdp, true)) });
   }
   const idleControl = {

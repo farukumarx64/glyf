@@ -1,15 +1,15 @@
 import type { CSSProperties, ReactElement, ReactNode } from 'react';
-import type { Gap, MosaicDocument, MosaicNode } from '../core/types.ts';
+import type { Gap, GlyfDocument, GlyfNode } from '../core/types.ts';
 import { MarkdownView } from './MarkdownView.tsx';
 import { TableView } from './TableView.tsx';
 import { ChartView } from './ChartView.tsx';
 import { InputView, ToggleView } from './StateControls.tsx';
 
-export type NodesByType = { [Node in MosaicNode as Node['type']]: Node };
+export type NodesByType = { [Node in GlyfNode as Node['type']]: Node };
 
 export type NodeView<Kind extends keyof NodesByType> = (props: {
   readonly node: NodesByType[Kind];
-  readonly document: MosaicDocument;
+  readonly document: GlyfDocument;
   readonly anchorId: string;
   readonly children?: ReactNode;
 }) => ReactElement | null;
@@ -27,29 +27,29 @@ function gapSize(gap?: Gap) {
 export const nodeRegistry = Object.freeze<NodeRegistry>({
   column: function ColumnView({ node, children, anchorId }) {
     return (
-      <div id={anchorId} className="mosaic-column" style={{ gap: gapSize(node.gap) }}>
+      <div id={anchorId} className="glyf-column" style={{ gap: gapSize(node.gap) }}>
         {children}
       </div>
     );
   },
   row: function RowView({ node, children, anchorId }) {
     return (
-      <div id={anchorId} className="mosaic-row" style={{ gap: gapSize(node.gap) }}>
+      <div id={anchorId} className="glyf-row" style={{ gap: gapSize(node.gap) }}>
         {children}
       </div>
     );
   },
   grid: function GridView({ node, children, anchorId }) {
-    const style = { '--mosaic-columns': node.columns, '--mosaic-gap': gapSize(node.gap) };
+    const style = { '--glyf-columns': node.columns, '--glyf-gap': gapSize(node.gap) };
     return (
-      <div id={anchorId} className="mosaic-grid" style={style as CSSProperties}>
+      <div id={anchorId} className="glyf-grid" style={style as CSSProperties}>
         {children}
       </div>
     );
   },
   card: function CardView({ node, children, anchorId }) {
     return (
-      <section id={anchorId} className="mosaic-card" aria-label={node.title || undefined}>
+      <section id={anchorId} className="glyf-card" aria-label={node.title || undefined}>
         {node.title && <strong>{node.title}</strong>}
         {children}
       </section>
@@ -65,13 +65,13 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
   markdown: MarkdownView,
   text: function TextView({ node, anchorId }) {
     return (
-      <p id={anchorId} className="mosaic-text">
+      <p id={anchorId} className="glyf-text">
         {node.text}
       </p>
     );
   },
   divider: function DividerView({ anchorId }) {
-    return <hr id={anchorId} className="mosaic-divider" />;
+    return <hr id={anchorId} className="glyf-divider" />;
   },
   chart: ChartView,
   table: TableView,
@@ -79,7 +79,7 @@ export const nodeRegistry = Object.freeze<NodeRegistry>({
   input: InputView,
   stateValue: function StateValueView({ node, document, anchorId }) {
     return (
-      <span id={anchorId} className="mosaic-text">
+      <span id={anchorId} className="glyf-text">
         {node.prefix}
         {String(document.state?.[node.bind] ?? '—')}
         {node.suffix}

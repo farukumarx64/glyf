@@ -4,21 +4,21 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { DocumentView } from '../src/app/DocumentView.tsx';
 import { createDocumentStore } from '../src/core/store.ts';
 import type { Dataset, TableNode } from '../src/core/types.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples } from './fixtures.ts';
 
 afterEach(cleanup);
 
 function openTable(data: Dataset, tables: TableNode[] = [nodeSamples.table]) {
   const doc = minimalDocument();
-  const result = validateMosaic({
+  const result = validateGlyf({
     ...doc,
     datasets: { values: data },
     root: { ...doc.root, children: tables },
   });
   if (!result.ok) throw new Error(JSON.stringify(result.errors));
   const store = createDocumentStore(result);
-  render(<DocumentView store={store} fileName="table.mosa" />);
+  render(<DocumentView store={store} fileName="table.glyf" />);
   return store;
 }
 

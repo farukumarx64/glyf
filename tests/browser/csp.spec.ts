@@ -17,7 +17,7 @@ test('starts, validates, edits and exports offline under a CSP without unsafe-ev
   page.on('pageerror', (error) => errors.push(error.message));
   await page.addInitScript(() => {
     const violations: string[] = [];
-    Reflect.set(window, 'mosaicCspViolations', violations);
+    Reflect.set(window, 'glyfCspViolations', violations);
     document.addEventListener('securitypolicyviolation', (event) => {
       violations.push(`${event.effectiveDirective}: ${event.blockedURI}`);
     });
@@ -40,14 +40,14 @@ test('starts, validates, edits and exports offline under a CSP without unsafe-ev
   });
   await page.context().setOffline(true);
   await page.getByRole('button', { name: 'Open Demo' }).click();
-  await expect(page.locator('.mosaic-markdown strong')).toHaveText('offline-first');
+  await expect(page.locator('.glyf-markdown strong')).toHaveText('offline-first');
   const chart = page.getByRole('img', { name: 'Revenue by month' });
   await expect(chart).toBeVisible();
   const cell = page.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
   await cell.fill('-125.5');
   await expect(chart).toHaveAccessibleDescription(/Values range from -125.5/);
   await page.getByRole('textbox', { name: 'Document note' }).fill('Saved under strict CSP 😀');
-  await expect(page.locator('#mosaic-node-noteDisplay')).toHaveText(
+  await expect(page.locator('#glyf-node-noteDisplay')).toHaveText(
     'Current note: Saved under strict CSP 😀',
   );
   await page.getByRole('checkbox', { name: 'Show revenue chart' }).uncheck();
@@ -70,8 +70,8 @@ test('starts, validates, edits and exports offline under a CSP without unsafe-ev
       path: '/root/children/0/bind',
     },
   ]) {
-    await page.getByLabel('Choose a Mosaic file').setInputFiles({
-      name: 'invalid.mosa',
+    await page.getByLabel('Choose a Glyf file').setInputFiles({
+      name: 'invalid.glyf',
       mimeType: 'application/json',
       buffer: Buffer.from(source),
     });
@@ -82,7 +82,7 @@ test('starts, validates, edits and exports offline under a CSP without unsafe-ev
   }
 
   const original = JSON.parse(
-    await readFile(new URL('../../examples/mosaic-demo.mosa', import.meta.url), 'utf8'),
+    await readFile(new URL('../../examples/glyf-demo.glyf', import.meta.url), 'utf8'),
   );
   original.datasets.revenue.rows[0].amount = -125.5;
   original.state.note = 'Saved under strict CSP 😀';
@@ -97,7 +97,7 @@ test('starts, validates, edits and exports offline under a CSP without unsafe-ev
   const savedPath = await download.path();
   if (!savedPath) throw new Error('Expected a downloaded document');
   expect(await readFile(savedPath, 'utf8')).toBe(savedText);
-  await page.getByLabel('Choose a Mosaic file').setInputFiles(savedPath);
+  await page.getByLabel('Choose a Glyf file').setInputFiles(savedPath);
   await expect(page.getByRole('alert')).toHaveCount(0);
   await expect(cell).toHaveValue('-125.5');
   await expect(page.getByRole('textbox', { name: 'Document note' })).toHaveValue(
@@ -105,7 +105,7 @@ test('starts, validates, edits and exports offline under a CSP without unsafe-ev
   );
   await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).not.toBeChecked();
   await expect(chart).toHaveCount(0);
-  expect(await page.evaluate(() => Reflect.get(window, 'mosaicCspViolations'))).toEqual([]);
+  expect(await page.evaluate(() => Reflect.get(window, 'glyfCspViolations'))).toEqual([]);
   expect(errors).toEqual([]);
   expect(requests).toEqual([]);
 });

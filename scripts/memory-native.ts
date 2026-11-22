@@ -13,7 +13,7 @@ const output = path.resolve('benchmark-results', `memory-native-${label}`);
 await mkdir(path.dirname(output), { recursive: true });
 await mkdir(output);
 const results = [];
-// No Mosaic, React, author CSS or event handlers: isolate native HTML rendering.
+// No Glyf, React, author CSS or event handlers: isolate native HTML rendering.
 for (const kind of ['div', 'table', 'table-caption'] as const) {
   const browser = await chromium.launch(executablePath ? { executablePath } : {});
   try {

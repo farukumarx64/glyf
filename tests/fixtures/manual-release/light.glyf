@@ -1,11 +1,11 @@
 {
-  "mosaic": "0.1.0",
+  "glyf": "0.1.0",
   "id": "manual-release-check",
   "meta": {
     "title": "Manual release check"
   },
   "theme": {
-    "mode": "dark",
+    "mode": "light",
     "accent": "blue",
     "density": "comfortable"
   },

@@ -1,5 +1,5 @@
-import { parseMosaic } from '../../src/core/parse.ts';
-import type { DatasetRow, MosaicDocument, MosaicNode } from '../../src/core/types.ts';
+import { parseGlyf } from '../../src/core/parse.ts';
+import type { DatasetRow, GlyfDocument, GlyfNode } from '../../src/core/types.ts';
 
 export const fixtureProfiles = [
   { name: 'small', bytes: 3 * 1024, nodes: 14, rows: 3, columns: 3 },
@@ -7,8 +7,8 @@ export const fixtureProfiles = [
   { name: 'large', bytes: 1024 * 1024, nodes: 2000, rows: 1000, columns: 20 },
 ] as const;
 
-export function describeFixture(document: MosaicDocument) {
-  const pending: { node: MosaicNode; depth: number }[] = [{ node: document.root, depth: 1 }];
+export function describeFixture(document: GlyfDocument) {
+  const pending: { node: GlyfNode; depth: number }[] = [{ node: document.root, depth: 1 }];
   let nodes = 0;
   let depth = 0;
   let markdownNodes = 0;
@@ -53,9 +53,9 @@ export function generateFixture(profile: (typeof fixtureProfiles)[number]) {
     active: i % 2 === 0,
     ...Object.fromEntries(columns.slice(3).map((column, j) => [column.key, i + j])),
   }));
-  const children: MosaicNode[] = [
+  const children: GlyfNode[] = [
     { id: 'heading', type: 'heading', level: 2, text: 'Performance fixture' },
-    { id: 'intro', type: 'markdown', text: '**Mosaic**: portable UTF-8 content — 雪 😀.' },
+    { id: 'intro', type: 'markdown', text: '**Glyf**: portable UTF-8 content — 雪 😀.' },
     ...(['bar', 'line'] as const).map((kind) => ({
       id: kind,
       type: 'chart' as const,
@@ -83,8 +83,8 @@ export function generateFixture(profile: (typeof fixtureProfiles)[number]) {
       children: [{ id: 'card-text', type: 'text', text: 'Nested content.' }],
     },
   ];
-  const document: MosaicDocument = {
-    mosaic: '0.1.0',
+  const document: GlyfDocument = {
+    glyf: '0.1.0',
     id: `benchmark-${profile.name}`,
     meta: { title: `Benchmark ${profile.name}` },
     theme: { mode: 'light', accent: 'blue', density: 'comfortable' },
@@ -101,18 +101,19 @@ export function generateFixture(profile: (typeof fixtureProfiles)[number]) {
   }
   let remaining = profile.bytes - Buffer.byteLength(JSON.stringify(document));
   const textPositions = children.flatMap((node, i) => (node.type === 'text' ? [i] : []));
+  const filler = 'Portable Glyf content. ';
   for (const [index, position] of textPositions.entries()) {
     const length = Math.min(10_000, Math.ceil(remaining / (textPositions.length - index)));
     if (length < 0) throw new Error(`Fixture ${profile.name} exceeds its byte budget.`);
     children[position] = {
       id: children[position]!.id,
       type: 'text',
-      text: 'Portable Mosaic content. '.repeat(Math.ceil(length / 25)).slice(0, length),
+      text: filler.repeat(Math.ceil(length / filler.length)).slice(0, length),
     };
     remaining -= length;
   }
   const source = JSON.stringify(document);
-  const result = parseMosaic(source);
+  const result = parseGlyf(source);
   if (!result.ok) throw new Error(JSON.stringify(result.errors));
   if (remaining !== 0 || Buffer.byteLength(source) !== profile.bytes) {
     throw new Error(`Could not generate exact-size fixture ${profile.name}.`);
@@ -126,8 +127,8 @@ export function generateFixture(profile: (typeof fixtureProfiles)[number]) {
 }
 
 export const baselineSource = JSON.stringify({
-  mosaic: '0.1.0',
+  glyf: '0.1.0',
   id: 'benchmark-baseline',
   meta: { title: 'Replacement baseline' },
   root: { id: 'root', type: 'column', children: [] },
-} satisfies MosaicDocument);
+} satisfies GlyfDocument);

@@ -1,9 +1,9 @@
 import { checkChartPointLimit, isCellValue } from './dataset-rules.ts';
 import type { ParseResult } from './errors.ts';
 import { appendJsonPointer, jsonPointer, type JsonPointer } from './json-pointer.ts';
-import { MOSAIC_LIMITS } from './limits.ts';
+import { GLYF_LIMITS } from './limits.ts';
 import { stateBindingType } from './semantics.ts';
-import type { MosaicDocument, MosaicNode, TableNode } from './types.ts';
+import type { GlyfDocument, GlyfNode, TableNode } from './types.ts';
 
 interface DatasetIndex {
   rowPositions: Map<string, number>;
@@ -49,7 +49,7 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
     });
   }
 
-  function indexNode(node: MosaicNode, path: JsonPointer) {
+  function indexNode(node: GlyfNode, path: JsonPointer) {
     if ('bind' in node) {
       const type = stateBindingType(node);
       if (type) stateTypes.set(node.bind, type);
@@ -57,7 +57,7 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
     if (node.type === 'table') tables.set(node.id, { node, path });
     if (node.type === 'chart') {
       // Row count is fixed. A smaller dataset can never exceed the chart limit.
-      if (document.datasets![node.dataset]!.rows.length > MOSAIC_LIMITS.chartPoints) {
+      if (document.datasets![node.dataset]!.rows.length > GLYF_LIMITS.chartPoints) {
         const index = datasets.get(node.dataset)!;
         indexChartAxis(index, node.x, node.y, path);
         indexChartAxis(index, node.y, node.x, path);
@@ -180,7 +180,7 @@ export function createDocumentStore(opened: Extract<ParseResult, { ok: true }>) 
     getSnapshot: () => document,
     isDirty: () => dirty,
     // Browser download initiation is the checkpoint; this does not confirm a disk save.
-    markDownloaded(snapshot: MosaicDocument) {
+    markDownloaded(snapshot: GlyfDocument) {
       if (snapshot !== document || !dirty) return;
       dirty = false;
       for (const notify of listeners) notify();

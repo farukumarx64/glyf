@@ -1,8 +1,8 @@
-import type { MosaicError } from './errors.ts';
+import type { GlyfError } from './errors.ts';
 import type { JsonPointer } from './json-pointer.ts';
 
 /** Inclusive v0.1 safety ceilings; never override them from document data. */
-export const MOSAIC_LIMITS = Object.freeze({
+export const GLYF_LIMITS = Object.freeze({
   /** Actual UTF-8 bytes, including a BOM on import and formatting/newline on export. */
   fileBytes: 5 * 1024 * 1024,
   /** Root plus all descendants, including hidden conditional content. */
@@ -21,12 +21,12 @@ export const MOSAIC_LIMITS = Object.freeze({
   stateKeys: 100,
 } as const);
 
-export type MosaicResource = keyof typeof MOSAIC_LIMITS;
+export type GlyfResource = keyof typeof GLYF_LIMITS;
 
 /** The root counts as both one node and the first level of the node tree. */
 export const ROOT_NODE_DEPTH = 1;
 
-const resourceLabels: Readonly<Record<MosaicResource, string>> = {
+const resourceLabels: Readonly<Record<GlyfResource, string>> = {
   fileBytes: 'File size in UTF-8 bytes',
   nodes: 'Document node count',
   treeDepth: 'Node-tree depth',
@@ -46,15 +46,15 @@ const resourceLabels: Readonly<Record<MosaicResource, string>> = {
  * a negative value accidentally pass. Document errors use the returned object.
  */
 export function checkResourceLimit(
-  resource: MosaicResource,
+  resource: GlyfResource,
   count: number,
   path: JsonPointer,
-): MosaicError | undefined {
+): GlyfError | undefined {
   if (!Number.isSafeInteger(count) || count < 0) {
     throw new RangeError('A resource count must be a non-negative safe integer.');
   }
 
-  const limit = MOSAIC_LIMITS[resource];
+  const limit = GLYF_LIMITS[resource];
   if (count <= limit) return undefined;
 
   return {

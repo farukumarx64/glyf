@@ -1,5 +1,7 @@
 # Mosaic v0.1 — Release performance report
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 Consolidated **2026-11-19** for candidate commit **`0259136`**, using the optimized production measurements from **`2026-11-19T18:09:06.287Z`**. The measured renderer change was subsequently committed as `90c2723`; emitted JS/CSS SHA-256 hashes matched that reviewed production build. **The 2026-11-20 strict-CSP change replaces runtime schema compilation, so these timing/memory samples describe the earlier build.** Its new bundle measurements are recorded separately below; these older timing/memory samples are not relabeled. The [2026-11-20 memory follow-up](memory-stability.md) separately measures the current build across three browser profiles.
 
 **The recorded timing and bundle budgets were met on the reference machine. Memory stability remains unconfirmed.** The [release-readiness report](release-readiness.md) records the Definition of Done and remaining limitations. The [original baseline](benchmark-baseline.md) and [profiling follow-up](performance-improvements.md) preserve the before/after evidence.

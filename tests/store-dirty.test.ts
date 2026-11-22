@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 import { createDocumentStore } from '../src/core/store.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { typedDocument } from './fixtures.ts';
 
 function open() {
-  const validated = validateMosaic(typedDocument);
+  const validated = validateGlyf(typedDocument);
   if (!validated.ok) throw new Error(JSON.stringify(validated.errors));
   return createDocumentStore(validated);
 }
@@ -49,13 +49,13 @@ describe('document dirty tracking', () => {
     const store = open();
     store.updateState('note', 'Changed');
     const snapshot = store.getSnapshot();
-    const text = serializeMosaic(snapshot);
+    const text = serializeGlyf(snapshot);
     const listener = vi.fn(() => store.isDirty());
     store.subscribe(listener);
     store.markDownloaded(snapshot);
     expect(store.isDirty()).toBe(false);
     expect(store.getSnapshot()).toBe(snapshot);
-    expect(serializeMosaic(store.getSnapshot())).toBe(text);
+    expect(serializeGlyf(store.getSnapshot())).toBe(text);
     expect(listener).toHaveReturnedWith(false);
     expect(listener).toHaveBeenCalledTimes(1);
     store.markDownloaded(snapshot);

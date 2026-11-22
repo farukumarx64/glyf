@@ -1,12 +1,14 @@
 # Public-release checks — 2026-11-20, retried 2026-11-21
 
+**Current identity update — 2026-11-22:** The owner selected **Glyf**, `.glyf` and **One format. Infinite expressions.** The complete rename uses `"glyf": "0.1.0"`, Glyf API names and `.glyf` fixtures. The old marker is rejected; prior candidates remain historical. [Glyf findings](public-naming-research.md#user-selected-identity--2026-11-22) record existing exact-name software uses and the separate OpenType table tag. Worldwide naming clearance and extension coverage remain incomplete. The Mosaic searches below are historical and do not clear Glyf.
+
 **Public release is not cleared.** The preliminary naming review found close existing uses of **Mosaic**, including declarative visualization software. Manual browser and screen-reader checks remain incomplete. An earlier 2026-11-21 retry recovered Brave capture and opened the demo, but native input remained unreliable, Safari selection timed out, and no VoiceOver output was observed. A subsequent attempt returned native capture error `-3811` before test interaction. The extension search found no confirmed `.mosa` format collision in the accessible results, but registry coverage is incomplete. These are open gates, not passed checks.
 
 **Launch scope: worldwide**, explicitly confirmed by the user as “everywhere.” This is the intended distribution scope, not a claim of worldwide trademark clearance.
 
-Reviewed application commit: **`daf2de6`**. This follow-up adds documentation, synthetic manual-test fixtures and a narrow formatter exclusion for the intentionally malformed file. It does not rename the product, change the format, grant trademark clearance, publish a package, create a release/tag or deploy the viewer.
+Historical review of application commit **`daf2de6`**: that follow-up added documentation, synthetic manual-test fixtures and a narrow formatter exclusion for the intentionally malformed file. That review did not rename the product, change the format, grant trademark clearance, publish a package, create a release/tag or deploy the viewer.
 
-## Results and boundaries
+## Historical results and boundaries
 
 | Check                                           | Result                                                | Evidence / remaining work                                                                                                                                                                                                                                                 |
 | ----------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -98,6 +100,8 @@ The [manual checklist](manual-release-checklist.md) contains thirteen cases with
 
 ## Naming and namespace findings
 
+The subsequent [replacement-brand research](public-naming-research.md), dated 2026-11-21, recommends **Folioweft** for consideration. Its USPTO wordmark and TMview contains/fuzzy searches were observable in the browser and returned no results; this is new evidence beyond the access limitations recorded below. The brand has not been adopted and worldwide clearance remains incomplete.
+
 The following were checked using accessible primary project/vendor sources on the review date. No source was treated as authorization to change this repository or publish anything.
 
 | Existing use             | What was verified                                                                                                                                                                                                                                                                                                                      | Relevance to this project                                                                                                                                                                                                    |
@@ -126,13 +130,15 @@ Keep the specification's description of `.mosa` as **working and unregistered**.
 
 ## Release disposition
 
-Public-release preparation remains blocked on actual manual evidence and a naming decision with appropriate clearance. Required next evidence is concrete:
+**Updated 2026-11-22 for the selected Glyf identity.**
+
+Public-release preparation remains blocked on actual manual evidence and naming clearance. Required next evidence is concrete:
 
 1. Complete the manual checklist in the declared supported browser/screen-reader combinations, with actual announcements, focus behavior and native-dialog observations; fix and retest any failures.
-2. Choose the intended public name for the confirmed worldwide launch; complete an appropriately scoped national/regional registry and similar-mark review, documenting coverage and remaining gaps. Existing close uses make proceeding under Mosaic without that review inadvisable.
-3. Finish the unavailable extension-registry checks and record whether `.mosa` remains the chosen provisional suffix or needs a separately approved compatibility change.
+2. Complete an appropriately scoped national/regional registry and similar-mark review for the selected Glyf name and confirmed worldwide launch, documenting coverage and remaining gaps. Existing exact-name software uses require assessment.
+3. Complete extension-registry coverage for `.glyf`. The suffix is selected and implemented, but no unique-extension claim, OS association or registered media type is established. The current format rejects the obsolete marker; no `.mosa` compatibility mode remains.
 4. Preserve the documented native-memory limitation in release notes. Do not turn the implementation Definition of Done into an unconditional public-release approval.
 
-No application code, dependency, file-format rule or resource limit changed. No release, package, tag, push, external message, domain registration or trademark application was created.
+The original public-check follow-up changed no application code, dependency, file-format rule or resource limit. The subsequent Glyf rebrand is recorded separately above. No release, package, tag, push, external message, domain registration or trademark application was created.
 
-Formatting and `git diff --check` pass. The intentionally malformed fixture is excluded individually from Prettier so formatting cannot repair the invalid input. No new automated test cases or runtime changes were needed; the 34-case Brave run and fixture checks are the fresh verification for this documentation/test-data follow-up.
+Original-check verification: formatting and `git diff --check` passed. The intentionally malformed fixture is excluded individually from Prettier so formatting cannot repair the invalid input. No new automated test cases or runtime changes were needed; the 34-case Brave run and fixture checks are the fresh verification for this documentation/test-data follow-up.

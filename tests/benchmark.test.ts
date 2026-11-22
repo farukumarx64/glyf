@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { fixtureProfiles, generateFixture } from '../scripts/benchmarks/fixtures.ts';
 import { memorySlope, summarize } from '../scripts/benchmarks/statistics.ts';
-import { parseMosaic } from '../src/core/parse.ts';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import { parseGlyf } from '../src/core/parse.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 
 describe('benchmark evidence', () => {
   it.each(fixtureProfiles)(
@@ -15,10 +15,10 @@ describe('benchmark evidence', () => {
       expect(fixture.rows).toBe(profile.rows);
       expect(fixture.cells).toBe(profile.rows * profile.columns);
       expect(fixture.pointsPerChart).toBe(Math.min(profile.rows, 500));
-      const result = parseMosaic(fixture.source);
+      const result = parseGlyf(fixture.source);
       expect(result.ok).toBe(true);
       if (!result.ok) return;
-      expect(parseMosaic(serializeMosaic(result.document))).toEqual(result);
+      expect(parseGlyf(serializeGlyf(result.document))).toEqual(result);
     },
   );
 

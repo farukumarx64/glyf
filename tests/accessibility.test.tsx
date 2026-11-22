@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest';
 import { DocumentView } from '../src/app/DocumentView.tsx';
 import { createDocumentStore } from '../src/core/store.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples } from './fixtures.ts';
 
 afterEach(cleanup);
@@ -11,7 +11,7 @@ afterEach(cleanup);
 function open(kind: 'toggle' | 'input') {
   const doc = minimalDocument();
   const isToggle = kind === 'toggle';
-  const result = validateMosaic({
+  const result = validateGlyf({
     ...doc,
     state: { visible: true, count: 0, note: 'Outside' },
     root: {
@@ -33,7 +33,7 @@ function open(kind: 'toggle' | 'input') {
   });
   if (!result.ok) throw new Error(JSON.stringify(result.errors));
   const store = createDocumentStore(result);
-  render(<DocumentView store={store} fileName="focus.mosa" />);
+  render(<DocumentView store={store} fileName="focus.glyf" />);
   return store;
 }
 

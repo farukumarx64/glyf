@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { parseMosaic, parseMosaicText } from '../src/core/parse.ts';
-import { MOSAIC_LIMITS } from '../src/core/limits.ts';
-import { preflightMosaic } from '../src/core/preflight.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { parseGlyf, parseGlyfText } from '../src/core/parse.ts';
+import { GLYF_LIMITS } from '../src/core/limits.ts';
+import { preflightGlyf } from '../src/core/preflight.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { validateSchema } from '../scripts/schema-validator.ts';
 import { minimalDocument } from './fixtures.ts';
 
@@ -17,17 +17,17 @@ const documentWith = (root: unknown) => ({ ...minimalDocument(), root });
 
 describe('preflight before structural validation', () => {
   it('accepts the reference file through the source and direct validation APIs', () => {
-    const source = parseMosaicText(
-      readFileSync(new URL('../examples/mosaic-demo.mosa', import.meta.url), 'utf8'),
+    const source = parseGlyfText(
+      readFileSync(new URL('../examples/glyf-demo.glyf', import.meta.url), 'utf8'),
     );
-    expect(source.ok && validateMosaic(source.value)).toMatchObject({ ok: true });
+    expect(source.ok && validateGlyf(source.value)).toMatchObject({ ok: true });
   });
 
   it.each([1999, 2000, 2001])('counts the root in a %i-node document', (size) => {
     const children = Array.from({ length: size - 1 }, (_, i) => divider(i));
     const value = documentWith({ ...minimalDocument().root, children });
-    const result = validateMosaic(value);
-    expect(parseMosaic(JSON.stringify(value))).toStrictEqual(result);
+    const result = validateGlyf(value);
+    expect(parseGlyf(JSON.stringify(value))).toStrictEqual(result);
     if (size <= 2000) expect(result).toMatchObject({ ok: true });
     else
       expect(result).toMatchObject({
@@ -44,9 +44,9 @@ describe('preflight before structural validation', () => {
 
   it.each([19, 20, 21])('uses node levels for a chain of depth %i', (depth) => {
     const doc = documentWith(chain(depth));
-    const result = validateMosaic(doc);
+    const result = validateGlyf(doc);
     // Text can hit the raw container guard first. Both paths identify the same node.
-    const parsed = parseMosaic(JSON.stringify(doc));
+    const parsed = parseGlyf(JSON.stringify(doc));
     if (depth <= 20) expect(parsed).toStrictEqual(result);
     else
       expect(parsed).toMatchObject({
@@ -89,7 +89,7 @@ describe('preflight before structural validation', () => {
         ],
       },
     };
-    expect(validateMosaic(value)).toMatchObject({
+    expect(validateGlyf(value)).toMatchObject({
       ok: false,
       errors: [{ code: 'RESOURCE_LIMIT', path: '/root/children/1/children' }],
     });
@@ -98,7 +98,7 @@ describe('preflight before structural validation', () => {
   it('stops before schema validation even when required fields are missing', () => {
     // An empty object in a node slot is malformed. Resource preflight runs first.
     const value = { root: { children: new Array(100_000) } };
-    expect(validateMosaic(value)).toMatchObject({
+    expect(validateGlyf(value)).toMatchObject({
       ok: false,
       errors: [{ code: 'RESOURCE_LIMIT', path: '/root/children' }],
     });
@@ -111,7 +111,7 @@ describe('preflight before structural validation', () => {
     let deep: object = shared;
     for (let i = 0; i < 18; i++) deep = { type: 'card', id: 'wrap' + i, children: [deep] };
     const root = { ...minimalDocument().root, children: [shared, deep] };
-    expect(validateMosaic(documentWith(root))).toMatchObject({
+    expect(validateGlyf(documentWith(root))).toMatchObject({
       ok: false,
       errors: [{ code: 'RESOURCE_LIMIT', path: '/root/children/1' + '/children/0'.repeat(19) }],
     });
@@ -124,7 +124,7 @@ describe('preflight before structural validation', () => {
       children: Array.from({ length: 1000 }, (_, i) => divider(i)),
     };
     expect(
-      preflightMosaic(documentWith({ ...minimalDocument().root, children: [shared, shared] })),
+      preflightGlyf(documentWith({ ...minimalDocument().root, children: [shared, shared] })),
     ).toMatchObject({ code: 'RESOURCE_LIMIT', path: '/root/children/1/children' });
   });
 
@@ -134,22 +134,22 @@ describe('preflight before structural validation', () => {
       extra: shared,
       ...documentWith({ ...minimalDocument().root, children: [shared] }),
     };
-    expect(validateMosaic(value)).toMatchObject({
+    expect(validateGlyf(value)).toMatchObject({
       ok: false,
       errors: [{ code: 'RESOURCE_LIMIT', path: '/root' + '/children/0'.repeat(20) }],
     });
   });
 
   it('uses the same version diagnostics for direct input and source text', () => {
-    for (const value of [{ mosaic: '0.2.0' }, { mosaic: 1 }, {}]) {
-      expect(validateMosaic(value)).toEqual(parseMosaicText(JSON.stringify(value)));
+    for (const value of [{ glyf: '0.2.0' }, { glyf: 1 }, {}]) {
+      expect(validateGlyf(value)).toEqual(parseGlyfText(JSON.stringify(value)));
     }
   });
 
   it('preserves distinct diagnostics for structural constraints and published schema limits', () => {
-    const text = 'x'.repeat(MOSAIC_LIMITS.markdownCharacters + 1);
+    const text = 'x'.repeat(GLYF_LIMITS.markdownCharacters + 1);
     expect(
-      validateMosaic(
+      validateGlyf(
         documentWith({
           ...minimalDocument().root,
           children: [{ id: 'm', type: 'markdown', text }],
@@ -159,9 +159,10 @@ describe('preflight before structural validation', () => {
       ok: false,
       errors: [{ code: 'RESOURCE_LIMIT', path: '/root/children/0/text' }],
     });
-    expect(
-      validateMosaic({ ...minimalDocument(), meta: { title: 'x'.repeat(201) } }),
-    ).toMatchObject({ ok: false, errors: [{ code: 'SCHEMA_ERROR', path: '/meta/title' }] });
+    expect(validateGlyf({ ...minimalDocument(), meta: { title: 'x'.repeat(201) } })).toMatchObject({
+      ok: false,
+      errors: [{ code: 'SCHEMA_ERROR', path: '/meta/title' }],
+    });
   });
 
   it('leaves malformed child shapes within budget to the schema stage', () => {
@@ -171,8 +172,8 @@ describe('preflight before structural validation', () => {
       { root: null },
       documentWith({ ...minimalDocument().root, children: 'invalid' }),
     ]) {
-      expect(preflightMosaic(value)).toBeUndefined();
-      expect(validateMosaic(value)).toMatchObject({
+      expect(preflightGlyf(value)).toBeUndefined();
+      expect(validateGlyf(value)).toMatchObject({
         ok: false,
         errors: [{ code: 'SCHEMA_ERROR' }],
       });
@@ -196,14 +197,14 @@ describe('preflight before structural validation', () => {
       ...minimalDocument(),
       datasets: { a: data, b: structuredClone(data), c: structuredClone(data) },
     };
-    expect(validateMosaic(value)).toMatchObject({ ok: true });
+    expect(validateGlyf(value)).toMatchObject({ ok: true });
   });
 
   it('reports the depth limit for a deeply nested direct node chain', () => {
-    expect(validateMosaic(documentWith(chain(30000)))).toMatchObject({
+    expect(validateGlyf(documentWith(chain(30000)))).toMatchObject({
       ok: false,
       errors: [
-        { code: 'RESOURCE_LIMIT', path: '/root' + '/children/0'.repeat(MOSAIC_LIMITS.treeDepth) },
+        { code: 'RESOURCE_LIMIT', path: '/root' + '/children/0'.repeat(GLYF_LIMITS.treeDepth) },
       ],
     });
   });
@@ -213,7 +214,7 @@ describe('direct JavaScript object graphs', () => {
   it('reports a back edge from a node to itself', () => {
     const root = { ...minimalDocument().root, children: [] as unknown[] };
     root.children.push(root);
-    expect(validateMosaic(documentWith(root))).toMatchObject({
+    expect(validateGlyf(documentWith(root))).toMatchObject({
       ok: false,
       errors: [
         {
@@ -228,7 +229,7 @@ describe('direct JavaScript object graphs', () => {
   it('rejects a cycle from a nested array to the document, including escaped property names', () => {
     const value = { ...minimalDocument(), state: { 'a/b~': [] as unknown[] } };
     value.state['a/b~'].push(value);
-    expect(validateMosaic(value)).toMatchObject({
+    expect(validateGlyf(value)).toMatchObject({
       ok: false,
       errors: [
         {
@@ -248,7 +249,7 @@ describe('direct JavaScript object graphs', () => {
       extra: row,
     })) {
       const path = key === 'datasets' ? '/datasets/table/rows/0/link/0' : '/extra/link/0';
-      expect(validateMosaic({ ...minimalDocument(), [key]: value })).toMatchObject({
+      expect(validateGlyf({ ...minimalDocument(), [key]: value })).toMatchObject({
         ok: false,
         errors: [{ code: 'SCHEMA_ERROR', path, message: expect.stringContaining('Circular') }],
       });
@@ -262,14 +263,14 @@ describe('direct JavaScript object graphs', () => {
       rows: list,
     });
     const doc = Object.freeze({ ...minimalDocument(), datasets: { a: first, b: first } });
-    expect(validateMosaic(doc)).toMatchObject({ ok: true });
+    expect(validateGlyf(doc)).toMatchObject({ ok: true });
     list.push(first);
-    expect(validateMosaic(doc)).toMatchObject({
+    expect(validateGlyf(doc)).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/datasets/a/rows/0' }],
     });
     list.pop();
-    expect(validateMosaic(doc)).toMatchObject({ ok: true });
+    expect(validateGlyf(doc)).toMatchObject({ ok: true });
   });
 
   it('handles deep cyclic data outside the tree iteratively', () => {
@@ -281,7 +282,7 @@ describe('direct JavaScript object graphs', () => {
       tail = next;
     }
     tail.loop = head;
-    const result = validateMosaic({ ...minimalDocument(), state: { deep: head } });
+    const result = validateGlyf({ ...minimalDocument(), state: { deep: head } });
     expect(result).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/state/deep' + '/next'.repeat(12000) + '/loop' }],
@@ -290,10 +291,10 @@ describe('direct JavaScript object graphs', () => {
 
   it('rejects an accessor without invoking it, and accepts own properties of null-prototype records', () => {
     const value = Object.assign(Object.create(null) as Record<string, unknown>, minimalDocument());
-    expect(validateMosaic(value)).toMatchObject({ ok: true });
+    expect(validateGlyf(value)).toMatchObject({ ok: true });
     const getter = vi.fn(() => value);
     Object.defineProperty(value, 'extra', { get: getter, enumerable: true });
-    expect(validateMosaic(value)).toMatchObject({
+    expect(validateGlyf(value)).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/extra' }],
     });
@@ -303,19 +304,19 @@ describe('direct JavaScript object graphs', () => {
   it('rejects symbol and hidden fields on direct input at the nearest JSON location', () => {
     const value = minimalDocument();
     Object.defineProperty(value.meta, 'internal', { value });
-    expect(validateMosaic(value)).toMatchObject({
+    expect(validateGlyf(value)).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/meta/internal' }],
     });
     expect(
-      validateMosaic({ ...minimalDocument(), meta: { title: 'T', [Symbol('extra')]: 1 } }),
+      validateGlyf({ ...minimalDocument(), meta: { title: 'T', [Symbol('extra')]: 1 } }),
     ).toMatchObject({ ok: false, errors: [{ code: 'SCHEMA_ERROR', path: '/meta' }] });
   });
 
   it('rejects sparse and decorated arrays as non-JSON containers', () => {
     const extra = Object.assign([], { extra: 1 });
     for (const children of [new Array(2), extra]) {
-      expect(validateMosaic(documentWith({ ...minimalDocument().root, children }))).toMatchObject({
+      expect(validateGlyf(documentWith({ ...minimalDocument().root, children }))).toMatchObject({
         ok: false,
         errors: [{ code: 'SCHEMA_ERROR', path: '/root/children' }],
       });
@@ -332,7 +333,7 @@ describe('non-JSON JavaScript input', () => {
   ])('rejects %s in a nested cell before it can be dropped or converted', (_kind, cell) => {
     const row = { id: 'r', value: cell };
     const data = { columns: [{ key: 'value', kind: 'number', label: 'Value' }], rows: [row] };
-    expect(validateMosaic({ ...minimalDocument(), datasets: { data } })).toMatchObject({
+    expect(validateGlyf({ ...minimalDocument(), datasets: { data } })).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/datasets/data/rows/0/value' }],
     });
@@ -345,7 +346,7 @@ describe('non-JSON JavaScript input', () => {
     const get = vi.fn(() => divider(1));
     Object.defineProperty(children, '0', { get, enumerable: true, configurable: true });
     const descriptor = Object.getOwnPropertyDescriptor(children, '0');
-    expect(validateMosaic(documentWith({ ...minimalDocument().root, children }))).toMatchObject({
+    expect(validateGlyf(documentWith({ ...minimalDocument().root, children }))).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/root/children/0' }],
     });

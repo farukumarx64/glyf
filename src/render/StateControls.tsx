@@ -1,6 +1,6 @@
 import { useContext, useId } from 'react';
 import type { DocumentStore } from '../core/store.ts';
-import type { InputNode, ToggleNode, MosaicScalar } from '../core/types.ts';
+import type { InputNode, ToggleNode, GlyfScalar } from '../core/types.ts';
 import type { NodeView } from './nodeRegistry.tsx';
 import { StateEditingContext } from './state-editing-context.ts';
 import { useValueDraft } from './useValueDraft.ts';
@@ -16,7 +16,7 @@ function EditableInput({
   updateState,
 }: {
   node: InputNode;
-  value: MosaicScalar;
+  value: GlyfScalar;
   anchorId: string;
   updateState: DocumentStore['updateState'];
 }) {
@@ -31,7 +31,7 @@ function EditableInput({
     onKeyDown: draft.restore,
   } as const;
   return (
-    <div id={anchorId} className="mosaic-input">
+    <div id={anchorId} className="glyf-input">
       <label htmlFor={inputId}>{controlLabel(node)}</label>
       {node.kind === 'text' ? (
         <textarea
@@ -49,7 +49,7 @@ function EditableInput({
         />
       )}
       {draft.error && (
-        <p id={errorId} className="mosaic-control-error" role="alert">
+        <p id={errorId} className="glyf-control-error" role="alert">
           {draft.error}
         </p>
       )}
@@ -64,14 +64,14 @@ function EditableToggle({
   updateState,
 }: {
   node: ToggleNode;
-  value: MosaicScalar;
+  value: GlyfScalar;
   anchorId: string;
   updateState: DocumentStore['updateState'];
 }) {
   const errorId = useId();
   const draft = useValueDraft(value, (next) => updateState(node.bind, next));
   return (
-    <div id={anchorId} className="mosaic-toggle">
+    <div id={anchorId} className="glyf-toggle">
       <label>
         <input
           type="checkbox"
@@ -84,7 +84,7 @@ function EditableToggle({
         {controlLabel(node)}
       </label>
       {draft.error && (
-        <p id={errorId} className="mosaic-control-error" role="alert">
+        <p id={errorId} className="glyf-control-error" role="alert">
           {draft.error}
         </p>
       )}

@@ -3,7 +3,7 @@
   "printWidth": 100,
   "overrides": [
     {
-      "files": "*.mosa",
+      "files": "*.glyf",
       "options": { "parser": "json" }
     }
   ]

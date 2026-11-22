@@ -1,27 +1,27 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { readMosaicFile } from '../src/core/file.ts';
-import { parseMosaic, parseMosaicBytes } from '../src/core/parse.ts';
-import { MosaicSerializationError, serializeMosaic } from '../src/core/serialize.ts';
-import type { Dataset, MosaicDocument, MosaicNode, MosaicScalar } from '../src/core/types.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { readGlyfFile } from '../src/core/file.ts';
+import { parseGlyf, parseGlyfBytes } from '../src/core/parse.ts';
+import { GlyfSerializationError, serializeGlyf } from '../src/core/serialize.ts';
+import type { Dataset, GlyfDocument, GlyfNode, GlyfScalar } from '../src/core/types.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
 const utf8 = new TextEncoder();
 
 function fixture(name: string) {
-  return readFileSync(new URL('../examples/invalid/' + name + '.mosa', import.meta.url));
+  return readFileSync(new URL('../examples/invalid/' + name + '.glyf', import.meta.url));
 }
 
-function roundTrip(source: string, expected: MosaicDocument) {
-  const first = parseMosaic(source);
+function roundTrip(source: string, expected: GlyfDocument) {
+  const first = parseGlyf(source);
   if (!first.ok) throw new Error(JSON.stringify(first.errors));
   expect(first.document).toStrictEqual(expected);
-  const formatted = serializeMosaic(first.document);
-  const second = parseMosaic(formatted);
+  const formatted = serializeGlyf(first.document);
+  const second = parseGlyf(formatted);
   if (!second.ok) throw new Error(JSON.stringify(second.errors));
   expect(second.document).toStrictEqual(expected);
-  expect(serializeMosaic(second.document)).toBe(formatted);
+  expect(serializeGlyf(second.document)).toBe(formatted);
   return formatted;
 }
 
@@ -40,10 +40,10 @@ function documentAtAllLimits() {
   }));
   const datasets: Record<string, Dataset> = { data: { columns: dataColumns, rows } };
   for (let i = 1; i < 20; i++) datasets['empty' + i] = { columns, rows: [] };
-  const state: Record<string, MosaicScalar> = { visible: false, note: '' };
+  const state: Record<string, GlyfScalar> = { visible: false, note: '' };
   for (let i = 2; i < 100; i++) state['s' + i] = null;
 
-  let branch: MosaicNode = {
+  let branch: GlyfNode = {
     id: 'plot',
     type: 'chart',
     kind: 'line',
@@ -53,7 +53,7 @@ function documentAtAllLimits() {
   };
   for (let depth = 19; depth >= 3; depth--)
     branch = { id: 'card' + depth, type: 'card', children: [branch] };
-  const hidden: MosaicNode = {
+  const hidden: GlyfNode = {
     id: 'hidden',
     type: 'when',
     bind: 'visible',
@@ -65,7 +65,7 @@ function documentAtAllLimits() {
     id: 'line' + i,
     type: 'divider' as const,
   }));
-  const doc: MosaicDocument = {
+  const doc: GlyfDocument = {
     ...minimalDocument(),
     datasets,
     state,
@@ -87,7 +87,7 @@ function freezeDocument(value: unknown) {
 
 describe('v0.1 file conformance', () => {
   it.each([
-    ['unsupported-version', 'UNSUPPORTED_VERSION', '/mosaic'],
+    ['unsupported-version', 'UNSUPPORTED_VERSION', '/glyf'],
     ['duplicate-node-id', 'DUPLICATE_ID', '/root/children/1/children/0/id'],
     ['missing-binding', 'INVALID_BINDING', '/root/children/0/children/0/bind'],
     ['wrong-column-type', 'INVALID_DATASET', '/datasets/sales/rows/0/amount'],
@@ -95,16 +95,16 @@ describe('v0.1 file conformance', () => {
     'rejects the %s fixture at the specified location through file and text import',
     async (name, code, path) => {
       const bytes = fixture(name);
-      const parsed = parseMosaic(bytes.toString('utf8'));
+      const parsed = parseGlyf(bytes.toString('utf8'));
       expect(parsed).toMatchObject({ ok: false, errors: [{ code, path }] });
-      const source = await readMosaicFile(new File([new Uint8Array(bytes)], name + '.mosa'));
-      expect(source.ok ? validateMosaic(source.value) : source).toStrictEqual(parsed);
+      const source = await readGlyfFile(new File([new Uint8Array(bytes)], name + '.glyf'));
+      expect(source.ok ? validateGlyf(source.value) : source).toStrictEqual(parsed);
     },
   );
 
   it('preserves literal markup inside a Markdown string through parse–serialize–parse', () => {
     const text = fixture('malicious-markdown').toString('utf8');
-    const expected: MosaicDocument = JSON.parse(text);
+    const expected: GlyfDocument = JSON.parse(text);
     expect(expected.root.children[0]).toMatchObject({
       type: 'markdown',
       text: expect.stringContaining('<script type="application/json">'),
@@ -123,7 +123,7 @@ describe('v0.1 file conformance', () => {
     const row = { id, [key]: 0 };
     const dataset = { columns: [column], rows: [row] };
     const chart = { ...nodeSamples.chart, id: 'Plot', dataset: key, x: key, y: key };
-    const doc: MosaicDocument = {
+    const doc: GlyfDocument = {
       ...minimalDocument(),
       id,
       state: { [key]: false },
@@ -152,7 +152,7 @@ describe('v0.1 file conformance', () => {
       [{ ...doc, root: { ...doc.root, children: [{ ...chart, x: over }] } }, '/root/children/0/x'],
       [{ ...doc, state: { [id]: false } }, '/state/' + id], // Hyphens are allowed in IDs only.
     ] as const) {
-      expect(parseMosaic(JSON.stringify(invalid))).toMatchObject({
+      expect(parseGlyf(JSON.stringify(invalid))).toMatchObject({
         ok: false,
         errors: [{ code: 'SCHEMA_ERROR', path }],
       });
@@ -163,7 +163,7 @@ describe('v0.1 file conformance', () => {
     const text = fixture('wrong-column-type')
       .toString('utf8')
       .replace(/"amount"\s*:\s*"12"/u, '"amount": 12, "am\\u006funt": 13');
-    expect(parseMosaic(text)).toMatchObject({
+    expect(parseGlyf(text)).toMatchObject({
       ok: false,
       errors: [{ code: 'INVALID_JSON', path: '/datasets/sales/rows/0/amount' }],
     });
@@ -173,7 +173,7 @@ describe('v0.1 file conformance', () => {
     const doc = documentAtAllLimits();
     const formatted = roundTrip(JSON.stringify(doc), doc);
     expect(utf8.encode(formatted).byteLength).toBe(5_242_880);
-    expect(parseMosaic(formatted + '\n')).toMatchObject({
+    expect(parseGlyf(formatted + '\n')).toMatchObject({
       ok: false,
       errors: [{ code: 'FILE_TOO_LARGE', path: '' }],
     });
@@ -190,18 +190,18 @@ describe('v0.1 file conformance', () => {
     const invalidBefore = structuredClone(invalid);
     freezeDocument(doc);
     freezeDocument(invalid);
-    const valid = validateMosaic(doc);
+    const valid = validateGlyf(doc);
     expect(valid.ok && valid.document).toBe(doc);
-    expect(parseMosaic(serializeMosaic(doc))).toStrictEqual({ ok: true, document: validBefore });
-    const result = validateMosaic(invalid);
+    expect(parseGlyf(serializeGlyf(doc))).toStrictEqual({ ok: true, document: validBefore });
+    const result = validateGlyf(invalid);
     expect(result).toMatchObject({
       ok: false,
       errors: [{ code: 'INVALID_BINDING', path: '/root/children/0/bind' }],
     });
     if (result.ok) throw new Error('Expected the invalid control binding to fail.');
-    expect(() => serializeMosaic(invalid)).toThrowError(
+    expect(() => serializeGlyf(invalid)).toThrowError(
       expect.objectContaining({
-        name: MosaicSerializationError.name,
+        name: GlyfSerializationError.name,
         errors: result.errors,
       }),
     );
@@ -223,14 +223,14 @@ describe('v0.1 file conformance', () => {
     },
     {
       name: 'duplicate property',
-      bytes: utf8.encode('{"mosaic":"0.1.0","mosaic":"0.1.0"}'),
+      bytes: utf8.encode('{"glyf":"0.1.0","glyf":"0.1.0"}'),
       ok: false,
       code: 'INVALID_JSON',
     },
   ])('leaves the complete backing buffer untouched for $name', ({ bytes, ok, code }) => {
     const buffer = new Uint8Array([0xff, ...bytes, 0xfe]);
     const before = buffer.slice();
-    const result = parseMosaicBytes(buffer.subarray(1, buffer.length - 1));
+    const result = parseGlyfBytes(buffer.subarray(1, buffer.length - 1));
     if (ok) expect(result).toStrictEqual({ ok: true, value: minimalDocument() });
     else expect(result).toMatchObject({ ok: false, errors: [{ code }] });
     expect(buffer).toStrictEqual(before);

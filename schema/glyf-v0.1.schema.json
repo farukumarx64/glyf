@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Mosaic document 0.1.0",
-  "description": "Provisional schema for Mosaic .mosa documents, version 0.1.0; semantic validation is additionally required.",
+  "$id": "https://github.com/farukumarx64/mosaic/blob/main/schema/glyf-v0.1.schema.json",
+  "title": "Glyf document 0.1.0",
+  "description": "Provisional schema for Glyf .glyf documents, version 0.1.0; semantic validation is additionally required.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["mosaic", "id", "meta", "root"],
+  "required": ["glyf", "id", "meta", "root"],
   "properties": {
-    "mosaic": {
+    "glyf": {
       "const": "0.1.0"
     },
     "id": {

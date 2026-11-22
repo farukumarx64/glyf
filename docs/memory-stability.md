@@ -1,5 +1,7 @@
 # Replacement memory follow-up — 2026-11-20
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 The longer runs reproduce native media-query retention in two Chromium versions. They do not show an accumulating history of Mosaic documents or removed document views. The §7 no-persistent-growth target remains unconfirmed; a flat DOM count is not a leak-free result. The final investigation and disposition are recorded below.
 
 ## Build and measurement method

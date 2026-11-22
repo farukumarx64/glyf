@@ -1,5 +1,7 @@
 # Phase 5 — Profiled rendering improvement
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 Measured **2026-11-19**, following the [original production baseline](benchmark-baseline.md). The targeted change avoids reparsing unchanged Markdown during dataset/state updates. On the same Apple M4/16 GiB/Chromium 159.0.8154.6 profile, the large fixture's median cell-to-chart DOM update fell from **6.00 ms to 3.40 ms**. The memory investigation identified VM warmup and native browser retention; this change does **not** claim to fix those memory trends. Current consolidated results and release status are in [benchmarks.md](benchmarks.md) and [release-readiness.md](release-readiness.md).
 
 ## Evidence and implementation

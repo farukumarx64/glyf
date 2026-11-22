@@ -1,5 +1,7 @@
 # Phase 5 — Original production performance baseline
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 This is the archived pre-optimization report. For current release measurements and readiness, use [benchmarks.md](benchmarks.md) and [release-readiness.md](release-readiness.md). Statements about remaining work below describe the original measurement stage.
 
 Measured **2026-11-19**. All measured timing and bundle budgets passed on the reference machine. The memory experiment found small retained-heap growth during small/medium replacements, so the specification's **no persistent linear growth** criterion is **not yet confirmed**. This report preserves the original baseline. The subsequent [profiled improvement report](performance-improvements.md) records the completed investigation and rendering change, including the remaining native-memory limitation.

@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { parseMosaic } from '../src/core/parse.ts';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import { parseGlyf } from '../src/core/parse.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 import { createDocumentStore } from '../src/core/store.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
 const reservedNames = ['__proto__', 'prototype', 'constructor'];
@@ -58,7 +58,7 @@ describe('prototype-key attacks in source files', () => {
           JSON.stringify(name),
           '"\\u' + name.charCodeAt(0).toString(16).padStart(4, '0') + name.slice(1) + '"',
         );
-        expect(parseMosaic(source)).toMatchObject({
+        expect(parseGlyf(source)).toMatchObject({
           ok: false,
           errors: [{ code: name === '__proto__' ? 'SCHEMA_ERROR' : code, path }],
         });
@@ -68,18 +68,18 @@ describe('prototype-key attacks in source files', () => {
   );
 
   it.each([
-    '{"__proto__":{"mosaicAuditPolluted":true}}',
-    '{"constructor":{"prototype":{"mosaicAuditPolluted":true}}}',
+    '{"__proto__":{"glyfAuditPolluted":true}}',
+    '{"constructor":{"prototype":{"glyfAuditPolluted":true}}}',
   ])('rejects nested pollution payload %s without altering prototypes', (payload) => {
     const doc = minimalDocument();
     const source = JSON.stringify({ ...doc, state: 'PAYLOAD' }).replace('"PAYLOAD"', payload);
     const before = Object.getOwnPropertyDescriptors(Object.prototype);
-    expect(parseMosaic(source).ok).toBe(false);
+    expect(parseGlyf(source).ok).toBe(false);
     const value: unknown = JSON.parse(source);
-    expect(validateMosaic(value).ok).toBe(false);
+    expect(validateGlyf(value).ok).toBe(false);
     expect(JSON.stringify(value)).toBe(source);
     expect(Object.getOwnPropertyDescriptors(Object.prototype)).toEqual(before);
-    expect(Reflect.get({}, 'mosaicAuditPolluted')).toBeUndefined();
+    expect(Reflect.get({}, 'glyfAuditPolluted')).toBeUndefined();
   });
 
   it.each(['toString', 'valueOf', 'hasOwnProperty', 'toJSON'])(
@@ -103,13 +103,13 @@ describe('prototype-key attacks in source files', () => {
           ],
         },
       };
-      const opened = parseMosaic(JSON.stringify(value));
+      const opened = parseGlyf(JSON.stringify(value));
       if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
       const store = createDocumentStore(opened);
       expect(store.updateCell('prototype', 'constructor', name, 'After').ok).toBe(true);
       expect(store.updateState(name, 'After').ok).toBe(true);
-      const exported = serializeMosaic(store.getSnapshot());
-      expect(parseMosaic(exported)).toEqual({ ok: true, document: store.getSnapshot() });
+      const exported = serializeGlyf(store.getSnapshot());
+      expect(parseGlyf(exported)).toEqual({ ok: true, document: store.getSnapshot() });
       expect(store.getRow(name, 'constructor')?.[name]).toBe('After');
       expect(store.getSnapshot().state?.[name]).toBe('After');
       expect(value.state[name]).toBe('Before');
@@ -120,12 +120,12 @@ describe('prototype-key attacks in source files', () => {
 
 describe('failed edits are atomic', () => {
   it.each([false, true])('preserves snapshots, exports and dirty=%s for hostile edits', (dirty) => {
-    const opened = validateMosaic(typedDocument);
+    const opened = validateGlyf(typedDocument);
     if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
     const store = createDocumentStore(opened);
     if (dirty) store.updateState('note', 'Saved valid edit');
     const snapshot = store.getSnapshot();
-    const exported = serializeMosaic(snapshot);
+    const exported = serializeGlyf(snapshot);
     const notify = vi.fn();
     store.subscribe(notify);
     const hook = vi.fn(() => {
@@ -146,7 +146,7 @@ describe('failed edits are atomic', () => {
     expect(notify).not.toHaveBeenCalled();
     expect(store.getSnapshot()).toBe(snapshot);
     expect(store.isDirty()).toBe(dirty);
-    expect(serializeMosaic(store.getSnapshot())).toBe(exported);
+    expect(serializeGlyf(store.getSnapshot())).toBe(exported);
     expect(typedDocument.state.note).toBe('Hello');
   });
 });

@@ -1,6 +1,6 @@
 /** Keep document-controlled IDs separate from the viewer's own DOM IDs. */
 export function nodeAnchorId(id: string): string {
-  return `mosaic-node-${id}`;
+  return `glyf-node-${id}`;
 }
 
 const nodeFragment = /^#[A-Za-z][A-Za-z0-9_-]{0,63}$/;

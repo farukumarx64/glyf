@@ -4,7 +4,7 @@ export function installViewerBenchmark(sources: { name: string; source: string }
     sources.map(({ name, source }) => [
       name,
       {
-        file: new File([source], `${name}.mosa`, { type: 'application/json' }),
+        file: new File([source], `${name}.glyf`, { type: 'application/json' }),
         title: (JSON.parse(source) as { meta: { title: string } }).meta.title,
       },
     ]),
@@ -42,7 +42,7 @@ export function installViewerBenchmark(sources: { name: string; source: string }
     if (document.querySelector('[role="alert"]')) throw new Error('Unexpected viewer error.');
     return { domMs, paintMs };
   }
-  window.mosaicViewerBench = {
+  window.glyfViewerBench = {
     async open(name: string) {
       const selected = files.get(name)!;
       const previous = document.querySelector('.document-view');
@@ -60,7 +60,7 @@ export function installViewerBenchmark(sources: { name: string; source: string }
     async edit(value: number) {
       const input = document.querySelector<HTMLInputElement>('input[aria-label="Amount, row r0"]')!;
       if (!input) throw new Error('Editable benchmark cell is missing.');
-      const charts = Array.from(document.querySelectorAll('.mosaic-chart'));
+      const charts = Array.from(document.querySelectorAll('.glyf-chart'));
       const before = charts.map((chart) => chart.querySelector('svg')!.innerHTML);
       const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
       return measure(
@@ -96,19 +96,19 @@ export function installViewerBenchmark(sources: { name: string; source: string }
       return {
         elements: document.querySelectorAll('*').length,
         tableRows: document.querySelectorAll('tbody tr').length,
-        barPoints: document.querySelectorAll('.mosaic-chart-bar').length,
-        linePoints: document.querySelectorAll('.mosaic-chart-point').length,
+        barPoints: document.querySelectorAll('.glyf-chart-bar').length,
+        linePoints: document.querySelectorAll('.glyf-chart-point').length,
       };
     },
   };
 }
 
-window.installMosaicViewerBenchmark = installViewerBenchmark;
+window.installGlyfViewerBenchmark = installViewerBenchmark;
 
 declare global {
   interface Window {
-    installMosaicViewerBenchmark: typeof installViewerBenchmark;
-    mosaicViewerBench: {
+    installGlyfViewerBenchmark: typeof installViewerBenchmark;
+    glyfViewerBench: {
       open(name: string): Promise<{ domMs: number; paintMs: number }>;
       edit(value: number): Promise<{ domMs: number; paintMs: number }>;
       nextRows(): Promise<{ domMs: number; paintMs: number }>;

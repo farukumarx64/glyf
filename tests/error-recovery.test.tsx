@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App.tsx';
-import { MOSAIC_LIMITS } from '../src/core/limits.ts';
+import { GLYF_LIMITS } from '../src/core/limits.ts';
 import { minimalDocument } from './fixtures.ts';
 
 beforeEach(() =>
@@ -26,7 +26,7 @@ async function openDemo() {
 async function sendFile(file: File, route: 'picker' | 'drop' = 'picker') {
   await act(async () => {
     if (route === 'picker') {
-      fireEvent.change(screen.getByLabelText('Choose a Mosaic file'), {
+      fireEvent.change(screen.getByLabelText('Choose a Glyf file'), {
         target: { files: [file] },
       });
     } else {
@@ -38,7 +38,7 @@ async function sendFile(file: File, route: 'picker' | 'drop' = 'picker') {
 }
 
 function pendingFile() {
-  const file = new File([], 'pending.mosa');
+  const file = new File([], 'pending.glyf');
   let resolve!: (value: ArrayBuffer) => void;
   let reject!: (error: Error) => void;
   vi.spyOn(file, 'arrayBuffer').mockReturnValue(
@@ -75,11 +75,11 @@ describe('viewer recovery during asynchronous reads', () => {
       const geometry = chart.innerHTML;
       const pending = pendingFile();
       await sendFile(pending.file, route);
-      expect(screen.getByText('Opening pending.mosa…')).toBeTruthy();
+      expect(screen.getByText('Opening pending.glyf…')).toBeTruthy();
       expect(screen.getByRole('button', { name: 'Download' })).toHaveProperty('disabled', true);
       fireEvent.change(note, { target: { value: 'Edited during the read' } });
       await pending.finish('unreadable');
-      const error = screen.getByRole('alert', { name: 'Could not open pending.mosa' });
+      const error = screen.getByRole('alert', { name: 'Could not open pending.glyf' });
       expect(document.activeElement).toBe(error);
       expect(error.textContent).toContain('The file could not be read. Choose it again to retry.');
       expect(error.textContent).not.toMatch(/Private disk|INVALID_JSON|JSON Pointer/);
@@ -90,14 +90,14 @@ describe('viewer recovery during asynchronous reads', () => {
       expect(cell.getAttribute('aria-invalid')).toBe('true');
       expect(chart.innerHTML).toBe(geometry);
       expect(screen.getByText('Unsaved changes')).toBeTruthy();
-      expect(screen.queryByText('Opening pending.mosa…')).toBeNull();
+      expect(screen.queryByText('Opening pending.glyf…')).toBeNull();
       expect(screen.getByRole('button', { name: 'Download' })).toHaveProperty('disabled', false);
       expect(window.confirm).not.toHaveBeenCalled();
       fireEvent.keyDown(cell, { key: 'Escape' });
       expect(cell).toHaveProperty('value', '5000');
 
       // Reuse the failed filename through the same entry route.
-      await sendFile(new File([JSON.stringify(minimalDocument())], 'pending.mosa'), route);
+      await sendFile(new File([JSON.stringify(minimalDocument())], 'pending.glyf'), route);
       expect(window.confirm).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('heading', { name: 'Minimal document' })).toBeTruthy();
       expect(screen.queryByRole('alert')).toBeNull();
@@ -118,8 +118,8 @@ describe('viewer recovery during asynchronous reads', () => {
       const before = source.textContent;
       const pending = pendingFile();
       await sendFile(pending.file);
-      const oversized = new File([], 'oversized.mosa');
-      Object.defineProperty(oversized, 'size', { value: MOSAIC_LIMITS.fileBytes + 1 });
+      const oversized = new File([], 'oversized.glyf');
+      Object.defineProperty(oversized, 'size', { value: GLYF_LIMITS.fileBytes + 1 });
       const read = vi.spyOn(oversized, 'arrayBuffer');
       await sendFile(oversized, 'drop');
       expect(read).not.toHaveBeenCalled();
@@ -134,10 +134,10 @@ describe('viewer recovery during asynchronous reads', () => {
       expect(screen.getByRole('tabpanel', { name: 'Source' })).toBe(source);
       expect(source.textContent).toBe(before);
       expect(screen.getByText('Unsaved changes')).toBeTruthy();
-      expect(screen.queryByText('Opening pending.mosa…')).toBeNull();
+      expect(screen.queryByText('Opening pending.glyf…')).toBeNull();
       expect(screen.getByRole('button', { name: 'Download' })).toHaveProperty('disabled', false);
       expect(window.confirm).not.toHaveBeenCalled();
-      await sendFile(new File([JSON.stringify(minimalDocument())], 'oversized.mosa'), 'drop');
+      await sendFile(new File([JSON.stringify(minimalDocument())], 'oversized.glyf'), 'drop');
       expect(window.confirm).toHaveBeenCalledTimes(1);
       expect(screen.getByRole('heading', { name: 'Minimal document' })).toBeTruthy();
       expect(screen.queryByRole('alert')).toBeNull();
@@ -148,8 +148,8 @@ describe('viewer recovery during asynchronous reads', () => {
     await openDemo();
     const cell = screen.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
     fireEvent.change(cell, { target: { value: '-' } });
-    await sendFile(new File(['{'], 'broken.mosa'));
-    expect(screen.getByRole('alert', { name: 'Could not open broken.mosa' })).toBeTruthy();
+    await sendFile(new File(['{'], 'broken.glyf'));
+    expect(screen.getByRole('alert', { name: 'Could not open broken.glyf' })).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Revenue (NGN), row jan' })).toBe(cell);
     expect(cell).toHaveProperty('value', '-');
     expect(screen.queryByText('Unsaved changes')).toBeNull();

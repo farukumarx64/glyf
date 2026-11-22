@@ -1,5 +1,7 @@
 # Phase 0 verification
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 **Completed:** 2026-11-13 (Africa/Lagos). Only Phase 0 was implemented.
 
 ## Delivered

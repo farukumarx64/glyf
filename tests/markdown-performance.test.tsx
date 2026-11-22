@@ -1,11 +1,11 @@
 // @vitest-environment happy-dom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import demoSource from '../examples/mosaic-demo.mosa?raw';
+import demoSource from '../examples/glyf-demo.glyf?raw';
 import { DocumentView } from '../src/app/DocumentView.tsx';
-import { parseMosaic } from '../src/core/parse.ts';
+import { parseGlyf } from '../src/core/parse.ts';
 import { createDocumentStore } from '../src/core/store.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { MarkdownView } from '../src/render/MarkdownView.tsx';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
@@ -30,17 +30,17 @@ afterEach(() => {
 });
 
 function storeFor(value: unknown) {
-  const result = validateMosaic(value);
+  const result = validateGlyf(value);
   if (!result.ok) throw new Error(JSON.stringify(result.errors));
   return createDocumentStore(result);
 }
 
 describe('Markdown processing during document updates', () => {
   it('reuses unchanged Markdown while cell edits, state values and chart conditions still update', () => {
-    const result = parseMosaic(demoSource);
+    const result = parseGlyf(demoSource);
     if (!result.ok) throw new Error(JSON.stringify(result.errors));
     const store = createDocumentStore(result);
-    render(<DocumentView store={store} fileName="demo.mosa" />);
+    render(<DocumentView store={store} fileName="demo.glyf" />);
     expect(processing.count).toBe(1);
     fireEvent.change(screen.getByRole('textbox', { name: 'Revenue (NGN), row jan' }), {
       target: { value: '5000' },
@@ -90,13 +90,13 @@ describe('Markdown processing during document updates', () => {
         children: [nodeSamples.toggle, { ...nodeSamples.when, children: [nodeSamples.markdown] }],
       },
     });
-    render(<DocumentView store={store} fileName="conditional.mosa" />);
+    render(<DocumentView store={store} fileName="conditional.glyf" />);
     expect(processing.count).toBe(0);
     const toggle = screen.getByRole('checkbox', { name: 'Visible' });
     fireEvent.click(toggle);
     expect(processing.count).toBe(1);
     fireEvent.click(toggle);
-    expect(document.querySelector('.mosaic-markdown')).toBeNull();
+    expect(document.querySelector('.glyf-markdown')).toBeNull();
     fireEvent.click(toggle);
     expect(processing.count).toBe(2);
   });
@@ -105,11 +105,11 @@ describe('Markdown processing during document updates', () => {
     const document = minimalDocument();
     const value = { ...document, root: { ...document.root, children: [nodeSamples.markdown] } };
     const { rerender } = render(
-      <DocumentView key="first" store={storeFor(value)} fileName="first.mosa" />,
+      <DocumentView key="first" store={storeFor(value)} fileName="first.glyf" />,
     );
     expect(processing.count).toBe(1);
-    rerender(<DocumentView key="second" store={storeFor(value)} fileName="second.mosa" />);
+    rerender(<DocumentView key="second" store={storeFor(value)} fileName="second.glyf" />);
     expect(processing.count).toBe(2);
-    expect(screen.getByText('second.mosa')).toBeTruthy();
+    expect(screen.getByText('second.glyf')).toBeTruthy();
   });
 });

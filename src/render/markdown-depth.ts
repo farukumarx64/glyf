@@ -1,4 +1,4 @@
-// A viewer budget, not a Mosaic format limit. The Markdown AST root is depth 0;
+// A viewer budget, not a Glyf format limit. The Markdown AST root is depth 0;
 // every child (including text) adds one. Leave ample headroom for recursive
 // dependency traversals and prevent engine-dependent, thousands-deep DOM trees.
 export const MARKDOWN_RENDER_DEPTH = 128;

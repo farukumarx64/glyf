@@ -1,5 +1,5 @@
 {
-  "mosaic": "0.2.0",
+  "glyf": "0.2.0",
   "id": "version",
   "meta": { "title": "Unsupported version" },
   "root": { "type": "column", "id": "root", "children": [] }

@@ -1,21 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { parseMosaic } from '../src/core/parse.ts';
-import { serializeMosaic } from '../src/core/serialize.ts';
-import type { MosaicNode, MosaicScalar } from '../src/core/types.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { parseGlyf } from '../src/core/parse.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
+import type { GlyfNode, GlyfScalar } from '../src/core/types.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { NodeRenderer } from '../src/render/NodeRenderer.tsx';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 import { renderDocument } from './render-document.tsx';
 
-function withSavedValue(saved: MosaicScalar, children: readonly MosaicNode[]) {
+function withSavedValue(saved: GlyfScalar, children: readonly GlyfNode[]) {
   const doc = minimalDocument();
   return { ...doc, state: { saved }, root: { ...doc.root, children } };
 }
 
 describe('read-only initial state', () => {
-  it.each<[MosaicScalar, MosaicScalar, boolean]>([
+  it.each<[GlyfScalar, GlyfScalar, boolean]>([
     [null, null, true],
     [false, false, true],
     [0, 0, true],
@@ -39,7 +39,7 @@ describe('read-only initial state', () => {
       },
     });
     const branch = { ...nodeSamples.when, bind: 'saved', children };
-    const result = validateMosaic(withSavedValue(false, [branch]));
+    const result = validateGlyf(withSavedValue(false, [branch]));
     if (!result.ok) throw new Error(JSON.stringify(result.errors));
     reads = 0;
     const html = renderToStaticMarkup(<NodeRenderer document={result.document} />);
@@ -47,7 +47,7 @@ describe('read-only initial state', () => {
     expect(reads).toBe(0);
   });
 
-  it.each<[MosaicScalar, string]>([
+  it.each<[GlyfScalar, string]>([
     [null, '—'],
     [false, 'false'],
     [true, 'true'],
@@ -58,7 +58,7 @@ describe('read-only initial state', () => {
   ])('displays saved %j as text between the prefix and suffix', (saved, displayed) => {
     const value = { ...nodeSamples.stateValue, bind: 'saved', prefix: '<', suffix: '>' };
     const html = renderDocument(withSavedValue(saved, [value]));
-    expect(html).toContain(`class="mosaic-text">&lt;${displayed}&gt;</span>`);
+    expect(html).toContain(`class="glyf-text">&lt;${displayed}&gt;</span>`);
   });
 
   it.each(['first\nsecond', 'first\rsecond', 'first\r\n<second>'])(
@@ -68,7 +68,7 @@ describe('read-only initial state', () => {
       const html = renderDocument(withSavedValue(saved, [input]));
       expect(html).toContain(
         renderToStaticMarkup(
-          <label id="mosaic-node-input">
+          <label id="glyf-node-input">
             Note
             <textarea value={saved} disabled />
           </label>,
@@ -77,7 +77,7 @@ describe('read-only initial state', () => {
     },
   );
 
-  it.each<[MosaicScalar, 'number' | 'text']>([
+  it.each<[GlyfScalar, 'number' | 'text']>([
     [-2.5, 'number'],
     ['', 'text'],
   ])(
@@ -87,7 +87,7 @@ describe('read-only initial state', () => {
       const html = renderDocument(withSavedValue(saved, [input]));
       expect(html).toContain(
         renderToStaticMarkup(
-          <label id="mosaic-node-input">
+          <label id="glyf-node-input">
             saved
             <input type={kind} value={String(saved)} disabled />
           </label>,
@@ -100,7 +100,7 @@ describe('read-only initial state', () => {
     const toggle = { ...nodeSamples.toggle, bind: 'saved', label: '' };
     expect(renderDocument(withSavedValue(true, [toggle]))).toContain(
       renderToStaticMarkup(
-        <label id="mosaic-node-toggle">
+        <label id="glyf-node-toggle">
           <input type="checkbox" checked disabled />
           saved
         </label>,
@@ -116,15 +116,15 @@ describe('read-only initial state', () => {
   });
 
   it('renders the reference demo from its saved state and keeps the chart conditional', () => {
-    const source = readFileSync(new URL('../examples/mosaic-demo.mosa', import.meta.url), 'utf8');
-    const result = parseMosaic(source);
+    const source = readFileSync(new URL('../examples/glyf-demo.glyf', import.meta.url), 'utf8');
+    const result = parseGlyf(source);
     if (!result.ok) throw new Error(JSON.stringify(result.errors));
     const doc = result.document;
-    const before = serializeMosaic(doc);
+    const before = serializeGlyf(doc);
     const html = renderToStaticMarkup(<NodeRenderer document={doc} />);
     expect(html).toContain(
       renderToStaticMarkup(
-        <label id="mosaic-node-noteInput">
+        <label id="glyf-node-noteInput">
           Document note
           <input type="text" value="First report" disabled />
         </label>,
@@ -133,7 +133,7 @@ describe('read-only initial state', () => {
     expect(html).toContain('Current note: First report</span>');
     expect(html).toContain(
       renderToStaticMarkup(
-        <label id="mosaic-node-chartToggle">
+        <label id="glyf-node-chartToggle">
           <input type="checkbox" checked disabled />
           Show revenue chart
         </label>,
@@ -143,8 +143,8 @@ describe('read-only initial state', () => {
     expect(html).toContain('<caption>revenue</caption>');
 
     const hidden = renderDocument({ ...doc, state: { ...doc.state, showChart: false } });
-    expect(hidden).not.toContain('mosaic-node-revenueChart');
+    expect(hidden).not.toContain('glyf-node-revenueChart');
     expect(hidden).toContain('<caption>revenue</caption>');
-    expect(serializeMosaic(doc)).toBe(before);
+    expect(serializeGlyf(doc)).toBe(before);
   });
 });

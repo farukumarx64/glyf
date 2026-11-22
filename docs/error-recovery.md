@@ -1,5 +1,7 @@
 # Phase 5 — Viewer error recovery verification
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 Verified on **2026-11-18** with Node **22.18.0**, the production Vite build, and Playwright's **Chromium 159.0.8154.6** and **WebKit 27.2**.
 
 The existing viewer preserved the current document throughout the new scenarios. No application defect was found in this verification, so this step adds tests and evidence without changing runtime behavior, the schema, dependencies, or resource limits.

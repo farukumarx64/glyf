@@ -1,27 +1,27 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import demoSource from '../examples/mosaic-demo.mosa?raw';
+import demoSource from '../examples/glyf-demo.glyf?raw';
 import { DocumentView } from '../src/app/DocumentView.tsx';
-import { parseMosaic } from '../src/core/parse.ts';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import { parseGlyf } from '../src/core/parse.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 import { createDocumentStore } from '../src/core/store.ts';
-import type { MosaicDocument } from '../src/core/types.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import type { GlyfDocument } from '../src/core/types.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
 afterEach(cleanup);
 
 function open(input: unknown) {
-  const opened = validateMosaic(input);
+  const opened = validateGlyf(input);
   if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
   const store = createDocumentStore(opened);
-  render(<DocumentView store={store} fileName="edit.mosa" />);
+  render(<DocumentView store={store} fileName="edit.glyf" />);
   return store;
 }
 
-function demo(): MosaicDocument {
-  const parsed = parseMosaic(demoSource);
+function demo(): GlyfDocument {
+  const parsed = parseGlyf(demoSource);
   if (!parsed.ok) throw new Error(JSON.stringify(parsed.errors));
   return parsed.document;
 }
@@ -29,7 +29,7 @@ function demo(): MosaicDocument {
 describe('cell editing', () => {
   it('commits a demo edit immediately to the table, chart and Source, preserving the original', () => {
     const original = demo();
-    const before = serializeMosaic(original);
+    const before = serializeGlyf(original);
     const store = open(original);
     const input = screen.getByRole('textbox', { name: 'Revenue (NGN), row jan' });
     const chart = screen.getByRole('img', { name: 'Revenue by month' });
@@ -42,8 +42,8 @@ describe('cell editing', () => {
     expect(document.getElementById(chart.getAttribute('aria-describedby')!)?.textContent).toContain(
       'Values range from 1800 to 5000',
     );
-    expect(serializeMosaic(original)).toBe(before);
-    expect(parseMosaic(serializeMosaic(store.getSnapshot()))).toEqual({
+    expect(serializeGlyf(original)).toBe(before);
+    expect(parseGlyf(serializeGlyf(store.getSnapshot()))).toEqual({
       ok: true,
       document: store.getSnapshot(),
     });

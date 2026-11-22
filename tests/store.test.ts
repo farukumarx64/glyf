@@ -1,19 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
-import demoSource from '../examples/mosaic-demo.mosa?raw';
-import { parseMosaic } from '../src/core/parse.ts';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import demoSource from '../examples/glyf-demo.glyf?raw';
+import { parseGlyf } from '../src/core/parse.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 import { createDocumentStore } from '../src/core/store.ts';
-import type { Dataset, MosaicNode } from '../src/core/types.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import type { Dataset, GlyfNode } from '../src/core/types.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
 function storeFor(input: unknown) {
-  const opened = validateMosaic(input);
+  const opened = validateGlyf(input);
   if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
   return createDocumentStore(opened);
 }
 
-function withTables(dataset: Dataset, ...children: MosaicNode[]) {
+function withTables(dataset: Dataset, ...children: GlyfNode[]) {
   return {
     ...minimalDocument(),
     datasets: { values: dataset },
@@ -23,7 +23,7 @@ function withTables(dataset: Dataset, ...children: MosaicNode[]) {
 
 describe('document store', () => {
   it('edits January revenue by stable ID and preserves the demo and file order', () => {
-    const opened = parseMosaic(demoSource);
+    const opened = parseGlyf(demoSource);
     if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
     const original = opened.document;
     const store = createDocumentStore(opened);
@@ -47,7 +47,7 @@ describe('document store', () => {
     expect(current.rows[2]).toBe(revenue.rows[2]);
     expect(edited.document.root).toBe(original.root);
     expect(edited.document.state).toBe(original.state);
-    expect(parseMosaic(serializeMosaic(edited.document))).toEqual(edited);
+    expect(parseGlyf(serializeGlyf(edited.document))).toEqual(edited);
   });
 
   it('scopes row IDs to their dataset and keeps earlier snapshots across successive edits', () => {
@@ -224,15 +224,15 @@ describe('document store', () => {
     expect(store.updateCell('table', 'r500', 'amount', 0).ok).toBe(true);
     expect(store.updateCell('table', 'r0', 'label', '').ok).toBe(true);
     expect(store.updateCell('table', 'r0', 'amount', -1).ok).toBe(true);
-    expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+    expect(validateGlyf(store.getSnapshot()).ok).toBe(true);
     expect(listener).toHaveBeenCalledTimes(4);
     const edited = store.getSnapshot();
-    const exported = serializeMosaic(edited);
+    const exported = serializeGlyf(edited);
     expect(store.updateCell('table', 'r501', 'amount', 2).ok).toBe(false);
     expect(store.getSnapshot()).toBe(edited);
     expect(store.isDirty()).toBe(true);
     expect(listener).toHaveBeenCalledTimes(4);
-    expect(serializeMosaic(store.getSnapshot())).toBe(exported);
+    expect(serializeGlyf(store.getSnapshot())).toBe(exported);
   });
 
   it('counts a new x value only if y is present and permits exactly 500 points', () => {
@@ -258,13 +258,13 @@ describe('document store', () => {
     });
     expect(store.updateCell('table', 'r0', 'label', null).ok).toBe(true);
     expect(store.updateCell('table', 'r500', 'label', '').ok).toBe(true);
-    expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+    expect(validateGlyf(store.getSnapshot()).ok).toBe(true);
   });
 });
 
 describe('state updates', () => {
   it('updates the demo note and preserves the original document and earlier snapshots', () => {
-    const opened = parseMosaic(demoSource);
+    const opened = parseGlyf(demoSource);
     if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
     const original = opened.document;
     Object.freeze(original.state);
@@ -285,7 +285,7 @@ describe('state updates', () => {
     expect(store.updateState('showChart', false).ok).toBe(true);
     expect(result.document.state!.showChart).toBe(true);
     expect(store.getSnapshot().state).toEqual({ showChart: false, note: 'Updated report' });
-    expect(parseMosaic(serializeMosaic(store.getSnapshot()))).toEqual({
+    expect(parseGlyf(serializeGlyf(store.getSnapshot()))).toEqual({
       ok: true,
       document: store.getSnapshot(),
     });
@@ -327,7 +327,7 @@ describe('state updates', () => {
       }
       expect(store.updateState(key, valid).ok).toBe(true);
       expect(store.getSnapshot().state![key]).toBe(valid);
-      expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+      expect(validateGlyf(store.getSnapshot()).ok).toBe(true);
     }
   });
 
@@ -348,7 +348,7 @@ describe('state updates', () => {
       for (const value of ['show', '', false, true, -0, Number.MIN_VALUE, Number.MAX_VALUE, null]) {
         expect(store.updateState(key, value).ok).toBe(true);
         expect(store.getSnapshot().state![key]).toBe(value);
-        expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+        expect(validateGlyf(store.getSnapshot()).ok).toBe(true);
       }
     }
   });
@@ -418,7 +418,7 @@ describe('state updates', () => {
     expect(store.getSnapshot().state).toEqual({ toString: 'Literal', hasOwnProperty: true });
     expect(state.toString).toBe(1);
     expect(state.hasOwnProperty).toBe(false);
-    expect(validateMosaic(store.getSnapshot()).ok).toBe(true);
+    expect(validateGlyf(store.getSnapshot()).ok).toBe(true);
   });
 
   it('publishes once per actual change, supports unsubscribe and composes state and cell edits', () => {

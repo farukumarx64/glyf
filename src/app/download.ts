@@ -1,13 +1,13 @@
-import { serializeMosaic } from '../core/serialize.ts';
-import type { MosaicDocument } from '../core/types.ts';
+import { serializeGlyf } from '../core/serialize.ts';
+import type { GlyfDocument } from '../core/types.ts';
 
 /** Validate and format before allocating a download URL or triggering browser I/O. */
-export function downloadMosaic(snapshot: MosaicDocument, fileName: string): void {
-  const text = serializeMosaic(snapshot);
+export function downloadGlyf(snapshot: GlyfDocument, fileName: string): void {
+  const text = serializeGlyf(snapshot);
   const blob = new Blob([text], { type: 'application/json' });
   const link = document.createElement('a');
   const name = fileName.split(/[\\/]/u).at(-1) || 'document';
-  link.download = name.replace(/(?:\.mosa)?$/iu, '.mosa');
+  link.download = name.replace(/(?:\.glyf)?$/iu, '.glyf');
   link.hidden = true;
   const url = URL.createObjectURL(blob);
   try {

@@ -1,17 +1,17 @@
 import type { ParseResult } from './errors.ts';
 import { appendJsonPointer, isJsonPointer, ROOT_POINTER } from './json-pointer.ts';
-import { checkMosaicHeader } from './source.ts';
+import { checkGlyfHeader } from './source.ts';
 import { checkStructure } from './schema.ts';
 import { validateSemantics } from './semantics.ts';
 
 /** Validate an in-memory document without coercing, copying, or mutating it. */
-export function validateMosaic(value: unknown): ParseResult {
+export function validateGlyf(value: unknown): ParseResult {
   const result = checkStructure(value);
   if (result.ok) return validateSemantics(result.document);
   const { problem } = result;
   if (!Array.isArray(problem)) return { ok: false, errors: [problem] };
 
-  const headerError = checkMosaicHeader(value);
+  const headerError = checkGlyfHeader(value);
   if (headerError) return { ok: false, errors: [headerError] };
   // All array and property-count maxima in v0.1 are published resource limits.
   // Other string-length rules (for example, a heading) are structural.
@@ -42,7 +42,7 @@ export function validateMosaic(value: unknown): ParseResult {
       {
         code: budget ? 'RESOURCE_LIMIT' : 'SCHEMA_ERROR',
         path,
-        message: issue.message ?? 'Value does not match the Mosaic schema.',
+        message: issue.message ?? 'Value does not match the Glyf schema.',
       },
     ],
   };

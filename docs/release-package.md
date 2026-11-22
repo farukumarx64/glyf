@@ -1,6 +1,6 @@
-# Mosaic viewer candidate package
+# Glyf viewer candidate package
 
-This package is for local evaluation of app **0.1.0-rc.1**. It reads document format **0.1.0** only. Read `RELEASE-NOTES.md` before evaluating; public release remains uncleared.
+This package is for local evaluation of app **0.1.0-rc.3**. It reads document format **0.1.0** only. Glyf uses the tagline **One format. Infinite expressions.** Open and download `.glyf` files with the required `"glyf": "0.1.0"` marker. Documents produced by rc.1/rc.2 use the obsolete `mosaic` field and are rejected; there is no automatic migration. Read `RELEASE-NOTES.md` before evaluating; public release remains uncleared.
 
 ## Verify and extract
 
@@ -8,8 +8,8 @@ Keep the archive, its adjacent manifest and `SHA256SUMS` in one directory. On ma
 
 ```sh
 shasum -a 256 -c SHA256SUMS
-tar -xzf mosaic-viewer-0.1.0-rc.1.tar.gz
-cd mosaic-viewer-0.1.0-rc.1
+tar -xzf glyf-viewer-0.1.0-rc.3.tar.gz
+cd glyf-viewer-0.1.0-rc.3
 shasum -a 256 -c SHA256SUMS
 ```
 
@@ -41,17 +41,17 @@ It permits the viewer's inline layout/theme styles and excludes inline scripts a
 
 1. Open Demo. Change January revenue from `1200` to `3000`; its chart and Source should update.
 2. Change Document note and turn off Show revenue chart. The current note changes and the chart disappears.
-3. Choose Download and confirm the browser completed the save. Open the saved `.mosa` file and verify those values and the hidden chart persist.
+3. Choose Download and confirm the browser completed the save. Open the saved `.glyf` file and verify those values and the hidden chart persist.
 4. After the page has loaded, repeat editing/download/reopen with the network disconnected. Keep the tab open; refreshing or closing loses the in-memory document. Cold-offline startup is not provided.
 
-Choose Open File or drop the supplied `mosaic-demo.mosa` to exercise file reading. Invalid files show an error while retaining the currently open document. Source is read-only. The JSON schema describes structure; full acceptance also requires Mosaic's semantic validation and resource checks.
+Choose Open File or drop the supplied `glyf-demo.glyf` to exercise file reading. Invalid files show an error while retaining the currently open document. Source is read-only. The JSON schema describes structure; full acceptance also requires Glyf's semantic validation and resource checks.
 
 ## Contents and provenance
 
 - `site/`: complete static viewer plus Vite-generated notices for its bundled dependencies.
 - `AJV-LICENSE.txt`: license for the Ajv helper embedded in the precompiled validator, which the final app bundler cannot attribute automatically.
-- `mosaic-demo.mosa` and `mosaic-v0.1.schema.json`: unchanged reference document and authoritative working schema.
-- `manifest.json`: app/format/toolchain versions, lockfile and source-input digests, payload byte counts and hashes. It excludes itself and `SHA256SUMS` from its payload list to avoid circular hashes.
+- `glyf-demo.glyf` and `glyf-v0.1.schema.json`: current Glyf golden fixture and authoritative working schema.
+- `manifest.json`: app/format/toolchain versions, version-field name and file extension, lockfile and source-input digests, payload byte counts and hashes. It excludes itself and `SHA256SUMS` from its payload list to avoid circular hashes.
 - `SOURCE-FILES.json`: sorted fingerprints of the explicitly selected build/package inputs. It does not contain source code or claim to fingerprint the entire repository, test evidence or Git history.
 
 No clock time, checkout path, user identity or Git working-tree status is embedded. Archive entries use sorted names, fixed permissions/ownership and an epoch timestamp. Reproduction requires the same input bytes and pinned Node/Bun toolchain; the repository documents the measured platform scope. Source files and installed dependencies are not part of this viewer archive.

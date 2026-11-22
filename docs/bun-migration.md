@@ -1,5 +1,7 @@
 # Bun package-management migration
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 Completed **2026-11-21**, from the working tree based on `158b307`. Bun **1.3.14** manages dependency installation and package scripts. Node **22.18.0** remains the locally tested runtime for Vite, Vitest, Playwright and the existing TypeScript tooling. This is a tooling change; the document contract and viewer implementation are unchanged.
 
 ## Lockfile and dependency preservation

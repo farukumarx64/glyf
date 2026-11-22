@@ -1,19 +1,19 @@
-import type { MosaicError } from './errors.ts';
+import type { GlyfError } from './errors.ts';
 import { ROOT_POINTER } from './json-pointer.ts';
-import { MOSAIC_LIMITS } from './limits.ts';
+import { GLYF_LIMITS } from './limits.ts';
 
-export function textSizeError(): MosaicError {
+export function textSizeError(): GlyfError {
   return {
     code: 'FILE_TOO_LARGE',
     path: ROOT_POINTER,
-    message: `Document text exceeds the limit of ${MOSAIC_LIMITS.fileBytes} UTF-8 bytes.`,
+    message: `Document text exceeds the limit of ${GLYF_LIMITS.fileBytes} UTF-8 bytes.`,
   };
 }
 
 // Measure supplied JS strings without allocating an encoded copy. UTF-16 length
 // is a lower bound, so an oversized string can be rejected immediately.
-export function checkUtf8Text(text: string): MosaicError | undefined {
-  const max = MOSAIC_LIMITS.fileBytes;
+export function checkUtf8Text(text: string): GlyfError | undefined {
+  const max = GLYF_LIMITS.fileBytes;
   let bytes = text.length;
   if (bytes > max) return textSizeError();
   for (let i = 0; i < text.length; i++) {

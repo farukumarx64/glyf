@@ -1,4 +1,6 @@
-# Mosaic v0.1 — Engineering decisions
+# Glyf v0.1 — Engineering decisions
+
+**Current identity:** The owner-approved full Glyf rename below supersedes the temporary rc.2 compatibility decision. Historical decisions retain their original names and dates.
 
 ## Status and scope
 
@@ -375,6 +377,32 @@ D001, D002, D005, D006, D007, and the later-phase portions of D003, D004, and D0
 - Use Vite's existing license output for bundled dependencies and include Ajv's license separately for its precompiled helper. No package dependency or application feature is introduced, and no project license is chosen on the user's behalf.
 - Compare independent fresh source snapshots and exercise the extracted candidate. Preserve the measured platform scope and exact artifact hashes in [pre-release.md](pre-release.md). Keep the successful predecessor Ubuntu CI run separate from this candidate's verification.
 - Draft public-facing limitations explicitly: native/manual accessibility, memory disposition, naming/extension checks, offline/save boundaries and synchronous Markdown. No publication, tag or deployment is part of preparation.
+
+## Replacement public-brand research — 2026-11-21
+
+- The user requested replacement-brand research after clarification of the Mosaic collision concern. Recommend **Folioweft** as the leading candidate; do not record it as a user-approved rename or worldwide-cleared mark.
+- Record exact queries, live namespace responses and observed USPTO/TMview results. Distinguish no returned records from registration availability, legal rights or a comprehensive similarity review. Deprioritize Tessfolio for its near-match to Testfolio and Meldleaf for the crowded software-related Meld component.
+- Keep WIPO's verification challenge, national-register/similarity coverage gaps and the separate `.mosa` extension review explicit. Preserve the app, existing format identifiers and reviewed candidate artifacts during this research. See [public-naming-research.md](public-naming-research.md).
+
+## Glyf public identity and compatible suffix — 2026-11-22
+
+**Superseded by the full identity amendment below.** This records the initial rc.2 choice, not the current contract.
+
+- The owner selected **Glyf**, proposed **`.glyf`**, and supplied **One format. Infinite expressions.** Apply them to the viewer, HTML metadata, current guides, demo and candidate packaging. The earlier Folioweft recommendation is superseded.
+- Treat this as a public-name/suffix change. Preserve the authoritative schema, exact `"mosaic": "0.1.0"` field and `/mosaic` diagnostics, existing TypeScript API names and internal node/CSS namespaces. Accept `.glyf` and legacy `.mosa` in the picker; validate contents on every route. No alternate marker or migration is introduced.
+- Export `.glyf` by replacing a terminal `.glyf`/`.mosa` case-insensitively, or appending the suffix otherwise. Continue using the same validating serializer and 5 MiB final-byte check. File suffixes do not change document values.
+- Keep the supplied original demo/schema/specification and dated benchmark/release evidence intact. The new demo changes only its title and introductory heading. Validate both demos. Use app `0.1.0-rc.2` and `glyf-viewer` artifacts so previously reviewed rc.1 artifacts retain their identity and bytes. The private package is named `glyf`; dependencies are unchanged.
+- Record existing Glyf software uses and distinguish the OpenType `glyf` table tag from a standalone extension. Selection is implemented; worldwide clearance remains open. The repository/remote, domains, public package namespaces and registrations are not renamed or claimed. See [research](public-naming-research.md) and [compatibility](compatibility.md#glyf-name-and-file-extension).
+
+## Full Glyf format identity — 2026-11-22
+
+- The owner clarified that the format has no existing users and explicitly approved completing the rename. Supersede the temporary rc.2 compatibility policy: require `"glyf": "0.1.0"`, use `glyf-v0.1.schema.json`, and rename all active APIs/types/constants, renderer namespaces, scripts and fixtures to Glyf.
+- Keep the document version `0.1.0` as the first-adoption version and advance the app to `0.1.0-rc.3`. Reject the obsolete `mosaic` marker rather than creating an alias, migration or dual format. A missing `glyf` marker reports `SCHEMA_ERROR` at `/glyf`; a mixed-identity document rejects its unknown `/mosaic` property. Source text, byte/Blob reads, direct validation and serialization enforce the same identity.
+- Give the working schema a Glyf title/description and an absolute `$id` using the existing repository's schema URL. This identifier does not introduce a network fetch or claim a new domain. JSON Schema [recommends absolute identifiers](https://json-schema.org/understanding-json-schema/structuring#id); standalone compilation still uses only the bundled schema. The schema-difference test permits only these identity changes and D003's existing `id` column restriction.
+- Keep only `.glyf` in the picker; normalize only that suffix on Download. Byte and Blob readers remain content-based and filename-independent. Remove special `.mosa` handling and old API aliases. Preserve all existing validation rules, limits, editing behavior and output formatting.
+- Move the original supplied `mosaic-demo.mosa` into `docs/reference/` without changing its bytes. Convert active golden/invalid/manual fixtures to `.glyf`; retain malformed fixtures as malformed. Preserve the original schema/specification, prior candidate artifacts and dated measurement records as history. Current documentation and example commands use the new identity; the existing GitHub remote URL remains accurate.
+- Fix the exact-byte benchmark fixture generator uncovered by the shorter brand: derive repetition count from the ASCII filler length rather than a hard-coded former string length. Existing tests continue to require the exact 3 KiB, 100 KiB and 1 MiB budgets. Historical performance numbers are not measurements of the new build.
+- Verify old and mixed marker rejection, error pointers, non-mutation, complete offline download/reopen and failed-import preservation. Rebuild the strict-CSP standalone validator and prepare fresh reproducible rc.3 artifacts. Naming clearance and manual accessibility remain separate open release checks.
 
 ## Supporting references
 

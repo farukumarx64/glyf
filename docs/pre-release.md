@@ -1,6 +1,6 @@
 # Pre-release candidate preparation
 
-Prepared **2026-11-21**. App **`0.1.0-rc.1`** is a local evaluation candidate. The document format remains **`0.1.0`**, the working extension remains `.mosa`, and `package.json` remains private. The [draft release notes](releases/0.1.0-rc.1.md) describe the included behavior and limitations. Packaging does not publish, tag, push or deploy a release.
+Prepared **2026-11-22**. App **`0.1.0-rc.3`** is a local evaluation candidate. The document format remains **`0.1.0`**, the required marker is `"glyf": "0.1.0"` and extension is `.glyf` (pre-rename documents are rejected), and `package.json` remains private. The [draft release notes](releases/0.1.0-rc.3.md) describe the included behavior and limitations. Packaging does not publish, tag, push or deploy a release.
 
 ## Build and verify
 
@@ -16,37 +16,76 @@ bun run release:prepare
 
 Browser installation needs network access and, on Linux, permission to install system prerequisites. Skip installation when the pinned browsers are already available. `release:prepare` regenerates the validator, typechecks and rebuilds the production viewer before packaging; it does **not** replace the full lint/test/browser checks above. It rejects `.env`/`.env.*` files and `VITE_*` environment overrides so local configuration is not silently incorporated. No new package dependency is required.
 
-The output directory is **`release/0.1.0-rc.1/`**, ignored by Git, lint and formatting:
+The output directory is **`release/0.1.0-rc.3/`**, ignored by Git, lint and formatting:
 
-| File                                     | Purpose                                                                                                                                  |
-| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `mosaic-viewer-0.1.0-rc.1.tar.gz`        | Static viewer and evaluation materials in one versioned directory.                                                                       |
-| `mosaic-viewer-0.1.0-rc.1.manifest.json` | Readable app/format/toolchain versions, source and lockfile digests, payload sizes and SHA-256 hashes; also included inside the archive. |
-| `SHA256SUMS`                             | SHA-256 of the archive and adjacent manifest.                                                                                            |
+| File                                   | Purpose                                                                                                                                  |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `glyf-viewer-0.1.0-rc.3.tar.gz`        | Static viewer and evaluation materials in one versioned directory.                                                                       |
+| `glyf-viewer-0.1.0-rc.3.manifest.json` | Readable app/format/toolchain versions, source and lockfile digests, payload sizes and SHA-256 hashes; also included inside the archive. |
+| `SHA256SUMS`                           | SHA-256 of the archive and adjacent manifest.                                                                                            |
 
 Repeated preparation replaces only these generated files for this version. It leaves other version directories intact. The script always rebuilds `dist/`, so an old production build is not reused as a candidate. Changing included source or release-note bytes changes the source fingerprint and archive checksum; preserve reviewed artifacts and increment the candidate version for a new externally shared candidate.
 
-The archive contains `site/`, package instructions, draft release notes, the unchanged demo and working schema, dependency notices, `SOURCE-FILES.json`, `manifest.json` and internal `SHA256SUMS`. Vite generates notices for the bundled app dependencies; Ajv's license is included separately because its helper is embedded during standalone-validator generation. Source code, `node_modules`, test evidence, environment files and Git metadata are excluded.
+The archive contains `site/`, package instructions, draft release notes, the current Glyf demo and schema, dependency notices, `SOURCE-FILES.json`, `manifest.json` and internal `SHA256SUMS`. Vite generates notices for the bundled app dependencies; Ajv's license is included separately because its helper is embedded during standalone-validator generation. Source code, `node_modules`, test evidence, environment files and Git metadata are excluded.
 
 The [package README](release-package.md) explains outer/inner checksum verification, extraction, local serving, HTTP(S) hosting, the tested CSP, caching and a first edit/download/reopen workflow. Host only `site/` at an origin root; the unchanged candidate does not support a subdirectory mount or `file://`. The archive does not configure server headers itself.
 
 ## Reproduce the bytes
 
-Use two fresh checkouts of the **same committed candidate source**, with identical line endings, exact Node/Bun versions and the frozen lockfile. In each, run `bun install --frozen-lockfile` and `bun run release:prepare`. Compare all three output files with `cmp` or their SHA-256 values. For example, with checkouts at `/tmp/mosaic-rc-a` and `/tmp/mosaic-rc-b`:
+Use two fresh checkouts of the **same committed candidate source**, with identical line endings, exact Node/Bun versions and the frozen lockfile. In each, run `bun install --frozen-lockfile` and `bun run release:prepare`. Compare all three output files with `cmp` or their SHA-256 values. For example, with checkouts at `/tmp/glyf-rc-a` and `/tmp/glyf-rc-b`:
 
 ```sh
-cmp /tmp/mosaic-rc-a/release/0.1.0-rc.1/mosaic-viewer-0.1.0-rc.1.tar.gz /tmp/mosaic-rc-b/release/0.1.0-rc.1/mosaic-viewer-0.1.0-rc.1.tar.gz
-cmp /tmp/mosaic-rc-a/release/0.1.0-rc.1/mosaic-viewer-0.1.0-rc.1.manifest.json /tmp/mosaic-rc-b/release/0.1.0-rc.1/mosaic-viewer-0.1.0-rc.1.manifest.json
-cmp /tmp/mosaic-rc-a/release/0.1.0-rc.1/SHA256SUMS /tmp/mosaic-rc-b/release/0.1.0-rc.1/SHA256SUMS
+cmp /tmp/glyf-rc-a/release/0.1.0-rc.3/glyf-viewer-0.1.0-rc.3.tar.gz /tmp/glyf-rc-b/release/0.1.0-rc.3/glyf-viewer-0.1.0-rc.3.tar.gz
+cmp /tmp/glyf-rc-a/release/0.1.0-rc.3/glyf-viewer-0.1.0-rc.3.manifest.json /tmp/glyf-rc-b/release/0.1.0-rc.3/glyf-viewer-0.1.0-rc.3.manifest.json
+cmp /tmp/glyf-rc-a/release/0.1.0-rc.3/SHA256SUMS /tmp/glyf-rc-b/release/0.1.0-rc.3/SHA256SUMS
 ```
 
 These paths are examples; do not compare against an older committed checkout while candidate changes are still uncommitted. If bytes differ, first compare `SOURCE-FILES.json` and the toolchain/lockfile fields before examining asset hashes.
 
-The packager sorts archive paths without locale-dependent comparison, permits only regular files, rejects unsafe/duplicate/overlong member names, and fixes permissions to `0644`, uid/gid to zero and timestamps to the Unix epoch. It emits a regular-file-only ustar archive and gzip level 9 with no timestamp, source filename or host OS identifier. It uses Node built-ins instead of platform-specific archive creation flags. The archive is a distribution mechanism for the viewer, not a change to the `.mosa` file format.
+The packager sorts archive paths without locale-dependent comparison, permits only regular files, rejects unsafe/duplicate/overlong member names, and fixes permissions to `0644`, uid/gid to zero and timestamps to the Unix epoch. It emits a regular-file-only ustar archive and gzip level 9 with no timestamp, source filename or host OS identifier. It uses Node built-ins instead of platform-specific archive creation flags. The archive is a distribution mechanism for the viewer, not a change to the JSON document format.
 
 The manifest fingerprints explicitly selected source/configuration/package inputs: `src/` except the generated validator, `scripts/`, package/toolchain/build configuration, schema, demo and the two packaged documentation files. The generated validator is rebuilt from source. Inputs do not include test evidence, this verification report, general repository documentation or Git history. This avoids a circular dependency between the recorded archive hash and the archive itself. The input list and lockfile digest identify reproducible content; they do not assert a signed source revision or supply the source code.
 
-## Verification performed
+## rc.3 verification — 2026-11-22
+
+The reviewed tree is based on `c83b5b5` plus the owner-approved complete Glyf rename, before committing these changes. The toolchain is Node **22.18.0**, Bun **1.3.14**, Chromium **159.0.8154.6** and WebKit **27.2**, on macOS arm64.
+
+- `CI=true bun run check` passed typecheck, lint, formatting, **626 tests across 32 files**, current-demo validation and the production build. The schema-difference test permits only the existing D003 column restriction and the approved identity changes. Old and mixed markers are rejected across source/direct-validation/serialization boundaries; failed checks preserve input values.
+- The rename exposed a hard-coded benchmark filler length. The generator now uses the actual ASCII string length; existing tests again verify exact 3 KiB, 100 KiB and 1 MiB fixtures. This is a fixture correction, not a new performance measurement.
+- Two fresh snapshots, initially without dependencies/generated validator/`dist/`, each installed 285 platform-applicable packages from the frozen lockfile. Both and the main checkout produced identical archive, adjacent manifest and outer checksums. Dependency versions/resolutions did not change.
+- Verified all 12 regular-file archive members, fixed metadata, internal checksums, and 67 source-input fingerprints. The packaged schema/demo equal the current working inputs. The manifest explicitly records `documentVersionField: "glyf"` and `documentExtension: ".glyf"`, alongside document version `0.1.0`.
+- **70/70 production-browser checks passed** against the extracted archive's site, with no rebuild, in **58.0 seconds**. Both engines rejected the archived original under `.mosa` and `.glyf` filenames, focused the `/glyf` error, preserved the current edits and downloaded/reopened valid Glyf JSON offline. Existing strict-CSP, keyboard, editing, conditions, unsaved-change, resource-limit, safe-Markdown and error-recovery workflows passed using the renamed renderer identifiers. The 320 px start screen was checked for overflow and its WebKit screenshot was visually inspected.
+- The converted light/dark manual fixtures validate; the intentionally malformed fixture still returns `INVALID_JSON`. The three supplied originals and prior rc.1/rc.2 archives retain their bytes. The current demo differs from the supplied original only in its version-field name and two display strings.
+- Checked 226 local documentation file links and 51 local heading anchors. Current docs describe the intentional pre-adoption break; earlier notes and performance evidence are labeled historical. There are no active `.mosa` fixtures and no old API aliases.
+
+| Artifact                               |   Bytes | SHA-256                                                            |
+| -------------------------------------- | ------: | ------------------------------------------------------------------ |
+| `glyf-viewer-0.1.0-rc.3.tar.gz`        | 141,281 | `5495c9711e92d9030567f4e8b5d72d89fcc4669955bbb1534c66ec242f4d3451` |
+| `glyf-viewer-0.1.0-rc.3.manifest.json` |   1,974 | `2bd729b3c2d993ce40520bff5247e3a65fff8c1cb8bcd8d65e38d86cb051fafa` |
+
+Source-input digest: `89c8bc4bc3d9785320bfad78688f84821a14667fab0ace9ac93192b94c46b75f`. Lockfile digest: `ae1f6674add1c270ecce519724e7504d516d5364638ef271bc1079d1a25c7a44`. Local logs, artifact comparisons and browser reports/screenshots are retained under ignored `benchmark-results/glyf-format-rename/`.
+
+These are local automated results, not a hosted CI pass or completed native screen-reader/file-dialog verification. Naming clearance and the previously recorded release limitations remain open. Earlier results below apply to their own candidates, not rc.3.
+
+## rc.2 verification — 2026-11-22
+
+The reviewed tree is based on `c83b5b5` plus the Glyf rename, before committing these changes. Local checks used Node **22.18.0**, Bun **1.3.14**, and the previously installed Chromium **159.0.8154.6** / WebKit **27.2** on macOS arm64.
+
+- Frozen installation succeeded in the main checkout and two fresh source snapshots without existing dependencies, generated validator or `dist/`. Each fresh install added 285 platform-applicable packages. The only lockfile change is the private root package name; dependency versions/resolutions are unchanged.
+- `CI=true bun run check` passed typecheck, lint, formatting, **625 tests across 32 files**, both demo validations and the production build.
+- The complete production-browser suite passed **70/70 checks** against the extracted archive's site, without rebuilding it. It includes the new legacy `.MOSA` → `.glyf` download/reopen test in both engines, exact serialization equality, the retained wire marker, and the branded 320 px start screen. Existing offline editing, condition persistence, keyboard, error recovery, unsaved-change and strict-CSP checks also passed. This is automated evidence, not native screen-reader or file-dialog verification.
+- All three archive/manifest/checksum outputs were byte-identical across both fresh builds and the main checkout. All 12 regular-file members, fixed archive metadata, internal checksums and 67 source-input fingerprints were verified. The packaged schema equals the unchanged working schema; the original rc.1 archive and supplied reference materials retain their bytes.
+
+| Artifact                               |   Bytes | SHA-256                                                            |
+| -------------------------------------- | ------: | ------------------------------------------------------------------ |
+| `glyf-viewer-0.1.0-rc.2.tar.gz`        | 140,939 | `4974b3583cce2064d410c38199abf6345953041cce2f86abbf2a2ffcf312504c` |
+| `glyf-viewer-0.1.0-rc.2.manifest.json` |   1,908 | `af9bc149d774ffeffa40a4f0cab4f7819c64ae38e414b0737cfa8317447a9ca8` |
+
+Source-input digest: `994744e016ac45e729c5d8152fe4f7554a0a42b8a42ac0ceca13a7a7ee73faa3`. Lockfile digest: `ae1f6674add1c270ecce519724e7504d516d5364638ef271bc1079d1a25c7a44`. Logs, reproducibility records and browser reports/screenshots are in ignored `benchmark-results/glyf-rename/`. The 320 px WebKit start screenshot was also visually inspected: the name, wrapped tagline and file actions remain readable without horizontal overflow.
+
+No hosted CI pass is claimed for these uncommitted changes. The rc.1 results below remain historical and do not establish an rc.2 pass.
+
+## rc.1 verification performed — 2026-11-21
 
 The reviewed working tree was based on **`557c86f`** with the candidate preparation changes applied. Two separate fresh source snapshots had **no `node_modules`, generated validator or `dist/`**. Each installed **285 platform-applicable packages** from the frozen lockfile. The lockfile stayed unchanged. Both builds and the main checkout produced identical archive, manifest and outer checksum bytes despite different absolute paths.
 

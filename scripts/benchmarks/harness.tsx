@@ -1,8 +1,8 @@
 import { createRoot } from 'react-dom/client';
 import { DocumentView } from '../../src/app/DocumentView.tsx';
-import { readMosaicFile } from '../../src/core/file.ts';
+import { readGlyfFile } from '../../src/core/file.ts';
 import { createDocumentStore } from '../../src/core/store.ts';
-import { validateMosaic } from '../../src/core/validate.ts';
+import { validateGlyf } from '../../src/core/validate.ts';
 import '../../src/styles/global.css';
 
 const root = createRoot(document.getElementById('root')!);
@@ -24,21 +24,21 @@ async function settled(selector: string, expected: number) {
   throw new Error(`Render did not settle: ${selector}`);
 }
 
-window.mosaicCoreBench = async (source: string) => {
+window.glyfCoreBench = async (source: string) => {
   // File construction/transport and unmounting are outside the initial-render measurement.
-  const file = new File([source], 'fixture.mosa');
+  const file = new File([source], 'fixture.glyf');
   root.render(null);
   await settled('.document-view', 0);
   const start = performance.now();
-  const read = await readMosaicFile(file);
+  const read = await readGlyfFile(file);
   const readEnd = performance.now();
   if (!read.ok) throw new Error(JSON.stringify(read.errors));
-  const valid = validateMosaic(read.value);
+  const valid = validateGlyf(read.value);
   const validationEnd = performance.now();
   if (!valid.ok) throw new Error(JSON.stringify(valid.errors));
   const store = createDocumentStore(valid);
   const storeEnd = performance.now();
-  root.render(<DocumentView key={++key} store={store} fileName="fixture.mosa" />);
+  root.render(<DocumentView key={++key} store={store} fileName="fixture.glyf" />);
   await settled('.document-view', 1);
   const renderEnd = performance.now();
   if (
@@ -59,7 +59,7 @@ window.mosaicCoreBench = async (source: string) => {
 
 declare global {
   interface Window {
-    mosaicCoreBench: (source: string) => Promise<{
+    glyfCoreBench: (source: string) => Promise<{
       readDecodeParseMs: number;
       validationMs: number;
       loadMs: number;

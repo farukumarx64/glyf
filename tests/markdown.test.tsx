@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 import { minimalDocument, nodeSamples } from './fixtures.ts';
 import { renderDocument } from './render-document.tsx';
 
@@ -10,7 +10,7 @@ function renderMarkdown(text: string): string {
   return renderDocument({ ...doc, root: { ...doc.root, children } });
 }
 
-describe('Mosaic Markdown', () => {
+describe('Glyf Markdown', () => {
   it.each([
     '',
     ' ',
@@ -62,7 +62,7 @@ describe('Mosaic Markdown', () => {
 
   it('renders the reference demo Markdown in its document', () => {
     const demo = JSON.parse(
-      readFileSync(new URL('../examples/mosaic-demo.mosa', import.meta.url), 'utf8'),
+      readFileSync(new URL('../examples/glyf-demo.glyf', import.meta.url), 'utf8'),
     );
     expect(renderDocument(demo)).toContain('A compact, <strong>offline-first</strong> document');
   });
@@ -82,8 +82,8 @@ describe('Mosaic Markdown', () => {
     expect(html).toContain(
       '<a href="mailto:team@example.org" rel="noopener noreferrer">team@example.org</a>',
     );
-    expect(html).toContain('<a href="#mosaic-node-heading">jump</a>');
-    expect(html).toContain('<h1 id="mosaic-node-heading">');
+    expect(html).toContain('<a href="#glyf-node-heading">jump</a>');
+    expect(html).toContain('<h1 id="glyf-node-heading">');
   });
 
   it.each([
@@ -134,13 +134,13 @@ describe('Mosaic Markdown', () => {
   });
 
   it('renders the valid raw-markup fixture without script or SVG elements', () => {
-    const file = new URL('../examples/invalid/malicious-markdown.mosa', import.meta.url);
+    const file = new URL('../examples/invalid/malicious-markdown.glyf', import.meta.url);
     const doc = JSON.parse(readFileSync(file, 'utf8'));
-    const before = serializeMosaic(doc);
+    const before = serializeGlyf(doc);
     const html = renderDocument(doc);
-    expect(html).toContain('class="mosaic-markdown">');
+    expect(html).toContain('class="glyf-markdown">');
     expect(html).not.toMatch(/<(?:script|svg|title)\b/i);
-    expect(serializeMosaic(doc)).toBe(before);
+    expect(serializeGlyf(doc)).toBe(before);
   });
 
   it('omits inline, reference, and raw HTML images, including their resource URLs', () => {

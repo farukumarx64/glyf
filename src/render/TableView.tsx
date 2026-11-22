@@ -74,9 +74,9 @@ export const TableView: NodeView<'table'> = ({ node, document, anchorId }) => {
   const nextCount = Math.min(ROW_BATCH_SIZE, rows.length - visibleCount);
 
   return (
-    <div className="mosaic-table-view">
+    <div className="glyf-table-view">
       <div
-        className="mosaic-table-scroll"
+        className="glyf-table-scroll"
         role="group"
         aria-label={`${node.dataset} table`}
         tabIndex={0}
@@ -111,7 +111,7 @@ export const TableView: NodeView<'table'> = ({ node, document, anchorId }) => {
       </div>
       {rows.length === 0 && <p>No rows</p>}
       {progressive && (
-        <div className="mosaic-table-progress">
+        <div className="glyf-table-progress">
           <span role="status">
             Showing {visibleCount} of {rows.length} rows
           </span>

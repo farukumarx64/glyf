@@ -57,8 +57,8 @@ p {
   --tint: light-dark(#fcf3e2, #3c3222);
 }
 .viewer[data-density='compact'] {
-  --mosaic-layout-gap: 0.5rem;
-  --mosaic-card-padding: 0.75rem;
+  --glyf-layout-gap: 0.5rem;
+  --glyf-card-padding: 0.75rem;
   --panel-padding: clamp(0.75rem, 2.5vw, 1.5rem);
 }
 .viewer :focus-visible {
@@ -94,7 +94,7 @@ p {
   letter-spacing: -0.04em;
   font-weight: 700;
 }
-.mosaic-mark {
+.glyf-mark {
   width: 1.45rem;
   aspect-ratio: 1;
   display: grid;
@@ -102,14 +102,14 @@ p {
   gap: 2px;
   transform: rotate(-4deg);
 }
-.mosaic-mark i {
+.glyf-mark i {
   background: var(--accent);
   border-radius: 2px;
 }
-.mosaic-mark i:nth-child(2) {
+.glyf-mark i:nth-child(2) {
   opacity: 0.48;
 }
-.mosaic-mark i:nth-child(3) {
+.glyf-mark i:nth-child(3) {
   opacity: 0.72;
 }
 

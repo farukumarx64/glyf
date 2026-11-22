@@ -1,6 +1,6 @@
-import type { MosaicError } from './errors.ts';
+import type { GlyfError } from './errors.ts';
 import { appendJsonPointer, ROOT_POINTER } from './json-pointer.ts';
-import { checkResourceLimit, MOSAIC_LIMITS, ROOT_NODE_DEPTH } from './limits.ts';
+import { checkResourceLimit, GLYF_LIMITS, ROOT_NODE_DEPTH } from './limits.ts';
 
 type Role = 'document' | 'node' | 'children' | 'data';
 
@@ -52,7 +52,7 @@ function isJsonContainer(value: object): boolean {
 }
 
 /** Inspect plain JSON data before passing it to the recursive schema validator. */
-export function preflightMosaic(input: unknown): MosaicError | undefined {
+export function preflightGlyf(input: unknown): GlyfError | undefined {
   if (input === null || typeof input !== 'object') return;
   if (!isJsonContainer(input)) {
     return {
@@ -143,9 +143,9 @@ export function preflightMosaic(input: unknown): MosaicError | undefined {
       role = 'node';
       depth = frame.role === 'document' ? ROOT_NODE_DEPTH : frame.depth + 1;
       nodes++;
-      if (depth > MOSAIC_LIMITS.treeDepth)
+      if (depth > GLYF_LIMITS.treeDepth)
         return checkResourceLimit('treeDepth', depth, location(stack, key));
-      if (nodes > MOSAIC_LIMITS.nodes)
+      if (nodes > GLYF_LIMITS.nodes)
         return checkResourceLimit('nodes', nodes, location(stack, key));
     } else if (frame.role === 'node' && key === 'children' && Array.isArray(child)) {
       role = 'children';
@@ -153,7 +153,7 @@ export function preflightMosaic(input: unknown): MosaicError | undefined {
       // Every slot is a node position. Reject obviously oversized lists before
       // enumerating them, including sparse arrays supplied by JavaScript.
       const minimumTotal = nodes + child.length;
-      if (minimumTotal > MOSAIC_LIMITS.nodes)
+      if (minimumTotal > GLYF_LIMITS.nodes)
         return checkResourceLimit('nodes', minimumTotal, location(stack, key));
     }
     if (child === null || typeof child !== 'object') continue;

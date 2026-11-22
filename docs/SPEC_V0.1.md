@@ -1,18 +1,20 @@
-# Mosaic v0.1 — Technical Specification & Development Plan
+# Glyf v0.1 — Technical Specification & Development Plan
 
-> **Status:** Implemented v0.1; release readiness recorded with limitations · **Working name:** Mosaic · **File extension:** `.mosa` · **Format version:** `0.1.0`
+> **Status:** Implemented v0.1; release readiness recorded with limitations · **Public name:** Glyf · **File extension:** `.glyf` · **Format version:** `0.1.0`
 >
 > **Intended audience:** Codex / an implementing developer  
 > **Priority order:** Correctness and safety → small, portable files → fast loading/rendering → low memory usage → visual quality → extensibility.
 
 > **Repository edition (2026-11-15):** Incorporates the eight owner-approved decisions in [decisions.md](decisions.md). The unmodified supplied plan and schema are retained in `docs/reference/`. Phase 0 and the Phase 1 core (safe parsing, resource preflight, full validation, and serialization) are implemented. Embedded example prompts below are reference material, not authorization to begin work.
 
+> **Glyf identity amendment (2026-11-22):** The owner approved the complete rename before adoption: Glyf, `.glyf`, **One format. Infinite expressions.**, the exact `"glyf": "0.1.0"` marker, and Glyf schema/API/renderer names. Pre-rename Mosaic documents and API aliases are not supported. The current golden fixture is `examples/glyf-demo.glyf`; the supplied original is archived unchanged at `docs/reference/mosaic-demo.mosa`. Schema constraints and resource limits are otherwise unchanged. See [the compatibility contract](compatibility.md#glyf-name-and-file-extension).
+
 ## 0. Instructions to Codex
 
-Build **Mosaic v0.1**, a local-first browser viewer/editor for declarative `.mosa` documents. Treat this document as the implementation contract. The companion files are:
+Build **Glyf v0.1**, a local-first browser viewer/editor for declarative `.glyf` documents. Treat this document as the implementation contract. The companion files are:
 
-- `mosaic-v0.1.schema.json` — the machine-readable JSON Schema (Draft 2020-12).
-- `mosaic-demo.mosa` — a conforming example document and initial golden fixture.
+- `glyf-v0.1.schema.json` — the machine-readable JSON Schema (Draft 2020-12).
+- `glyf-demo.glyf` — the current conforming demo and golden fixture.
 
 **Work incrementally and in order.** Begin by inspecting the repository, then create the project if it is empty. Implement one milestone at a time, run its tests, fix failures, and report what is done and what remains. Favor small, straightforward abstractions; avoid premature monorepo setup, cloud infrastructure, heavy editors, charting frameworks, and autonomous package upgrades. Do not replace the schema or silently expand v0.1 scope. If the two companion files are unavailable, create them from the specification below, record that substitution, and validate them before proceeding.
 
@@ -22,20 +24,20 @@ Do not claim successful tests, performance, or builds without running them. Do n
 
 ## 1. Product thesis
 
-Mosaic is an **AI-native, portable visual document format**. A document declares _what_ should be presented (text, layout, datasets, charts, controls) while a trusted viewer implements _how_ it looks and behaves.
+Glyf is an **AI-native, portable visual document format**. A document declares _what_ should be presented (text, layout, datasets, charts, controls) while a trusted viewer implements _how_ it looks and behaves.
 
-A `.mosa` file is **not** a webpage, executable application, Markdown derivative, compressed archive, or framework-specific React tree. It is a compact **UTF-8 JSON document** with a versioned component vocabulary. Markdown is embedded as plain strings inside `markdown` nodes.
+A `.glyf` file is **not** a webpage, executable application, Markdown derivative, compressed archive, or framework-specific React tree. It is a compact **UTF-8 JSON document** with a versioned component vocabulary. Markdown is embedded as plain strings inside `markdown` nodes.
 
 ### v0.1 promise
 
 A user can:
 
-1. Open a local `.mosa` file in a browser app, with no account or backend.
+1. Open a local `.glyf` file in a browser app, with no account or backend.
 2. View headings, Markdown, cards, layouts, a chart, and a data table.
 3. Interact with a toggle or text/number input, including conditional content.
 4. Edit permitted table cells; charts using the same dataset update accordingly.
 5. See helpful errors for malformed or unsupported documents.
-6. Download the modified document as a valid `.mosa` file, reopen it, and retain edits.
+6. Download the modified document as a valid `.glyf` file, reopen it, and retain edits.
 7. Inspect the underlying JSON in a lightweight source view.
 
 ### Non-goals for v0.1
@@ -56,7 +58,7 @@ No freehand Excalidraw-style infinite canvas, 3D engine, arbitrary HTML/CSS/JS, 
 ## 2. Architecture
 
 ```text
-.mosa file (UTF-8 JSON)
+.glyf file (UTF-8 JSON)
         |
         v
 [byte-size guard] -> [strict UTF-8 decode] -> [duplicate-key scan]
@@ -88,7 +90,7 @@ No freehand Excalidraw-style infinite canvas, 3D engine, arbitrary HTML/CSS/JS, 
               [import / edits / export]
                         |
                         v
-                     .mosa file
+                     .glyf file
 ```
 
 The app itself is a static Vite build. It does **not** need a server, an AI provider, or internet access to process local documents. During development it is served from `localhost`; production may be served as static files or offered as an installable offline app in a later step. **Do not promise that double-clicking `index.html` using `file://` will work** across all browsers.
@@ -108,24 +110,24 @@ Use explicit errors and discriminated TypeScript unions. Keep libraries behind s
 
 ---
 
-## 3. Normative `.mosa` file specification
+## 3. Normative `.glyf` file specification
 
 ### 3.1 Encoding and file handling
 
-- File extension: `.mosa` (working, **not registered** as a standard format).
+- File extension: `.glyf` (working, **not registered** as a standard format).
 - Content: **one JSON object**, UTF-8, optional BOM may be stripped on import.
-- File should end with `\n` when serialized by Mosaic; tolerate files without it.
-- Parsed top-level document **MUST** follow `mosaic-v0.1.schema.json` and semantic rules below.
-- The top-level `mosaic` field must equal the exact string `"0.1.0"`.
+- File should end with `\n` when serialized by Glyf; tolerate files without it.
+- Parsed top-level document **MUST** follow `glyf-v0.1.schema.json` and semantic rules below.
+- The top-level `glyf` field must equal the exact string `"0.1.0"`.
 - Unknown core fields and unknown component types must be rejected in v0.1; never silently execute or reinterpret them.
 - Content may be pretty-printed or minified; whitespace has no semantic meaning outside string values.
-- For downloads, use the provisional media type `application/json`; **do not claim an officially registered `.mosa` MIME type**.
+- For downloads, use the provisional media type `application/json`; **do not claim an officially registered `.glyf` MIME type**.
 
 ### 3.2 Top-level fields
 
 | Field      | Type         | Required | Meaning                                            |
 | ---------- | ------------ | -------- | -------------------------------------------------- |
-| `mosaic`   | string       | yes      | Exact format version `0.1.0`                       |
+| `glyf`     | string       | yes      | Exact format version `0.1.0`                       |
 | `id`       | string       | yes      | Stable document identifier                         |
 | `meta`     | object       | yes      | `title`, optional `description`, `locale`          |
 | `theme`    | object       | no       | Viewer theme tokens                                |
@@ -141,13 +143,13 @@ Reject duplicate property names within every JSON object before `JSON.parse`, co
 
 ### 3.3 Example document
 
-The full example is `mosaic-demo.mosa`. This shortened example demonstrates the shape:
+The full example is `glyf-demo.glyf`. This shortened example demonstrates the shape:
 
 ```json
 {
-  "mosaic": "0.1.0",
-  "id": "hello_mosaic",
-  "meta": { "title": "Hello Mosaic" },
+  "glyf": "0.1.0",
+  "id": "hello_glyf",
+  "meta": { "title": "Hello Glyf" },
   "datasets": {
     "numbers": {
       "columns": [
@@ -165,7 +167,7 @@ The full example is `mosaic-demo.mosa`. This shortened example demonstrates the 
     "id": "root",
     "type": "column",
     "children": [
-      { "id": "heading1", "type": "heading", "level": 1, "text": "Hello Mosaic" },
+      { "id": "heading1", "type": "heading", "level": 1, "text": "Hello Glyf" },
       { "id": "body1", "type": "markdown", "text": "This is **portable**." },
       { "id": "toggle1", "type": "toggle", "label": "Show chart", "bind": "showChart" },
       {
@@ -285,7 +287,7 @@ The following are **v0.1 safety and resource limits** (not long-term limits):
 
 | Limit                                   |                    Value | Enforcement                                                |
 | --------------------------------------- | -----------------------: | ---------------------------------------------------------- |
-| Raw `.mosa` bytes                       |                    5 MiB | Reject before JSON parsing                                 |
+| Raw `.glyf` bytes                       |                    5 MiB | Reject before JSON parsing                                 |
 | Total document nodes                    |                    2,000 | Iterative resource preflight                               |
 | Max tree depth                          |                       20 | Iterative resource preflight                               |
 | Named datasets                          |                       20 | Schema and semantic validation                             |
@@ -296,26 +298,26 @@ The following are **v0.1 safety and resource limits** (not long-term limits):
 | Markdown characters per node            |                   20,000 | Schema                                                     |
 | Persistent state keys                   |                      100 | Schema                                                     |
 
-Before invoking the versioned JSON Schema validator, perform an **iterative resource preflight** for node count and node-tree depth. Reject cyclic in-memory input to `validateMosaic` before recursive schema validation. Then run the schema validator, followed by a **single bounded semantic traversal** for properties JSON Schema cannot conveniently express: global node ID uniqueness, root kind, binding resolution, dataset column uniqueness and reserved names, row ID uniqueness, complete row shape, cell types, total cells, chart compatibility, and chart point cap. This approved ordering amendment (D002) protects the schema validator itself; it does not replace either validation layer.
+Before invoking the versioned JSON Schema validator, perform an **iterative resource preflight** for node count and node-tree depth. Reject cyclic in-memory input to `validateGlyf` before recursive schema validation. Then run the schema validator, followed by a **single bounded semantic traversal** for properties JSON Schema cannot conveniently express: global node ID uniqueness, root kind, binding resolution, dataset column uniqueness and reserved names, row ID uniqueness, complete row shape, cell types, total cells, chart compatibility, and chart point cap. This approved ordering amendment (D002) protects the schema validator itself; it does not replace either validation layer.
 
 Count the root at depth **1** and include it in the node count. Include all descendants, even hidden conditional content. Count dataset cells as the sum of `rows × declared columns`, including null cells and excluding row IDs. Count chart points separately per chart after skipping rows with either selected value null. Exactly the limit is allowed; one over is rejected (D004).
 
 Validator API:
 
 ```ts
-type MosaicError = {
-  readonly code: MosaicErrorCode;
+type GlyfError = {
+  readonly code: GlyfErrorCode;
   readonly path: JsonPointer; // RFC 6901 string form; empty string means whole document
   readonly message: string; // clear and human-readable
 };
 
 type ParseResult =
-  | { readonly ok: true; readonly document: MosaicDocument }
-  | { readonly ok: false; readonly errors: readonly [MosaicError, ...MosaicError[]] };
+  | { readonly ok: true; readonly document: GlyfDocument }
+  | { readonly ok: false; readonly errors: readonly [GlyfError, ...GlyfError[]] };
 
-function parseMosaic(input: string): ParseResult;
-function validateMosaic(value: unknown): ParseResult;
-function serializeMosaic(document: MosaicDocument): string;
+function parseGlyf(input: string): ParseResult;
+function validateGlyf(value: unknown): ParseResult;
+function serializeGlyf(document: GlyfDocument): string;
 ```
 
 Fixed error codes: `FILE_TOO_LARGE`, `INVALID_UTF8`, `INVALID_JSON`, `UNSUPPORTED_VERSION`, `SCHEMA_ERROR`, `DUPLICATE_ID`, `INVALID_ROOT`, `INVALID_BINDING`, `INVALID_DATASET`, `RESOURCE_LIMIT`.
@@ -357,14 +359,14 @@ const registry = {
   toggle: ToggleNode,
   input: InputNode,
   stateValue: StateValueNode,
-} satisfies Record<MosaicNode['type'], React.ComponentType<any>>;
+} satisfies Record<GlyfNode['type'], React.ComponentType<any>>;
 ```
 
 This is **illustrative**: keep implementation strongly typed where possible and avoid `any` leaking into component props. Renderer behavior must be driven exclusively by validated values.
 
 ### 5.2 Application screens
 
-**Initial screen:** project title, “Open `.mosa`”, “Open demo”, drag-and-drop zone, short explanation.  
+**Initial screen:** project title, “Open `.glyf`”, “Open demo”, drag-and-drop zone, short explanation.
 **Document screen:** compact header; Preview / Source tabs; Import/Replace, Download, Reset demo controls; validation errors with JSON paths.  
 **Preview:** responsive, readable content, tables and SVG charts.  
 **Source:** lightweight read-only formatted JSON first; do not pull in Monaco/CodeMirror solely for v0.1. If time permits, add an explicit “Edit JSON” mode with an Apply button that validates before replacing preview.  
@@ -386,7 +388,7 @@ A preview/source **split view is optional**, not required for release. No automa
 
 ## 6. Security, privacy, and threat model
 
-A `.mosa` file is **untrusted input**, including when generated by an AI.
+A `.glyf` file is **untrusted input**, including when generated by an AI.
 
 | Threat                                | Mandatory defense                                                                                   |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------- |
@@ -420,7 +422,7 @@ These are **engineering targets, not established benchmarks**. Report measuremen
 
 | Metric                                             | Target (reference device, production build)                   |
 | -------------------------------------------------- | ------------------------------------------------------------- |
-| Example `.mosa`                                    | < 10 KiB (readable JSON)                                      |
+| Example `.glyf`                                    | < 10 KiB (readable JSON)                                      |
 | App initial JS payload                             | Aim ≤ 250 KiB gzip; investigate if higher                     |
 | 1 MiB file: read/decode/parse/validate             | Median ≤ 200 ms                                               |
 | 300-node document: initial render after validation | Median ≤ 500 ms                                               |
@@ -476,7 +478,7 @@ Pin compatible package versions in `bun.lock`, not hard-coded guesses in this do
 Keep a **single app repository** in v0.1; modularize directories instead of creating a monorepo immediately.
 
 ```text
-mosaic/
+glyf/
 ├── README.md
 ├── package.json
 ├── bun.lock
@@ -488,9 +490,9 @@ mosaic/
 │   ├── decisions.md
 │   └── benchmarks.md
 ├── schema/
-│   └── mosaic-v0.1.schema.json
+│   └── glyf-v0.1.schema.json
 ├── examples/
-│   ├── mosaic-demo.mosa
+│   ├── glyf-demo.glyf
 │   └── invalid/               # negative fixtures
 ├── scripts/
 │   ├── validate-example.ts
@@ -525,7 +527,7 @@ mosaic/
 │   ├── interactions.test.tsx
 │   ├── security.test.tsx
 │   └── e2e/
-│       └── mosaic.spec.ts
+│       └── glyf.spec.ts
 └── public/
 ```
 
@@ -542,7 +544,7 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 - [x] Create Vite React/TypeScript project with strict TS config, ESLint and formatting.
 - [x] Copy the schema and example into `schema/` and `examples/`.
 - [x] Add `README.md`, `docs/decisions.md`, and package scripts for development, build, typecheck, lint, test, and format check.
-- [x] Run JSON Schema validation on `mosaic-demo.mosa` before adding UI code.
+- [x] Run JSON Schema validation on `glyf-demo.glyf` before adding UI code.
 - [x] Define the type unions in `src/core/types.ts` aligned with the schema.
 
 **Acceptance:** `bun install --frozen-lockfile`, `bun run dev`, `bun run build`, and typecheck pass; the example validates; README describes how to start.
@@ -556,8 +558,8 @@ Keep `schema/` as the source of truth for the format. Generate or type-check Typ
 - [x] Define structured errors/results, JSON Pointer helpers, shared resource ceilings, inclusive limit diagnostics, and counting conventions (step 1, 2026-11-14).
 - [x] Read files, guard the inclusive 5 MiB limit, decode strict UTF-8, handle one leading BOM, reject duplicate JSON members, and report syntax and version errors.
 - [x] Run iterative node-count, depth and cycle checks before schema validation, including for direct in-memory inputs.
-- [x] Complete `parseMosaic` and `validateMosaic` with the typed document result.
-- [x] Implement `serializeMosaic` and verify the export byte limit and roundtrip.
+- [x] Complete `parseGlyf` and `validateGlyf` with the typed document result.
+- [x] Implement `serializeGlyf` and verify the export byte limit and roundtrip.
 - [x] Compile the JSON Schema validator once per module instance and run it behind preflight.
 - [x] Validate node and row identity, layout roots, dataset declarations and cells, state and dataset references, chart compatibility, and aggregate limits.
 - [x] Return structured errors with JSON Pointer paths and a distinct unsupported version code.
@@ -600,7 +602,7 @@ Verified with the production build in headless Chromium and WebKit. The browser 
 
 - [x] Add typed state updates to the document store with immutable snapshots, existing-key checks, control binding compatibility, and finite-number validation.
 - [x] Enable mutations for `toggle` and `input`, and reactive updates for `stateValue` and `when`, building on their Phase 2 read-only rendering; use typed state changes.
-- [x] Export current datasets and state via new `.mosa` download.
+- [x] Export current datasets and state via new `.glyf` download.
 - [x] Re-import exported file and verify structural equivalence and persisted edits.
 - [x] Track unsaved changes; warn before replacing a modified document.
 - [x] Ensure open/download flows use local browser File/Blob APIs only.
@@ -671,12 +673,12 @@ The [production benchmark report](benchmarks.md) consolidates the optimized rele
 
 ### Format fixtures
 
-- `mosaic-demo.mosa` — gold sample with Markdown, chart, editable table, conditional and text input.
-- `examples/invalid/unsupported-version.mosa`
-- `examples/invalid/duplicate-node-id.mosa`
-- `examples/invalid/missing-binding.mosa`
-- `examples/invalid/wrong-column-type.mosa`
-- `examples/invalid/malicious-markdown.mosa` (valid v0.1 Markdown content, retained for later renderer checks)
+- `glyf-demo.glyf` — gold sample with Markdown, chart, editable table, conditional and text input.
+- `examples/invalid/unsupported-version.glyf`
+- `examples/invalid/duplicate-node-id.glyf`
+- `examples/invalid/missing-binding.glyf`
+- `examples/invalid/wrong-column-type.glyf`
+- `examples/invalid/malicious-markdown.glyf` (valid v0.1 Markdown content, retained for later renderer checks)
 - Synthetic medium/large valid documents generated in benchmark tests, not committed if huge.
 
 ---
@@ -696,18 +698,18 @@ bun run validate:example
 bun run benchmark
 ```
 
-CLI tool for arbitrary input files (`mosaic validate file.mosa`) is **optional** in v0.1. Do not block shipping the browser viewer to build a standalone CLI.
+CLI tool for arbitrary input files (`glyf validate file.glyf`) is **optional** in v0.1. Do not block shipping the browser viewer to build a standalone CLI.
 
 Recommended public core functions (even if package is not published):
 
 ```ts
-parseMosaic(text: string): ParseResult;
-validateMosaic(input: unknown): ParseResult;
-serializeMosaic(doc: MosaicDocument): string;
-updateCell(doc: MosaicDocument, dataset: string, rowId: string,
-           columnKey: string, value: string | number | boolean | null): MosaicDocument;
-updateState(doc: MosaicDocument, key: string,
-            value: string | number | boolean | null): MosaicDocument;
+parseGlyf(text: string): ParseResult;
+validateGlyf(input: unknown): ParseResult;
+serializeGlyf(doc: GlyfDocument): string;
+updateCell(doc: GlyfDocument, dataset: string, rowId: string,
+           columnKey: string, value: string | number | boolean | null): GlyfDocument;
+updateState(doc: GlyfDocument, key: string,
+            value: string | number | boolean | null): GlyfDocument;
 ```
 
 `updateCell` and `updateState` must reject invalid changes with clear typed errors; a cleaner Result return type is fine. Choose one immutable update strategy consistently.
@@ -716,11 +718,11 @@ updateState(doc: MosaicDocument, key: string,
 
 ## 13. AI generation contract
 
-The _format_ should work well with or without an AI. v0.1 does not call an AI service; users can produce `.mosa` externally or by hand.
+The _format_ should work well with or without an AI. v0.1 does not call an AI service; users can produce `.glyf` externally or by hand.
 
 An AI adapter should be able to receive the JSON Schema plus a short component guide and produce a valid document. For reliable generation:
 
-1. Instruct the model to output **one JSON object only**, with exact `"mosaic": "0.1.0"`.
+1. Instruct the model to output **one JSON object only**, with exact `"glyf": "0.1.0"`.
 2. Permit only the defined node types and properties; require stable unique IDs.
 3. Generate `datasets` and `state` before referencing them from nodes.
 4. Generate semantic text in Markdown strings; do not include HTML/JS/CSS.
@@ -729,7 +731,7 @@ An AI adapter should be able to receive the JSON Schema plus a short component g
 
 **Sample prompt for a separate AI adapter:**
 
-> Produce a Mosaic `.mosa` document that visualizes monthly revenue with one editable table, one bar chart bound to that table, an explanatory Markdown section, and a toggle that shows/hides the chart. Output strict UTF-8-compatible JSON matching Mosaic schema version `0.1.0`. Use unique node IDs, existing dataset/state bindings, and no HTML, CSS, JavaScript, URLs to assets, or unsupported components. Prefer simple layouts and concise content.
+> Produce a Glyf `.glyf` document that visualizes monthly revenue with one editable table, one bar chart bound to that table, an explanatory Markdown section, and a toggle that shows/hides the chart. Output strict UTF-8-compatible JSON matching Glyf schema version `0.1.0`. Use unique node IDs, existing dataset/state bindings, and no HTML, CSS, JavaScript, URLs to assets, or unsupported components. Prefer simple layouts and concise content.
 
 Future model-specific prompt engineering is deliberately outside the format specification.
 
@@ -737,11 +739,11 @@ Future model-specific prompt engineering is deliberately outside the format spec
 
 ## 14. Release checklist / Definition of Done
 
-**Mosaic v0.1 is ready when all statements below are true:**
+**Glyf v0.1 is ready when all statements below are true:**
 
 - [x] A newcomer can clone repo, install dependencies, and run the app from README.
 - [x] Schema, example document, and documented semantics agree.
-- [x] Local `.mosa` import, safe validation, preview, controls, editing, and export work.
+- [x] Local `.glyf` import, safe validation, preview, controls, editing, and export work.
 - [x] Demo includes Markdown, responsive layout, chart, editable table, input, toggle, and conditional rendering.
 - [x] Exported changes persist on re-import.
 - [x] Unknown/invalid/hostile documents fail with clear errors rather than crashes or execution.
@@ -758,7 +760,7 @@ Future model-specific prompt engineering is deliberately outside the format spec
 - v0.3: true canvas/whiteboard, richer chart libraries (conditionally loaded), richer tables, document migrations and richer exports.
 - Later: sandboxed programmable components, collaborative editing, 3D, plugins, cloud synchronization, AI-driven UI regeneration and partial updates with explicit permissions.
 
-Future versions need a published compatibility policy, conformance tests, and an extension mechanism. The working name **Mosaic** and `.mosa` extension also require collision/trademark checks before public launch. The [2026-11-20 public-release review](public-release-checks.md) found close existing Mosaic software uses; the name is not cleared. Trademark/extension registry coverage and manual screen-reader/browser evidence remain incomplete. No format identity or release approval is changed by that preliminary review.
+Future versions need a published compatibility policy, conformance tests, and an extension mechanism. The working name **Glyf** and `.glyf` extension also require collision/trademark checks before public launch. The [2026-11-20 public-release review](public-release-checks.md) found close existing Glyf software uses; the name is not cleared. Trademark/extension registry coverage and manual screen-reader/browser evidence remain incomplete. No format identity or release approval is changed by that preliminary review.
 
 ---
 
@@ -766,10 +768,10 @@ Future versions need a published compatibility policy, conformance tests, and an
 
 Provide this file and both companions to Codex. Then work through these prompts instead of asking for the whole product in one unreviewed change:
 
-1. **Foundation:** “Implement Phase 0 and Phase 1 of `MOSAIC_V0.1_TECHNICAL_SPEC_AND_BUILD_PLAN.md`. Follow `mosaic-v0.1.schema.json` as the contract. Set up tests for every parser/semantic rule. Report commands actually run.”
-2. **Read-only viewer:** “Implement Phase 2. Open `mosaic-demo.mosa` locally, render the supported static nodes, and handle import/errors securely. Run tests and build.”
+1. **Foundation:** “Implement Phase 0 and Phase 1 of `MOSAIC_V0.1_TECHNICAL_SPEC_AND_BUILD_PLAN.md`. Follow `glyf-v0.1.schema.json` as the contract. Set up tests for every parser/semantic rule. Report commands actually run.”
+2. **Read-only viewer:** “Implement Phase 2. Open `glyf-demo.glyf` locally, render the supported static nodes, and handle import/errors securely. Run tests and build.”
 3. **Reactive data:** “Implement Phase 3. Add dataset store, editable table, and minimal accessible SVG bar/line charts. Validate edits and update charts from shared data.”
-4. **Interactions and saving:** “Implement Phase 4, including toggle/input/conditional/stateValue and round-trip `.mosa` export. No cloud or scripts.”
+4. **Interactions and saving:** “Implement Phase 4, including toggle/input/conditional/stateValue and round-trip `.glyf` export. No cloud or scripts.”
 5. **Shipping:** “Implement Phase 5. Run all tests and production benchmark suite, record honest results, fix regressions, and produce a clear final release report.”
 
 **Original suggested first prompt:** implement Phase 0 and Phase 1, then show the directory tree, test output, and any spec ambiguities encountered. This is reference guidance, not current authorization. Follow the owner's explicitly requested phase; do not build speculative v0.2 features until v0.1 is stable.

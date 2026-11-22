@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
-import type { MosaicErrors } from '../core/errors.ts';
+import type { GlyfErrors } from '../core/errors.ts';
 
-export type FileFailure =
-  { name: string; errors: MosaicErrors } | { name?: string; message: string };
+export type FileFailure = { name: string; errors: GlyfErrors } | { name?: string; message: string };
 
 export function ErrorPanel({
   failure,

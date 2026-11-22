@@ -1,12 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { parseMosaic } from '../../src/core/parse.ts';
-import type { MosaicDocument, MosaicTheme } from '../../src/core/types.ts';
+import { parseGlyf } from '../../src/core/parse.ts';
+import type { GlyfDocument, GlyfTheme } from '../../src/core/types.ts';
 import { minimalDocument, nodeSamples } from '../fixtures.ts';
 
-function accessibleDocument(
-  theme: MosaicTheme = { mode: 'light', accent: 'blue' },
-): MosaicDocument {
+function accessibleDocument(theme: GlyfTheme = { mode: 'light', accent: 'blue' }): GlyfDocument {
   const doc = minimalDocument();
   return {
     ...doc,
@@ -67,10 +65,10 @@ async function tabTo(page: Page, target: Locator, key: string) {
   throw new Error('Could not reach the requested control using the keyboard');
 }
 
-async function open(page: Page, value: MosaicDocument) {
+async function open(page: Page, value: GlyfDocument) {
   await page.goto('/');
-  await page.getByLabel('Choose a Mosaic file').setInputFiles({
-    name: 'accessibility.mosa',
+  await page.getByLabel('Choose a Glyf file').setInputFiles({
+    name: 'accessibility.glyf',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(value)),
   });
@@ -99,8 +97,8 @@ test('makes wide Markdown code keyboard-scrollable without unnamed image links',
 }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await open(page, accessibleDocument());
-  await expect(page.locator('.mosaic-markdown a')).toHaveCount(1);
-  await expect(page.locator('.mosaic-markdown a')).toHaveAccessibleName('Details');
+  await expect(page.locator('.glyf-markdown a')).toHaveCount(1);
+  await expect(page.locator('.glyf-markdown a')).toHaveAccessibleName('Details');
   const block = page.getByRole('group', { name: 'Code block' });
   await expect(block).toHaveAttribute('tabindex', '0');
   await tabTo(page, block, nextKey(browserName));
@@ -181,7 +179,7 @@ for (const mode of ['light', 'dark'] as const) {
       density: mode === 'light' ? 'comfortable' : 'compact',
     });
     await choose({
-      name: 'keyboard.mosa',
+      name: 'keyboard.glyf',
       mimeType: 'application/json',
       buffer: Buffer.from(JSON.stringify(doc)),
     });
@@ -304,13 +302,13 @@ for (const mode of ['light', 'dark'] as const) {
     const pending = page.waitForEvent('download');
     await page.keyboard.press('Enter');
     const downloaded = await pending;
-    const saved = testInfo.outputPath('keyboard-edits.mosa');
+    const saved = testInfo.outputPath('keyboard-edits.glyf');
     await downloaded.saveAs(saved);
     await expect(downloadButton).toBeFocused();
     await expect(page.getByText('Unsaved changes', { exact: true })).toHaveCount(0);
     const text = await readFile(saved, 'utf8');
     expect(text).toBe(JSON.stringify(expected, null, 2) + '\n');
-    expect(parseMosaic(text)).toEqual({ ok: true, document: expected });
+    expect(parseGlyf(text)).toEqual({ ok: true, document: expected });
     await choose(saved);
     await expect(preview).toBeFocused();
     await expect(note).toHaveValue('Saved 雪 😀\nKeyboard note');
@@ -320,8 +318,8 @@ for (const mode of ['light', 'dark'] as const) {
     await expect(active).toHaveValue('true');
     await checkRelationships(page);
 
-    await choose({ name: 'broken.mosa', mimeType: 'application/json', buffer: Buffer.from('{') });
-    const error = page.getByRole('alert', { name: 'Could not open broken.mosa' });
+    await choose({ name: 'broken.glyf', mimeType: 'application/json', buffer: Buffer.from('{') });
+    const error = page.getByRole('alert', { name: 'Could not open broken.glyf' });
     await expect(error).toBeFocused();
     await expect(error).toContainText('INVALID_JSON');
     await checkRelationships(page);
@@ -435,8 +433,8 @@ test('keeps text, focus and control boundaries distinguishable across theme toke
           const style = getComputedStyle(element);
           const primary = getComputedStyle(document.querySelector('.primary-action')!);
           const sheet = getComputedStyle(document.querySelector('.document-sheet')!);
-          const link = getComputedStyle(document.querySelector('.mosaic-markdown a')!);
-          const muted = getComputedStyle(document.querySelector('.mosaic-chart > p')!);
+          const link = getComputedStyle(document.querySelector('.glyf-markdown a')!);
+          const muted = getComputedStyle(document.querySelector('.glyf-chart > p')!);
           return {
             ink: style.color,
             background: style.backgroundColor,

@@ -58,8 +58,8 @@ const explicitInputs = [
   'tsconfig.json',
   'vite.config.ts',
   'index.html',
-  'examples/mosaic-demo.mosa',
-  'schema/mosaic-v0.1.schema.json',
+  'examples/glyf-demo.glyf',
+  'schema/glyf-v0.1.schema.json',
   'docs/release-package.md',
   notesPath,
 ];
@@ -76,8 +76,8 @@ execFileSync(bun, ['run', 'build'], {
   stdio: 'inherit',
   env: { ...process.env, NODE_ENV: 'production' },
 });
-const schema = JSON.parse((await read('schema/mosaic-v0.1.schema.json')).toString('utf8'));
-const formatVersion: unknown = schema.properties.mosaic.const;
+const schema = JSON.parse((await read('schema/glyf-v0.1.schema.json')).toString('utf8'));
+const formatVersion: unknown = schema.properties.glyf.const;
 if (formatVersion !== '0.1.0') throw new Error('The candidate expects document format 0.1.0.');
 const site = (await filesIn('dist')).map(({ name, bytes }) => ({
   name: name.replace(/^dist\//, 'site/'),
@@ -93,8 +93,8 @@ const files: ReleaseFile[] = [
   ...site,
   { name: 'README.md', bytes: await read('docs/release-package.md') },
   { name: 'RELEASE-NOTES.md', bytes: await read(notesPath) },
-  { name: 'mosaic-demo.mosa', bytes: await read('examples/mosaic-demo.mosa') },
-  { name: 'mosaic-v0.1.schema.json', bytes: await read('schema/mosaic-v0.1.schema.json') },
+  { name: 'glyf-demo.glyf', bytes: await read('examples/glyf-demo.glyf') },
+  { name: 'glyf-v0.1.schema.json', bytes: await read('schema/glyf-v0.1.schema.json') },
   // Ajv's Unicode helper was bundled before Vite saw the app's dependency graph.
   { name: 'AJV-LICENSE.txt', bytes: await read('node_modules/ajv/LICENSE') },
   { name: 'SOURCE-FILES.json', bytes: sourceRecords },
@@ -102,6 +102,8 @@ const files: ReleaseFile[] = [
 const manifest = json({
   appVersion: pkg.version,
   documentFormat: formatVersion,
+  documentVersionField: 'glyf',
+  documentExtension: '.glyf',
   status: 'local-evaluation-candidate',
   toolchain: { node: nodeVersion, bun: bunVersion },
   sourceSha256: sha256(sourceRecords),
@@ -110,7 +112,7 @@ const manifest = json({
 });
 files.push({ name: 'manifest.json', bytes: manifest });
 files.push({ name: 'SHA256SUMS', bytes: Buffer.from(checksums(files)) });
-const base = `mosaic-viewer-${pkg.version}`;
+const base = `glyf-viewer-${pkg.version}`;
 const archive = releaseArchive(
   files.map(({ name, bytes }) => ({ name: `${base}/${name}`, bytes })),
 );

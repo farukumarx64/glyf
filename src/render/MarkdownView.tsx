@@ -58,7 +58,7 @@ class MarkdownBoundary extends Component<{ text: string; children: ReactNode }> 
     return (
       <>
         <p role="note">Markdown formatting could not be displayed. Showing the original text.</p>
-        <pre className="mosaic-markdown-fallback">{this.props.text}</pre>
+        <pre className="glyf-markdown-fallback">{this.props.text}</pre>
       </>
     );
   }
@@ -83,7 +83,7 @@ const MarkdownContent = memo(function MarkdownContent({ text }: { text: string }
 });
 
 export const MarkdownView: NodeView<'markdown'> = ({ node, anchorId }) => (
-  <div id={anchorId} className="mosaic-markdown">
+  <div id={anchorId} className="glyf-markdown">
     <MarkdownContent text={node.text} />
   </div>
 );

@@ -1,4 +1,4 @@
-# Troubleshooting Mosaic
+# Troubleshooting Glyf
 
 Use the [setup instructions](../README.md#development-environment) and [user guide](user-guide.md) alongside this page. If a document is still open, download accepted changes before restarting the viewer. Invalid file opens and failed exports preserve the current document; refreshing does not.
 
@@ -21,7 +21,7 @@ Run commands from the repository folder containing `package.json`. Use `node --v
 
 ## Opening files and reading errors
 
-Choose **one `.mosa` file** at a time. The viewer reads actual content; renaming a PDF or ZIP to `.mosa` does not convert it. If your file picker filters it out, check the saved filename and suffix. Keep the original while investigating a damaged file.
+Choose **one `.glyf` file** at a time. The viewer reads actual content; renaming a PDF or ZIP to `.glyf` does not convert it. If your file picker filters it out, check the saved filename and suffix. Keep the original while investigating a damaged file. The JSON version field must be `"glyf": "0.1.0"`. The earlier `mosaic` marker is not supported: an error at `/glyf` can mean you opened a pre-rename document. Renaming its suffix alone does not convert it. Both markers together also fail; start from the current Glyf example when authoring a new document.
 
 The error panel identifies **Could not open** or **Could not download**, the attempted filename when available, and a readable message. Format validation failures also include an error code and a **JSON Pointer**; browser read/download failures may have only a retry message. The pointer identifies a location inside the JSON, not a line number. For example, `/datasets/revenue/rows/0/amount` refers to the first revenue row's amount (`0` is the first array index). `""` means the document root. In a property name, `~1` represents `/` and `~0` represents `~`. The validator stops at the first applicable failure, so another error can appear after the first is corrected.
 
@@ -35,7 +35,7 @@ The error panel identifies **Could not open** or **Could not download**, the att
 | `INVALID_BINDING` or `INVALID_DATASET`           | A control/chart references incompatible or missing data, a row is incomplete, or a dataset rule fails. Check the referenced state, columns and rows with the document author.                                                                        |
 | `RESOURCE_LIMIT`                                 | A document resource exceeds its fixed ceiling, such as node count or plotted points. Hidden content also counts. See the [resource limits](compatibility.md#fixed-resource-limits); toggling content off does not remove it from the file.           |
 | “The file could not be read”                     | Choose the file again. Ensure it still exists and is readable; for a cloud-backed file, make a complete local copy first.                                                                                                                            |
-| “Drop one Mosaic document at a time”             | Retry with one file. The current document remains open.                                                                                                                                                                                              |
+| “Drop one Glyf document at a time”               | Retry with one file. The current document remains open.                                                                                                                                                                                              |
 
 These corrections belong in the source/authoring tool: the viewer's Source tab is read-only. Cancelling a chooser or rejecting an incoming file preserves the current document and edits, so you can still download the open document while investigating another file.
 

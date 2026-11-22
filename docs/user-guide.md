@@ -1,4 +1,4 @@
-# Mosaic user guide
+# Glyf user guide
 
 This guide covers the current v0.1 local preview. Start the viewer using the [README setup instructions](../README.md#development-environment), then keep its browser tab open while you work. For startup or file errors, use [troubleshooting](troubleshooting.md).
 
@@ -10,14 +10,14 @@ This guide covers the current v0.1 local preview. Start the viewer using the [RE
 4. Turn **Show revenue chart** off. The chart disappears; its dataset remains in the document. Turn it on to see the edited values again, then leave it off for the save/reopen check below.
 5. As an optional error check, replace Jan's number with `abc`. Feedback appears, but the accepted value remains `3000`. Press **Escape** while focused in that cell to restore `3000` and clear the draft error.
 6. Select **Source** to inspect the current document. It includes the accepted number and note, and `showChart` is `false`. Source is read-only; return to Preview to edit controls.
-7. Choose **Download** and let your browser save the `.mosa` file. The browser may add a suffix if a file with that name already exists. Check its downloads list or destination folder for completion.
+7. Choose **Download** and let your browser save the `.glyf` file. The browser may add a suffix if a file with that name already exists. Check its downloads list or destination folder for completion.
 8. Choose **Open File** and select the file you just downloaded. Jan should show `3000`, the note should say `My updated report`, and the chart should remain hidden until you turn its toggle on.
 
 **Open Demo always opens the bundled starting example.** Use Open File to return to your downloaded edits. If you have made additional changes since downloading, cancel a replacement prompt and download those changes first if you want to keep them.
 
 ## Open and inspect a document
 
-Choose **Open File** or drop **one file at a time** into the viewer. The file chooser filters for `.mosa`. The reader checks the document contents; changing another file's suffix does not convert it into Mosaic. A valid file must use the exact format version `0.1.0` and fit the limits below.
+Choose **Open File** or drop **one file at a time** into the viewer. The file chooser filters for `.glyf` files. The reader checks the document contents; changing another file's suffix does not convert it into Glyf. A valid file must declare `"glyf": "0.1.0"` and fit the limits below. Files from the earlier Mosaic/rc.1/rc.2 candidates use an obsolete marker and are rejected, even after changing the suffix. Use the current demo as the authoring reference.
 
 Opening a valid document selects **Preview**. If a replacement is invalid or unreadable, an error panel appears and your existing document, edits and selected tab remain available. Cancelling the chooser also leaves the current document intact. You can choose the same file again after correcting it.
 
@@ -47,7 +47,7 @@ An edit can also be rejected because it would exceed a chart's point limit, even
 
 Choose **Download** from Preview or Source. It is available after a document opens and is temporarily disabled while another file is being read. The download contains accepted table and control values, all rows, and hidden content. Invalid drafts are excluded.
 
-Download creates a **new file** through the browser. It does not overwrite the original or write back to an earlier downloaded copy. The suggested filename keeps the opened name with a `.mosa` suffix; the browser controls the save location and any duplicate-name suffix. For example, an opened `report.MOSA` is suggested as `report.mosa`.
+Download creates a **new file** through the browser. It does not overwrite the original or write back to an earlier downloaded copy. The suggested filename keeps the opened name with a `.glyf` suffix; the browser controls the save location and any duplicate-name suffix. For example, an opened `report.GLYF` is suggested as `report.glyf`. Opening `report.glyf` keeps that suffix; it is never doubled.
 
 The exported document is UTF-8 JSON with two-space indentation, one final newline and no BOM. Its structure, array order and accepted values survive reopening; original whitespace and numeric spelling are not preserved. The final formatted file must fit **5 MiB (5,242,880 bytes)**. A compact input can fit on open but exceed this limit after formatting or edits. A failed download retains the document; see [export troubleshooting](troubleshooting.md#download-and-saving).
 
@@ -76,4 +76,4 @@ Once the app assets have loaded, opening local files, editing, inspecting Source
 | Browser and accessibility verification | Automated Chromium/WebKit workflows on macOS and Ubuntu CI, plus a separate installed-Brave run, are recorded. This is not certification for every browser or physical mobile device. Native dialogs and actual screen-reader output still need manual checks; Windows setup remains unverified. |
 | Performance and long sessions          | Large/complex files can take longer, particularly on smaller devices. Memory stability after many replacements remains unconfirmed. Save your work before restarting the tab if the session becomes sluggish.                                                                                    |
 
-This is local evaluation documentation. Public naming and `.mosa` extension review remain open in [release readiness](release-readiness.md); no public release is declared here. For technical format rules, use the [compatibility contract](compatibility.md).
+The product name is Glyf and new downloads use `.glyf`. This is local evaluation documentation. Public naming clearance and extension review remain open in [release readiness](release-readiness.md); no public release is declared here. For technical format rules, use the [compatibility contract](compatibility.md).

@@ -1,22 +1,31 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import originalSchema from '../docs/reference/mosaic-v0.1.schema.json' with { type: 'json' };
-import schema from '../schema/mosaic-v0.1.schema.json' with { type: 'json' };
+import schema from '../schema/glyf-v0.1.schema.json' with { type: 'json' };
 import { validateSchema } from '../scripts/schema-validator.ts';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
-describe('Mosaic Draft 2020-12 structural contract', () => {
-  it('accepts the supplied reference document', () => {
+describe('Glyf Draft 2020-12 structural contract', () => {
+  it('accepts the current Glyf demo', () => {
     const value: unknown = JSON.parse(
-      readFileSync(new URL('../examples/mosaic-demo.mosa', import.meta.url), 'utf8'),
+      readFileSync(new URL('../examples/glyf-demo.glyf', import.meta.url), 'utf8'),
     );
     expect(validateSchema(value), JSON.stringify(validateSchema.errors)).toBe(true);
   });
 
-  it('changes the supplied schema only by the approved id-column restriction', () => {
+  it('changes the supplied schema only by the approved identity and id-column amendments', () => {
     const expected = structuredClone(originalSchema);
     Object.assign(expected.$defs.columnDef.properties.key, { not: { const: 'id' } });
-    expect(schema).toEqual(expected);
+    const { mosaic: version, ...properties } = expected.properties;
+    expect(schema).toEqual({
+      ...expected,
+      $id: 'https://github.com/farukumarx64/mosaic/blob/main/schema/glyf-v0.1.schema.json',
+      title: 'Glyf document 0.1.0',
+      description:
+        'Provisional schema for Glyf .glyf documents, version 0.1.0; semantic validation is additionally required.',
+      required: expected.required.map((key) => (key === 'mosaic' ? 'glyf' : key)),
+      properties: { glyf: version, ...properties },
+    });
   });
 
   it('keeps the TypeScript fixture vocabulary aligned with the schema', () => {
@@ -53,7 +62,7 @@ describe('Mosaic Draft 2020-12 structural contract', () => {
   });
 
   it.each([
-    ['version', { ...minimalDocument(), mosaic: '0.2.0' }],
+    ['version', { ...minimalDocument(), glyf: '0.2.0' }],
     ['unknown top-level field', { ...minimalDocument(), script: 'alert(1)' }],
     ['unknown node type', { ...minimalDocument(), root: { id: 'root', type: 'canvas' } }],
     [
@@ -62,7 +71,7 @@ describe('Mosaic Draft 2020-12 structural contract', () => {
     ],
     [
       'missing required property',
-      { mosaic: '0.1.0', id: 'missing_root', meta: { title: 'Missing' } },
+      { glyf: '0.1.0', id: 'missing_root', meta: { title: 'Missing' } },
     ],
     ['numeric string', { ...minimalDocument(), root: { ...minimalDocument().root, gap: '3' } }],
     ['invalid theme', { ...minimalDocument(), theme: { accent: 'purple' } }],
@@ -91,7 +100,7 @@ describe('Mosaic Draft 2020-12 structural contract', () => {
 
   it('rejects a syntactically valid numeric literal that overflows during JSON parsing', () => {
     const value: unknown = JSON.parse(
-      '{"mosaic":"0.1.0","id":"overflow","meta":{"title":"Overflow"},' +
+      '{"glyf":"0.1.0","id":"overflow","meta":{"title":"Overflow"},' +
         '"state":{"value":1e400},"root":{"id":"root","type":"column","children":[]}}',
     );
     expect(validateSchema(value)).toBe(false);

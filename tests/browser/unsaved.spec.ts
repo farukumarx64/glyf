@@ -13,14 +13,14 @@ async function replace(page: Page, route: 'demo' | 'picker' | 'drop') {
     await (
       await chooser
     ).setFiles({
-      name: 'replacement.mosa',
+      name: 'replacement.glyf',
       mimeType: 'application/json',
       buffer: Buffer.from(contents),
     });
   } else {
     const transfer = await page.evaluateHandle((json) => {
       const data = new DataTransfer();
-      data.items.add(new File([json], 'replacement.mosa', { type: 'application/json' }));
+      data.items.add(new File([json], 'replacement.glyf', { type: 'application/json' }));
       return data;
     }, contents);
     try {
@@ -88,7 +88,7 @@ for (const route of ['demo', 'picker', 'drop'] as const) {
       await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeChecked();
     } else {
       await expect(page.getByRole('heading', { name: 'Minimal document' })).toBeVisible();
-      await expect(page.getByText('replacement.mosa', { exact: true })).toBeVisible();
+      await expect(page.getByText('replacement.glyf', { exact: true })).toBeVisible();
     }
     expect(requests).toEqual([]);
   });

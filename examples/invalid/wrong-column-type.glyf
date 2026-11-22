@@ -1,5 +1,5 @@
 {
-  "mosaic": "0.1.0",
+  "glyf": "0.1.0",
   "id": "cell",
   "meta": { "title": "Numeric column containing a string" },
   "datasets": {

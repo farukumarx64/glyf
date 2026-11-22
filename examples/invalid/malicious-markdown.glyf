@@ -1,5 +1,5 @@
 {
-  "mosaic": "0.1.0",
+  "glyf": "0.1.0",
   "id": "markdown_content",
   "meta": { "title": "Literal markup in a valid Markdown node" },
   "root": {

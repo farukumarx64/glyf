@@ -1,4 +1,4 @@
-import type { MosaicDocument, MosaicNode } from '../src/core/types.ts';
+import type { GlyfDocument, GlyfNode } from '../src/core/types.ts';
 
 // The mapped type requires a fixture for every discriminant and checks each
 // fixture against its own node type. Schema tests validate the same fixtures.
@@ -25,10 +25,10 @@ export const nodeSamples = {
   toggle: { id: 'toggle', type: 'toggle', bind: 'visible', label: 'Visible' },
   input: { id: 'input', type: 'input', bind: 'note', label: 'Note', kind: 'text' },
   stateValue: { id: 'stateValue', type: 'stateValue', bind: 'note', prefix: '(', suffix: ')' },
-} satisfies { [Type in MosaicNode['type']]: Extract<MosaicNode, { type: Type }> };
+} satisfies { [Type in GlyfNode['type']]: Extract<GlyfNode, { type: Type }> };
 
 export const typedDocument = {
-  mosaic: '0.1.0',
+  glyf: '0.1.0',
   id: 'all_nodes',
   meta: { title: 'Format coverage', description: 'All node types', locale: 'en' },
   theme: { mode: 'system', accent: 'blue', density: 'comfortable' },
@@ -47,13 +47,13 @@ export const typedDocument = {
   },
   state: { visible: true, note: 'Hello', count: 3, empty: null },
   root: { id: 'root', type: 'column', children: Object.values(nodeSamples) },
-} satisfies MosaicDocument;
+} satisfies GlyfDocument;
 
 export function minimalDocument() {
   return {
-    mosaic: '0.1.0',
+    glyf: '0.1.0',
     id: 'minimal',
     meta: { title: 'Minimal document' },
     root: { id: 'root', type: 'column', children: [] },
-  } satisfies MosaicDocument;
+  } satisfies GlyfDocument;
 }

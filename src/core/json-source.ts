@@ -1,8 +1,8 @@
 // This pass records names while they are still present in the source. JSON.parse
 // handles the full JSON grammar and constructs the value after this pass succeeds.
-import type { MosaicError } from './errors.ts';
+import type { GlyfError } from './errors.ts';
 import { appendJsonPointer, ROOT_POINTER } from './json-pointer.ts';
-import { MOSAIC_LIMITS } from './limits.ts';
+import { GLYF_LIMITS } from './limits.ts';
 
 type Scope =
   { kind: 'object'; names: Set<string>; member: string } | { kind: 'array'; member: number };
@@ -10,7 +10,7 @@ type Scope =
 // The document object contains at most 20 node objects and their 20 children
 // arrays along any valid path. Dataset, state, theme, and meta paths are shorter.
 // This bounds the scanner's own stack before the later node-tree preflight.
-const maxOpenContainers = 1 + 2 * MOSAIC_LIMITS.treeDepth;
+const maxOpenContainers = 1 + 2 * GLYF_LIMITS.treeDepth;
 
 function memberPath(stack: readonly Scope[]) {
   let path = ROOT_POINTER;
@@ -22,7 +22,7 @@ function isJsonWhitespace(char: string | undefined): boolean {
   return char === ' ' || char === '\n' || char === '\r' || char === '\t';
 }
 
-export function checkJsonSource(text: string): MosaicError | undefined {
+export function checkJsonSource(text: string): GlyfError | undefined {
   const stack: Scope[] = [];
 
   for (let i = 0; i < text.length; i++) {
@@ -34,7 +34,7 @@ export function checkJsonSource(text: string): MosaicError | undefined {
         return {
           code: 'RESOURCE_LIMIT',
           path: memberPath(stack),
-          message: 'JSON containers are nested more deeply than a Mosaic v0.1 document permits.',
+          message: 'JSON containers are nested more deeply than a Glyf v0.1 document permits.',
         };
       }
       stack.push(

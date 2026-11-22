@@ -1,5 +1,7 @@
 # Phase 5 — Accessibility and browser verification
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 Completed **2026-11-19**, using the production build, Node **22.18.0**, Playwright **Chromium 159.0.8154.6**, and **WebKit 27.2**.
 
 ## Findings and fixes

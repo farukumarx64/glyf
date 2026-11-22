@@ -1,9 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { expect, test, type Page, type TestInfo } from '@playwright/test';
-import { readMosaicFile } from '../../src/core/file.ts';
-import { MOSAIC_LIMITS } from '../../src/core/limits.ts';
-import type { MosaicDocument } from '../../src/core/types.ts';
-import { validateMosaic } from '../../src/core/validate.ts';
+import { readGlyfFile } from '../../src/core/file.ts';
+import { GLYF_LIMITS } from '../../src/core/limits.ts';
+import type { GlyfDocument } from '../../src/core/types.ts';
+import { validateGlyf } from '../../src/core/validate.ts';
 import { nodeSamples, typedDocument } from '../fixtures.ts';
 
 async function offlineViewers(writer: Page) {
@@ -44,7 +44,7 @@ async function chooseFile(page: Page, path: string) {
   await expect(page.getByText('Unsaved changes', { exact: true })).toHaveCount(0);
 }
 
-async function expectSource(page: Page, expected: MosaicDocument) {
+async function expectSource(page: Page, expected: GlyfDocument) {
   await page.getByRole('tab', { name: 'Source' }).click();
   expect(await page.getByRole('tabpanel', { name: 'Source' }).innerText()).toBe(
     JSON.stringify(expected, null, 2) + '\n',
@@ -52,7 +52,7 @@ async function expectSource(page: Page, expected: MosaicDocument) {
   await page.getByRole('tab', { name: 'Preview' }).click();
 }
 
-async function exportFile(page: Page, expected: MosaicDocument, testInfo: TestInfo, name: string) {
+async function exportFile(page: Page, expected: GlyfDocument, testInfo: TestInfo, name: string) {
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download' }).click();
   const download = await pending;
@@ -62,9 +62,9 @@ async function exportFile(page: Page, expected: MosaicDocument, testInfo: TestIn
   await expect(page.getByText('Unsaved changes', { exact: true })).toHaveCount(0);
   const bytes = await readFile(path);
   expect(bytes).toEqual(Buffer.from(JSON.stringify(expected, null, 2) + '\n', 'utf8'));
-  expect(bytes.length).toBeLessThanOrEqual(MOSAIC_LIMITS.fileBytes);
-  const source = await readMosaicFile(new Blob([new Uint8Array(bytes)]));
-  expect(source.ok ? validateMosaic(source.value) : source).toEqual({
+  expect(bytes.length).toBeLessThanOrEqual(GLYF_LIMITS.fileBytes);
+  const source = await readGlyfFile(new Blob([new Uint8Array(bytes)]));
+  expect(source.ok ? validateGlyf(source.value) : source).toEqual({
     ok: true,
     document: expected,
   });
@@ -107,13 +107,13 @@ test('persists demo edits and both conditional chart states across independent o
   const session = await offlineViewers(page);
   const reader = session.reader;
   const originalText = await readFile(
-    new URL('../../examples/mosaic-demo.mosa', import.meta.url),
+    new URL('../../examples/glyf-demo.glyf', import.meta.url),
     'utf8',
   );
-  const original = JSON.parse(originalText) as MosaicDocument;
+  const original = JSON.parse(originalText) as GlyfDocument;
   const revenue = original.datasets!.revenue!;
   const note = 'Saved <b>雪 😀</b>\nSecond line';
-  const expected: MosaicDocument = {
+  const expected: GlyfDocument = {
     ...original,
     state: { ...original.state, note, showChart: false },
     datasets: {
@@ -137,22 +137,22 @@ test('persists demo edits and both conditional chart states across independent o
     /2 points. Values range from -125.5 to 0. 1 row skipped/,
   );
   await page.getByRole('textbox', { name: 'Document note' }).fill(note);
-  await expect(page.locator('#mosaic-node-noteDisplay')).toHaveText('Current note: ' + note);
+  await expect(page.locator('#glyf-node-noteDisplay')).toHaveText('Current note: ' + note);
   await page.getByRole('checkbox', { name: 'Show revenue chart' }).uncheck();
   await expect(page.getByRole('img', { name: 'Revenue by month' })).toHaveCount(0);
   await expect(page.getByText('Unsaved changes', { exact: true })).toBeVisible();
   await january.fill('1e999');
   await expect(january).toHaveAttribute('aria-invalid', 'true');
-  const hidden = await exportFile(page, expected, testInfo, 'hidden-chart.mosa');
-  expect(hidden.suggestedName).toBe('mosaic-demo.mosa');
+  const hidden = await exportFile(page, expected, testInfo, 'hidden-chart.glyf');
+  expect(hidden.suggestedName).toBe('glyf-demo.glyf');
   await expect(january).toHaveValue('1e999');
 
   // This reader has never opened a document, so persisted values must come from the file.
   await expect(reader.getByRole('tablist')).toHaveCount(0);
   await chooseFile(reader, hidden.path);
   await expect(reader.getByRole('textbox', { name: 'Document note' })).toHaveValue(note);
-  await expect(reader.locator('#mosaic-node-noteDisplay')).toHaveText('Current note: ' + note);
-  await expect(reader.locator('#mosaic-node-noteDisplay b')).toHaveCount(0);
+  await expect(reader.locator('#glyf-node-noteDisplay')).toHaveText('Current note: ' + note);
+  await expect(reader.locator('#glyf-node-noteDisplay b')).toHaveCount(0);
   await expect(reader.getByRole('textbox', { name: 'Revenue (NGN), row jan' })).toHaveValue(
     '-125.5',
   );
@@ -177,7 +177,7 @@ test('persists demo edits and both conditional chart states across independent o
   // Each page owns its own store; toggling the reader leaves the writer unchanged.
   await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).not.toBeChecked();
   const visibleExpected = { ...expected, state: { ...expected.state, showChart: true } };
-  const visible = await exportFile(reader, visibleExpected, testInfo, 'visible-chart.mosa');
+  const visible = await exportFile(reader, visibleExpected, testInfo, 'visible-chart.glyf');
   await chooseFile(page, visible.path);
   await expect(january).toHaveValue('-125.5');
   await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeChecked();
@@ -186,7 +186,7 @@ test('persists demo edits and both conditional chart states across independent o
   );
   await expect(page.getByRole('alert')).toHaveCount(0);
   await expectSource(page, visibleExpected);
-  expect(await readFile(new URL('../../examples/mosaic-demo.mosa', import.meta.url), 'utf8')).toBe(
+  expect(await readFile(new URL('../../examples/glyf-demo.glyf', import.meta.url), 'utf8')).toBe(
     originalText,
   );
   await expect
@@ -206,7 +206,7 @@ test('persists typed cells and numeric state while excluding invalid drafts offl
 }, testInfo) => {
   const session = await offlineViewers(page);
   const reader = session.reader;
-  const doc: MosaicDocument = {
+  const doc: GlyfDocument = {
     ...typedDocument,
     datasets: {
       values: {
@@ -233,8 +233,8 @@ test('persists typed cells and numeric state while excluding invalid drafts offl
       ],
     },
   };
-  await page.getByLabel('Choose a Mosaic file').setInputFiles({
-    name: 'typed.mosa',
+  await page.getByLabel('Choose a Glyf file').setInputFiles({
+    name: 'typed.glyf',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(doc)),
   });
@@ -251,7 +251,7 @@ test('persists typed cells and numeric state while excluding invalid drafts offl
   await expect(page.getByText('Zero count', { exact: true })).toBeVisible();
   await count.fill('1e-');
   await expect(count).toHaveAccessibleDescription('Enter a finite decimal number.');
-  const expected: MosaicDocument = {
+  const expected: GlyfDocument = {
     ...doc,
     state: { ...doc.state, note: '', count: 0 },
     datasets: {
@@ -264,7 +264,7 @@ test('persists typed cells and numeric state while excluding invalid drafts offl
       },
     },
   };
-  const saved = await exportFile(page, expected, testInfo, 'typed-values.mosa');
+  const saved = await exportFile(page, expected, testInfo, 'typed-values.glyf');
   await expect(count).toHaveValue('1e-');
   await chooseFile(reader, saved.path);
   await expect(reader.getByRole('textbox', { name: 'Label, row first' })).toHaveValue('');

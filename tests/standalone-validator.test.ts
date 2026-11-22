@@ -1,12 +1,12 @@
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { describe, expect, it } from 'vitest';
-import schema from '../schema/mosaic-v0.1.schema.json' with { type: 'json' };
+import schema from '../schema/glyf-v0.1.schema.json' with { type: 'json' };
 import { validatorOptions } from '../scripts/validator-options.ts';
 import matchesSchema from '../src/core/schema-validator.generated.js';
 import { minimalDocument, typedDocument } from './fixtures.ts';
 
 // Keep the original compiler as a test-only oracle for the generated module,
-// including the complete diagnostic arrays consumed by validateMosaic.
+// including the complete diagnostic arrays consumed by validateGlyf.
 const reference = new Ajv2020(validatorOptions).compile(schema);
 const minimal = minimalDocument();
 
@@ -14,8 +14,8 @@ describe('standalone validator compatibility', () => {
   it.each([
     ['minimal valid document', minimal],
     ['all fourteen node types', typedDocument],
-    ['wrong version', { ...minimal, mosaic: '0.2.0' }],
-    ['missing required field', { mosaic: '0.1.0' }],
+    ['wrong version', { ...minimal, glyf: '0.2.0' }],
+    ['missing required field', { glyf: '0.1.0' }],
     ['unknown property with pointer escapes', { ...minimal, 'a/b~': true }],
     ['unknown node type', { ...minimal, root: { id: 'root', type: 'canvas' } }],
     ['no numeric coercion', { ...minimal, root: { ...minimal.root, gap: '3' } }],

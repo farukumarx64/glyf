@@ -1,4 +1,4 @@
-# Mosaic v0.1 compatibility contract
+# Glyf v0.1 compatibility contract
 
 This describes the implemented **`0.1.0`** format and viewer. It summarizes [SPEC_V0.1.md](SPEC_V0.1.md), [the approved decisions](decisions.md), and [the core API contracts](core-contracts.md); it does not introduce new format rules.
 
@@ -6,13 +6,23 @@ For opening, editing and saving documents, start with the [user guide](user-guid
 
 ## Contract sources and version handling
 
-The authoritative structural contract is [schema/mosaic-v0.1.schema.json](../schema/mosaic-v0.1.schema.json), JSON Schema Draft 2020-12. The working schema contains the approved D003 amendment forbidding `id` as a declared column key. The supplied original schema/specification remain unchanged under `docs/reference/`. The reference document is [examples/mosaic-demo.mosa](../examples/mosaic-demo.mosa), preserved as supplied. Tests check the schema amendment, schema/resource-constant agreement, the demo, and all 14 typed node kinds.
+The authoritative structural contract is [schema/glyf-v0.1.schema.json](../schema/glyf-v0.1.schema.json), JSON Schema Draft 2020-12. It contains the approved D003 restriction on `id` column keys and the owner-approved Glyf identity amendment: title/description, schema identifier, and required `glyf` version property. The `$id` uses the existing repository's schema URL as an absolute identifier; validation uses the bundled schema and does not fetch that URL. The GitHub repository still has its original name.
 
-Files contain one UTF-8 JSON object with the exact string **`"mosaic": "0.1.0"`**. A different string version yields `UNSUPPORTED_VERSION`; a missing/non-string version is a structural error. There is no version guessing, automatic migration, extension namespace, unknown-field preservation, or acceptance promise for future versions. Unknown fields and node types are rejected. A future migration must be explicit; the current reader cannot interpret a future document merely because its version begins with `0.1`.
+The current golden fixture is [examples/glyf-demo.glyf](../examples/glyf-demo.glyf). The supplied original schema, specification and [Mosaic demo](reference/mosaic-demo.mosa) remain unchanged in `docs/reference/` solely as historical material. Tests verify the exact approved schema differences, resource-constant agreement, the current demo and all 14 typed node kinds.
+
+Files contain one UTF-8 JSON object with the exact string **`"glyf": "0.1.0"`**. A different string version yields `UNSUPPORTED_VERSION`; a missing/non-string version is a structural error. There is no version guessing, automatic migration, extension namespace, unknown-field preservation, or acceptance promise for future versions. Unknown fields and node types are rejected. A future migration must be explicit; the current reader cannot interpret a future document merely because its version begins with `0.1`.
 
 An optional single leading UTF-8 BOM is accepted; malformed UTF-8, a misplaced/repeated BOM, duplicate JSON properties (including escaped-equivalent names), non-finite numbers, and malformed JSON are rejected. Loading does not coerce cell/state types, add optional defaults, or discard unknown properties to make a document pass.
 
-Schema conformance alone is insufficient. A conforming reader also enforces source-level rules, resource preflight and semantic checks before rendering. `parseMosaic(text)` performs full validation; `readMosaicFile(blob)` returns a source value that still needs `validateMosaic(value)`. The in-memory API expects data from a trusted JavaScript caller and cannot sandbox Proxy traps or arbitrary executable objects.
+Schema conformance alone is insufficient. A conforming reader also enforces source-level rules, resource preflight and semantic checks before rendering. `parseGlyf(text)` performs full validation; `readGlyfFile(blob)` returns a source value that still needs `validateGlyf(value)`. The in-memory API expects data from a trusted JavaScript caller and cannot sandbox Proxy traps or arbitrary executable objects.
+
+## Glyf name and file extension
+
+Glyf is the user-selected public name; its tagline is **One format. Infinite expressions.** Files use `.glyf`; the picker filters for that suffix. All opening routes validate actual contents, and the byte/Blob APIs remain filename-independent. Download normalizes a terminal `.glyf` case-insensitively or appends `.glyf` to other names. For example, `report.GLYF` becomes `report.glyf`. There is no special handling for `.mosa`.
+
+The only accepted marker is `"glyf": "0.1.0"`; version diagnostics point to `/glyf`. A document with only `mosaic` fails for the missing `glyf` field, even if renamed to `.glyf`. A document containing both keys fails for the unknown `/mosaic` field. The reader never guesses, migrates or drops the obsolete marker. Failed imports preserve the current document and its edits.
+
+The public APIs are `GlyfDocument`, `parseGlyf`, `validateGlyf`, `serializeGlyf`, `readGlyfFile`, and the corresponding Glyf types/constants. No Mosaic aliases are exported. Renderer node IDs and CSS classes use `glyf-` prefixes. App candidate `0.1.0-rc.3` records this intentional break from the unused pre-release format; document version `0.1.0` remains the first-release version. Both rc.1 and rc.2 documents used the obsolete marker. Their artifacts and records are historical, not compatibility promises.
 
 ## Supported vocabulary and semantics
 

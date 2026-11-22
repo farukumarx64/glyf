@@ -7,7 +7,7 @@ Added **2026-11-21**. [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) 
 1. Check out a fresh source tree on **Ubuntu 24.04**, with read-only repository permissions and no persisted checkout credentials.
 2. Install Node from `.nvmrc` (**22.18.0**) and Bun from `package.json` (**1.3.14**). There is no independent CI runtime-version list to keep in sync.
 3. Run `bun install --frozen-lockfile`, including the existing toolchain guard and esbuild setup. A manifest/lockfile mismatch fails the job.
-4. Run `bun run check`: regenerate the standalone Ajv validator, typecheck, lint with zero warnings, check formatting, run all Vitest tests, validate the reference `.mosa` document, and build the static production viewer.
+4. Run `bun run check`: regenerate the standalone Ajv validator, typecheck, lint with zero warnings, check formatting, run all Vitest tests, validate the current `.glyf` demo, and build the static production viewer.
 5. Install the locked Playwright package's Chromium headless shell, WebKit and their Linux system dependencies with `bun run playwright install --with-deps --only-shell chromium webkit`.
 6. Run `bun run playwright test` against the production build already created in step 4. Playwright starts/stops the loopback preview server itself. This uses the same tests as `bun run test:viewer`, without a duplicate build.
 7. Upload available browser reports and test artifacts as **browser-results**, retained for **seven days**, on success or failure unless the run was cancelled. If an earlier step failed before browser output exists, the upload is skipped without obscuring the original failure.

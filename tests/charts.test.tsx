@@ -2,10 +2,10 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DocumentView } from '../src/app/DocumentView.tsx';
-import { serializeMosaic } from '../src/core/serialize.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
 import { createDocumentStore } from '../src/core/store.ts';
 import type { ChartNode, Dataset } from '../src/core/types.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { chartGeometry } from '../src/render/chart-geometry.ts';
 import { minimalDocument, nodeSamples } from './fixtures.ts';
 
@@ -26,14 +26,14 @@ function dataset(
 
 function openCharts(data: Dataset, kind: ChartNode['kind'] = 'bar') {
   const doc = minimalDocument();
-  const opened = validateMosaic({
+  const opened = validateGlyf({
     ...doc,
     datasets: { values: data },
     root: { ...doc.root, children: [{ ...nodeSamples.chart, kind }, nodeSamples.table] },
   });
   if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
   const store = createDocumentStore(opened);
-  render(<DocumentView store={store} fileName="chart.mosa" />);
+  render(<DocumentView store={store} fileName="chart.glyf" />);
   return store;
 }
 
@@ -54,7 +54,7 @@ describe('SVG charts', () => {
         ['skip', null],
       ]),
     );
-    const before = serializeMosaic(store.getSnapshot());
+    const before = serializeGlyf(store.getSnapshot());
     const svg = screen.getByRole('img', { name: 'Values' });
     const description = document.getElementById(svg.getAttribute('aria-describedby')!)!;
     expect(description.textContent).toBe(
@@ -62,17 +62,17 @@ describe('SVG charts', () => {
     );
     const bars = [...svg.querySelectorAll('rect')];
     expect(bars).toHaveLength(3);
-    const baseline = Number(svg.querySelector('.mosaic-chart-baseline line')?.getAttribute('y1'));
+    const baseline = Number(svg.querySelector('.glyf-chart-baseline line')?.getAttribute('y1'));
     const ys = bars.map((bar) => Number(bar.getAttribute('y')));
     const heights = bars.map((bar) => Number(bar.getAttribute('height')));
     expect(ys[0]).toBe(baseline);
     expect(heights[0]).toBeGreaterThan(0);
     expect(heights[1]).toBe(0);
     expect(ys[2]! + heights[2]!).toBeCloseTo(baseline);
-    expect(
-      [...svg.querySelectorAll('.mosaic-chart-x-tick')].map((tick) => tick.textContent),
-    ).toEqual(['Z', 'A', 'Z']);
-    expect(serializeMosaic(store.getSnapshot())).toBe(before);
+    expect([...svg.querySelectorAll('.glyf-chart-x-tick')].map((tick) => tick.textContent)).toEqual(
+      ['Z', 'A', 'Z'],
+    );
+    expect(serializeGlyf(store.getSnapshot())).toBe(before);
   });
 
   it.each(['bar', 'line'] as const)(
@@ -254,11 +254,11 @@ describe('SVG charts', () => {
     openCharts(dataset(pairs));
     const svg = screen.getByRole('img');
     expect(svg.querySelectorAll('rect')).toHaveLength(500);
-    const xTicks = svg.querySelectorAll('.mosaic-chart-x-tick');
+    const xTicks = svg.querySelectorAll('.glyf-chart-x-tick');
     expect(xTicks.length).toBeLessThanOrEqual(5);
     expect([...xTicks].every((tick) => Array.from(tick.textContent!).length <= 14)).toBe(true);
     expect(
-      svg.querySelectorAll('.mosaic-chart-tick, .mosaic-chart-baseline').length,
+      svg.querySelectorAll('.glyf-chart-tick, .glyf-chart-baseline').length,
     ).toBeLessThanOrEqual(6);
     expect(svg.querySelector('svg, script, img, foreignObject')).toBeNull();
   });

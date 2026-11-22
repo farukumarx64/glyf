@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it } from 'vitest';
-import type { MosaicErrorCode } from '../src/core/errors.ts';
-import { parseMosaic } from '../src/core/parse.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import type { GlyfErrorCode } from '../src/core/errors.ts';
+import { parseGlyf } from '../src/core/parse.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 
 const sample = typedDocument.datasets.values;
@@ -14,8 +14,8 @@ function withChild(node: unknown) {
 function withDataset(columns: unknown[], rows: unknown[]) {
   return { ...minimalDocument(), datasets: { values: { columns, rows } } };
 }
-function failsInMemory(value: unknown, code: MosaicErrorCode, path: string) {
-  const result = validateMosaic(value);
+function failsInMemory(value: unknown, code: GlyfErrorCode, path: string) {
+  const result = validateGlyf(value);
   expect(result).toMatchObject({
     ok: false,
     errors: [{ code, path, message: expect.any(String) }],
@@ -23,10 +23,10 @@ function failsInMemory(value: unknown, code: MosaicErrorCode, path: string) {
   return result;
 }
 // JSON documents must give the same diagnostic through either public entry point.
-function fails(value: unknown, code: MosaicErrorCode, path: string) {
+function fails(value: unknown, code: GlyfErrorCode, path: string) {
   const source = JSON.stringify(value);
   const direct = failsInMemory(value, code, path);
-  expect(parseMosaic(source)).toStrictEqual(direct);
+  expect(parseGlyf(source)).toStrictEqual(direct);
   expect(JSON.stringify(value)).toBe(source);
 }
 function chartDocument(rows: unknown[], children: unknown[] = [nodeSamples.chart]) {
@@ -36,33 +36,33 @@ function chartDocument(rows: unknown[], children: unknown[] = [nodeSamples.chart
 describe('full validation entry points', () => {
   it('accepts every component together and returns the original typed document', () => {
     const copy = structuredClone(typedDocument);
-    const result = validateMosaic(typedDocument);
+    const result = validateGlyf(typedDocument);
     expect(result.ok && result.document).toBe(typedDocument);
     expect(typedDocument).toEqual(copy);
-    expect(parseMosaic(JSON.stringify(typedDocument))).toEqual(result);
+    expect(parseGlyf(JSON.stringify(typedDocument))).toEqual(result);
   });
 
   it('parses the unmodified demo and accepts an optional BOM', () => {
-    const source = readFileSync(new URL('../examples/mosaic-demo.mosa', import.meta.url), 'utf8');
-    expect(parseMosaic('\uFEFF' + source)).toEqual({ ok: true, document: JSON.parse(source) });
+    const source = readFileSync(new URL('../examples/glyf-demo.glyf', import.meta.url), 'utf8');
+    expect(parseGlyf('\uFEFF' + source)).toEqual({ ok: true, document: JSON.parse(source) });
   });
 
   it('uses the same semantic diagnostics from text and direct objects', () => {
     const doc = withChild({ ...nodeSamples.chart, x: 'missing' });
-    expect(parseMosaic(JSON.stringify(doc))).toEqual(validateMosaic(doc));
+    expect(parseGlyf(JSON.stringify(doc))).toEqual(validateGlyf(doc));
     fails(doc, 'INVALID_DATASET', childPath + '/x');
   });
 
   it('preserves source and schema diagnostics before semantics', () => {
-    expect(parseMosaic('{"mosaic":"0.1.0","mosaic":"0.2.0"}')).toMatchObject({
+    expect(parseGlyf('{"glyf":"0.1.0","glyf":"0.2.0"}')).toMatchObject({
       ok: false,
-      errors: [{ code: 'INVALID_JSON', path: '/mosaic' }],
+      errors: [{ code: 'INVALID_JSON', path: '/glyf' }],
     });
     const source = JSON.stringify({ ...minimalDocument(), state: { n: 123 } }).replace(
       '123',
       '1e400',
     );
-    expect(parseMosaic(source)).toMatchObject({
+    expect(parseGlyf(source)).toMatchObject({
       ok: false,
       errors: [{ code: 'SCHEMA_ERROR', path: '/state/n' }],
     });
@@ -77,7 +77,7 @@ describe('full validation entry points', () => {
     const external: unknown = runInNewContext('JSON.parse(source)', {
       source: JSON.stringify(typedDocument),
     });
-    expect(validateMosaic(external).ok).toBe(true);
+    expect(validateGlyf(external).ok).toBe(true);
     for (const state of [new Date(), new Map(), Object.create({ visible: true })]) {
       failsInMemory({ ...minimalDocument(), state }, 'SCHEMA_ERROR', '/state');
     }
@@ -89,7 +89,7 @@ describe('roots and identity', () => {
   it.each([nodeSamples.column, nodeSamples.row, nodeSamples.grid, nodeSamples.card])(
     'permits a $type root',
     (root) => {
-      expect(validateMosaic({ ...minimalDocument(), root }).ok).toBe(true);
+      expect(validateGlyf({ ...minimalDocument(), root }).ok).toBe(true);
     },
   );
   it.each(
@@ -124,7 +124,7 @@ describe('roots and identity', () => {
         children: [{ ...nodeSamples.text, id: 'first', text: 'constructor prototype __proto__' }],
       },
     };
-    expect(validateMosaic(doc).ok).toBe(true);
+    expect(validateGlyf(doc).ok).toBe(true);
   });
 });
 
@@ -218,7 +218,7 @@ describe('dataset declarations and cells', () => {
   });
   it('accepts null in each column kind, finite negative numbers, empty labels and false', () => {
     expect(
-      validateMosaic(
+      validateGlyf(
         withDataset(sample.columns, [
           { id: 'a', label: null, amount: null, active: null },
           { id: 'b', label: '', amount: -1.25, active: false },
@@ -247,7 +247,7 @@ describe('dataset declarations and cells', () => {
       ...withChild({ ...nodeSamples.chart, dataset: 'toString', x: 'toString', y: 'toString' }),
       datasets: { toString: { columns, rows: [{ id: 'r', toString: 0 }] } },
     };
-    expect(validateMosaic(doc).ok).toBe(true);
+    expect(validateGlyf(doc).ok).toBe(true);
   });
 });
 
@@ -286,7 +286,7 @@ describe('state bindings', () => {
       { ...nodeSamples.when, id: 'differentTypes', bind: 'n', equals: '0' },
     ];
     expect(
-      validateMosaic({
+      validateGlyf({
         ...typedDocument,
         state: { flag: false, toString: '', n: 0, empty: null },
         root: { ...minimalDocument().root, children },
@@ -315,7 +315,7 @@ describe('state bindings', () => {
           ],
         },
       };
-      expect(parseMosaic(JSON.stringify(doc))).toStrictEqual({ ok: true, document: doc });
+      expect(parseGlyf(JSON.stringify(doc))).toStrictEqual({ ok: true, document: doc });
     },
   );
 });
@@ -362,10 +362,10 @@ describe('dataset references and chart axes', () => {
     fails(withChild({ ...nodeSamples.chart, y: 'label' }), 'INVALID_DATASET', childPath + '/y');
     for (const kind of ['bar', 'line']) {
       expect(
-        validateMosaic(withChild({ ...nodeSamples.chart, kind, x: 'amount', y: 'amount' })).ok,
+        validateGlyf(withChild({ ...nodeSamples.chart, kind, x: 'amount', y: 'amount' })).ok,
       ).toBe(true);
     }
-    expect(validateMosaic(chartDocument([])).ok).toBe(true);
+    expect(validateGlyf(chartDocument([])).ok).toBe(true);
   });
 });
 
@@ -385,7 +385,7 @@ describe('aggregate cells and chart point budgets', () => {
       { ...minimalDocument(), state: state(100) },
       withChild({ ...nodeSamples.markdown, text: '😀'.repeat(20000) }),
     ])
-      expect(validateMosaic(doc).ok).toBe(true);
+      expect(validateGlyf(doc).ok).toBe(true);
     fails(withDataset(columns(31), []), 'RESOURCE_LIMIT', '/datasets/values/columns');
     fails(withDataset(columns(1), rows(1001)), 'RESOURCE_LIMIT', '/datasets/values/rows');
     fails({ ...minimalDocument(), datasets: datasets(21) }, 'RESOURCE_LIMIT', '/datasets');
@@ -405,7 +405,7 @@ describe('aggregate cells and chart point budgets', () => {
     const cells = Object.fromEntries(columns.map(({ key }) => [key, null]));
     const rows = Array.from({ length: 1000 }, (_, i) => ({ id: 'r' + i, ...cells }));
     const datasets = { a: { columns, rows }, b: { columns, rows } };
-    expect(validateMosaic({ ...minimalDocument(), datasets }).ok).toBe(true);
+    expect(validateGlyf({ ...minimalDocument(), datasets }).ok).toBe(true);
     fails(
       {
         ...minimalDocument(),
@@ -428,7 +428,7 @@ describe('aggregate cells and chart point budgets', () => {
     ];
     const data = [...rows, ...nullRows];
     expect(
-      validateMosaic(
+      validateGlyf(
         chartDocument(data, [
           nodeSamples.chart,
           { ...nodeSamples.chart, id: 'second', kind: 'line' },
@@ -450,7 +450,7 @@ describe('aggregate cells and chart point budgets', () => {
       'RESOURCE_LIMIT',
       childPath + '/children/0',
     );
-    expect(validateMosaic(chartDocument(over, [nodeSamples.table])).ok).toBe(true);
+    expect(validateGlyf(chartDocument(over, [nodeSamples.table])).ok).toBe(true);
   });
 
   it('checks chart points per dataset and checks edited rows again on the next validation', () => {
@@ -471,10 +471,10 @@ describe('aggregate cells and chart point budgets', () => {
         other: { columns: sample.columns, rows: otherRows },
       },
     };
-    expect(validateMosaic(doc).ok).toBe(true);
+    expect(validateGlyf(doc).ok).toBe(true);
     otherRows[500]!.amount = 0;
     fails(doc, 'RESOURCE_LIMIT', '/root/children/1');
     otherRows[500]!.amount = null;
-    expect(validateMosaic(doc).ok).toBe(true);
+    expect(validateGlyf(doc).ok).toBe(true);
   });
 });

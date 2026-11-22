@@ -1,18 +1,20 @@
-# Mosaic
+# Glyf
 
-Mosaic is a local-first visual document format and viewer. Open a `.mosa` file, read its layouts and charts, edit the controls its author enabled, and download the updated document. Files use UTF-8 JSON and the exact format version `0.1.0`.
+**One format. Infinite expressions.**
 
-**Current app candidate: `0.1.0-rc.1`, for local evaluation.** Document format stays `0.1.0`. Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). See [candidate preparation](docs/pre-release.md) for artifacts, checksums and reproducibility, and [CI verification](docs/ci.md) for the successful hosted run of the preceding implementation.
+Glyf is a local-first visual document format and viewer. Open a `.glyf` file, read its layouts and charts, edit the controls its author enabled, and download the updated document. Files use UTF-8 JSON and the exact format version `0.1.0`. The required version field is `"glyf": "0.1.0"`; the schema, APIs and files all use Glyf names. Pre-rename Mosaic documents are not accepted or automatically migrated; see the [format identity contract](docs/compatibility.md#glyf-name-and-file-extension).
+
+**Current app candidate: `0.1.0-rc.3`, for local evaluation.** Document format stays `0.1.0`. Public release remains uncleared; browser/accessibility coverage, memory stability, naming and extension decisions are recorded in [release readiness](docs/release-readiness.md). See [candidate preparation](docs/pre-release.md) for artifacts, checksums and reproducibility, and [CI verification](docs/ci.md) for the successful hosted run of the preceding implementation.
 
 - [Set up the local viewer](#development-environment).
 - [Follow the demo and learn editing/downloads](docs/user-guide.md).
 - [Resolve setup and document errors](docs/troubleshooting.md).
 - [Check known limitations](docs/user-guide.md#known-limitations) or the detailed [format compatibility contract](docs/compatibility.md).
-- [Read draft candidate release notes](docs/releases/0.1.0-rc.1.md).
+- [Read draft candidate release notes](docs/releases/0.1.0-rc.3.md).
 
 ## Development environment
 
-To run this checkout, install **Git**, **Node.js** and **Bun**, and obtain access to this repository. No account inside Mosaic, `.env` file, API key, database or backend is required. Internet access is needed to clone and install packages; the viewer processes documents locally once its assets have loaded.
+To run this checkout, install **Git**, **Node.js** and **Bun**, and obtain access to this repository. No account inside Glyf, `.env` file, API key, database or backend is required. Internet access is needed to clone and install packages; the viewer processes documents locally once its assets have loaded.
 
 - **Node:** the locally verified version is **22.18.0**, pinned in `.nvmrc`. The declared range also accepts 22.x from 22.13, 24.x, and 26+. Use the [official Node 22.18.0 downloads](https://nodejs.org/en/download/archive/v22.18.0), or, if you already use nvm, run `nvm install` and `nvm use` inside the checkout.
 - **Bun:** use **1.3.14**, pinned in `package.json`. Follow Bun's [specific-version installation instructions](https://bun.sh/docs/installation#installing-older-versions) or use its [1.3.14 release assets](https://github.com/oven-sh/bun/releases/tag/bun-v1.3.14). For a script-based installation on macOS/Linux, the version-specific command is:
@@ -29,6 +31,8 @@ From a terminal, clone and enter the project:
 git clone https://github.com/farukumarx64/mosaic.git
 cd mosaic
 ```
+
+The GitHub repository and checkout directory still use the original `mosaic` name; the app is Glyf.
 
 If already in a checkout, open its folder in the terminal. After selecting the supported Node and Bun versions, run:
 
@@ -50,7 +54,7 @@ Open `http://127.0.0.1:4180`. Build before preview and rebuild after changing ap
 
 ## First document
 
-Choose **Open Demo**, select **Open File**, or drop one `.mosa` file into the viewer. **Preview** shows the document; **Source** shows its current accepted values as read-only JSON. The [user guide](docs/user-guide.md#try-the-demo) walks through changing a table cell, updating a note, hiding a chart, downloading and reopening the result.
+Choose **Open Demo**, select **Open File**, or drop one `.glyf` file into the viewer. **Preview** shows the document; **Source** shows its current accepted values as read-only JSON. The [user guide](docs/user-guide.md#try-the-demo) walks through changing a table cell, updating a note, hiding a chart, downloading and reopening the result.
 
 Use **Download** to keep accepted edits. It creates a new browser-managed file and does not overwrite the original. Check that the download finished before closing or refreshing: there is no autosave or session recovery. Replacement warnings cover Open Demo, Open File and drop; they do not guard tab closure or navigation. Invalid numeric drafts are not included in the downloaded file. See [saving and replacement](docs/user-guide.md#download-and-reopen) for the details.
 
@@ -84,7 +88,7 @@ When switching an existing npm checkout, stop its dev/test processes, remove onl
 
 The file workflow tests use React Testing Library and Happy DOM. The other Vitest suites run in Node. Benchmarks run separately in production Chromium so unit-test timing is not mistaken for browser performance.
 
-Candidate packaging requires the exact Node version in `.nvmrc` and the pinned Bun version, even when normal development permits a broader Node range. Run a frozen install first. Artifacts go to ignored `release/0.1.0-rc.1/`; preparing them does not run every test or publish a release. Follow the [candidate verification procedure](docs/pre-release.md) before distributing a build.
+Candidate packaging requires the exact Node version in `.nvmrc` and the pinned Bun version, even when normal development permits a broader Node range. Run a frozen install first. Artifacts go to ignored `release/0.1.0-rc.3/`; preparing them does not run every test or publish a release. Follow the [candidate verification procedure](docs/pre-release.md) before distributing a build.
 
 ### Continuous integration
 
@@ -123,7 +127,7 @@ Run benchmarks without other test suites or heavy work competing for the machine
 
 The [profiled improvement report](docs/performance-improvements.md) compares the optimized renderer with the original baseline. Unchanged Markdown now reuses its mounted content during cell/state edits, with no global cache. The report also distinguishes V8 warmup from native browser retention and records the unresolved memory-stability limitation. Use `bun run profile investigation small` to capture source-mapped production CPU samples and heap snapshots at 0, 100, 300 and 500 replacement cycles on loopback port **4177**. Generated evidence is written to `benchmark-results/profile-investigation/`.
 
-The [memory follow-up](docs/memory-stability.md) extends replacements to 1,000 cycles in Chromium 159, Chromium 157 (Brave), and WebKit 27.2. Use `bun run memory investigation chromium 1000` on macOS/Linux; select `webkit` for WebKit or supply a local Chromium executable as the final argument. Each workload uses a fresh browser process on loopback port **4178**. The report distinguishes weak-reference observations, native retention and the incomplete macOS WebKit process-memory scope. `bun run memory:native investigation 100` reproduces the native retention with plain HTML tables and a div control, without loading Mosaic. Replacement results are saved under `benchmark-results/memory-investigation/`, and the native-only probe uses `benchmark-results/memory-native-investigation/`. Use a new label for each run.
+The [memory follow-up](docs/memory-stability.md) extends replacements to 1,000 cycles in Chromium 159, Chromium 157 (Brave), and WebKit 27.2. Use `bun run memory investigation chromium 1000` on macOS/Linux; select `webkit` for WebKit or supply a local Chromium executable as the final argument. Each workload uses a fresh browser process on loopback port **4178**. The report distinguishes weak-reference observations, native retention and the incomplete macOS WebKit process-memory scope. `bun run memory:native investigation 100` reproduces the native retention with plain HTML tables and a div control, without loading Glyf. Replacement results are saved under `benchmark-results/memory-investigation/`, and the native-only probe uses `benchmark-results/memory-native-investigation/`. Use a new label for each run.
 
 Before hosting, review the [deployment gates](docs/release-readiness.md#remaining-limitations-and-deployment-gates). The production viewer uses a precompiled validator and is tested under a CSP that excludes `unsafe-eval` and inline scripts. The tested policy permits inline styles for existing theme/layout behavior; it is documented in the release record. Initial assets require HTTP(S); offline cold startup and `file://` are unsupported. No deployment or CSP change is performed by this repository's release review.
 
@@ -136,11 +140,11 @@ docs/
   SPEC_V0.1.md                 Working specification with approved amendments
   decisions.md                 Accepted decisions and implementation status
   core-contracts.md             Errors, pointers, resource budgets, and counting rules
-  reference/                   Unmodified supplied plan and schema
+  reference/                   Archived supplied plan, schema and original demo
 schema/
-  mosaic-v0.1.schema.json       Authoritative structural contract
+  glyf-v0.1.schema.json       Authoritative structural contract
 examples/
-  mosaic-demo.mosa              Unmodified reference document
+  glyf-demo.glyf              Current Glyf golden fixture
   invalid/                     Format fixtures and literal Markdown sample
 scripts/
   generate-validator.ts        Build-time Ajv compilation and standalone ESM bundling
@@ -156,7 +160,7 @@ src/
   core/validate.ts             Full in-memory validation API
   core/semantics.ts            Dataset, state, node, and chart rules
   core/parse.ts                Parse and validate text into a typed document
-  core/serialize.ts            Validate and produce formatted .mosa text
+  core/serialize.ts            Validate and produce formatted .glyf text
   core/store.ts                Indexed dataset reads and immutable cell and state edits
   core/dataset-rules.ts        Shared cell-type and chart-point checks
   core/utf8.ts                 Shared UTF-8 text size and encoding checks
@@ -204,9 +208,9 @@ tests/
 
 The working schema differs from the supplied original only by the approved prohibition on a declared column key named `id` (D003). Row `id` remains required metadata. A test guards that precise amendment; the original files remain available for review.
 
-Use `parseMosaic(text)` for JSON text or `validateMosaic(value)` for an in-memory value, including the successful file reader’s `value`. Both return `{ ok: true, document: MosaicDocument }` after preflight, schema, and semantic validation. Failure returns `{ ok: false, errors }` with a code, JSON Pointer, and message for the first violation.
+Use `parseGlyf(text)` for JSON text or `validateGlyf(value)` for an in-memory value, including the successful file reader’s `value`. Both return `{ ok: true, document: GlyfDocument }` after preflight, schema, and semantic validation. Failure returns `{ ok: false, errors }` with a code, JSON Pointer, and message for the first violation.
 
-Use `serializeMosaic(document)` to export the current model as two-space JSON with one final LF. It revalidates the document and enforces the inclusive 5 MiB limit on the formatted UTF-8 output. A failed export throws `MosaicSerializationError` with the same `errors` list used by validation. See the [serialization contract](docs/core-contracts.md#serializing-a-document) for boundary behavior.
+Use `serializeGlyf(document)` to export the current model as two-space JSON with one final LF. It revalidates the document and enforces the inclusive 5 MiB limit on the formatted UTF-8 output. A failed export throws `GlyfSerializationError` with the same `errors` list used by validation. See the [serialization contract](docs/core-contracts.md#serializing-a-document) for boundary behavior.
 
 The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-property lookups, and no coercion, default insertion, or property removal. Scalar union types are enabled because the supplied schema uses them. Compilation happens in `scripts/generate-validator.ts`, using the trusted repository schema. Ajv is a development dependency; the shipped module contains static validator functions and the bundled Unicode-length helper, with no runtime compiler or imports.
 
@@ -216,10 +220,10 @@ The Ajv configuration uses Draft 2020-12, strict checks, finite numbers, own-pro
 
 ### Document store
 
-`createDocumentStore(opened)` takes the successful result of `parseMosaic` or `validateMosaic`. The viewer creates one store for each file it successfully opens. Preview and Source read the current snapshot.
+`createDocumentStore(opened)` takes the successful result of `parseGlyf` or `validateGlyf`. The viewer creates one store for each file it successfully opens. Preview and Source read the current snapshot.
 
 ```ts
-const opened = parseMosaic(demoText);
+const opened = parseGlyf(demoText);
 if (opened.ok) {
   const store = createDocumentStore(opened);
   const result = store.updateCell('revenueTable', 'jan', 'amount', 1500);
@@ -238,11 +242,11 @@ Row and column positions are indexed once per dataset. Each edit copies the affe
 
 The store indexes control binding types when it opens the validated document, including hidden controls. Toggle bindings require booleans, text inputs require strings, and number inputs require finite numbers. Keys used only by `when` or `stateValue`, along with unbound keys, can change among strings, finite numbers, booleans, and null. Rejected edits preserve the current snapshot. State updates also compose with cell edits and survive serialization and reopening.
 
-`store.isDirty()` returns a boolean that starts false and becomes true before subscribers are notified of a changed edit. After a download starts, `store.markDownloaded(snapshot)` clears it only if the exported snapshot is still current. Passing an older or foreign snapshot leaves newer edits dirty. Clearing the flag notifies subscribers without copying or changing the document; unchanged checkpoints are silent. This constant-size bookkeeping is outside the `.mosa` model and is never serialized.
+`store.isDirty()` returns a boolean that starts false and becomes true before subscribers are notified of a changed edit. After a download starts, `store.markDownloaded(snapshot)` clears it only if the exported snapshot is still current. Passing an older or foreign snapshot leaves newer edits dirty. Clearing the flag notifies subscribers without copying or changing the document; unchanged checkpoints are silent. This constant-size bookkeeping is outside the `.glyf` model and is never serialized.
 
 ### Preview
 
-Pass the successful result of `parseMosaic` or `validateMosaic` to the React preview as `<NodeRenderer document={result.document} />`. The renderer starts at `document.root`. Each child keeps its array position and uses its node ID as its React key.
+Pass the successful result of `parseGlyf` or `validateGlyf` to the React preview as `<NodeRenderer document={result.document} />`. The renderer starts at `document.root`. Each child keeps its array position and uses its node ID as its React key.
 
 Columns stack children, rows wrap, and grids use the declared column count when space permits. Each grid measures its own available width. It sheds columns as tracks approach 14 rem and can shrink a single track to the width of a narrow card. An explicit gap token from 0 through 6 sets the gap in steps of 0.25 rem. Cards group ordered children under an optional title. Headings use the declared level, text preserves line breaks, and dividers render a horizontal rule.
 
@@ -254,7 +258,7 @@ Code blocks are named keyboard-focusable scroll regions. Links with no remaining
 
 Markdown syntax deeper than the viewer's 128-level AST budget, or another Markdown rendering failure, shows an explanatory note and escaped source text in that node. The rest of the document remains usable. This rendering safeguard leaves format validation and exported values unchanged; see the [audit report](docs/security-audit.md) for counting and scope.
 
-HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links use the user's mail handler. A fragment such as `#notes` targets the rendered element for the Mosaic node with ID `notes`. DOM targets have a viewer-owned prefix to avoid collisions with the app shell. Other destinations, including relative paths and protocol-relative URLs, display their link label as ordinary content.
+HTTP and HTTPS links open in a new tab with `noopener noreferrer`. Mail links use the user's mail handler. A fragment such as `#notes` targets the rendered element for the Glyf node with ID `notes`. DOM targets have a viewer-owned prefix to avoid collisions with the app shell. Other destinations, including relative paths and protocol-relative URLs, display their link label as ordinary content.
 
 The preview uses the current `state` map. A `when` renders its children in order only if the bound value equals `equals` in both type and value. A `stateValue` displays its optional prefix, the current value, and its optional suffix. It displays `null` as an em dash and preserves empty strings, zero, and false.
 

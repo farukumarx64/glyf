@@ -1,19 +1,19 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import demoSource from '../examples/mosaic-demo.mosa?raw';
-import missingBinding from '../examples/invalid/missing-binding.mosa?raw';
+import demoSource from '../examples/glyf-demo.glyf?raw';
+import missingBinding from '../examples/invalid/missing-binding.glyf?raw';
 import { App } from '../src/app/App.tsx';
 import { DocumentView } from '../src/app/DocumentView.tsx';
-import { MOSAIC_LIMITS } from '../src/core/limits.ts';
-import { parseMosaic } from '../src/core/parse.ts';
+import { GLYF_LIMITS } from '../src/core/limits.ts';
+import { parseGlyf } from '../src/core/parse.ts';
 import { createDocumentStore } from '../src/core/store.ts';
 import { minimalDocument } from './fixtures.ts';
 
 afterEach(cleanup);
 
 function choose(...files: File[]) {
-  fireEvent.change(screen.getByLabelText('Choose a Mosaic file'), { target: { files } });
+  fireEvent.change(screen.getByLabelText('Choose a Glyf file'), { target: { files } });
 }
 
 function drop(...files: File[]) {
@@ -27,10 +27,10 @@ async function openDemo() {
 
 describe('viewer file workflow', () => {
   it('reflects programmatic state updates in content, conditional charts and Source', () => {
-    const opened = parseMosaic(demoSource);
+    const opened = parseGlyf(demoSource);
     if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
     const store = createDocumentStore(opened);
-    render(<DocumentView store={store} fileName="mosaic-demo.mosa" />);
+    render(<DocumentView store={store} fileName="glyf-demo.glyf" />);
     act(() => {
       expect(store.updateState('note', 'Updated report').ok).toBe(true);
       expect(store.updateState('showChart', false).ok).toBe(true);
@@ -51,10 +51,10 @@ describe('viewer file workflow', () => {
   });
 
   it('refreshes the open Source tab when the document store commits an edit', () => {
-    const opened = parseMosaic(demoSource);
+    const opened = parseGlyf(demoSource);
     if (!opened.ok) throw new Error(JSON.stringify(opened.errors));
     const store = createDocumentStore(opened);
-    render(<DocumentView store={store} fileName="mosaic-demo.mosa" />);
+    render(<DocumentView store={store} fileName="glyf-demo.glyf" />);
     fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
     const panel = screen.getByRole('tabpanel', { name: 'Source' });
     expect(panel.textContent).toContain('"amount": 1200');
@@ -90,10 +90,12 @@ describe('viewer file workflow', () => {
 
   it('routes both choose actions to the file picker and tolerates cancellation', () => {
     render(<App />);
-    const picker = screen.getByLabelText<HTMLInputElement>('Choose a Mosaic file');
+    const picker = screen.getByLabelText<HTMLInputElement>('Choose a Glyf file');
+    expect(picker.accept).toBe('.glyf');
+    expect(screen.getByRole('heading', { name: 'One format. Infinite expressions.' })).toBeTruthy();
     const click = vi.spyOn(picker, 'click');
     fireEvent.click(screen.getByRole('button', { name: 'Open File' }));
-    fireEvent.click(screen.getByRole('button', { name: /Drop a .mosa file here/ }));
+    fireEvent.click(screen.getByRole('button', { name: /Drop a .glyf file here/ }));
     expect(click).toHaveBeenCalledTimes(2);
     choose();
     expect(screen.queryByRole('alert')).toBeNull();
@@ -106,13 +108,13 @@ describe('viewer file workflow', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
     const doc = minimalDocument();
     choose(
-      new File(['\uFEFF' + JSON.stringify(doc)], 'report.mosa', {
+      new File(['\uFEFF' + JSON.stringify(doc)], 'report.glyf', {
         type: 'application/octet-stream',
       }),
     );
     await screen.findByRole('heading', { name: doc.meta.title });
     expect(screen.getByRole('tab', { name: 'Preview', selected: true })).toBeTruthy();
-    expect(screen.getByText('report.mosa')).toBeTruthy();
+    expect(screen.getByText('report.glyf')).toBeTruthy();
     expect(screen.queryByText('First report')).toBeNull();
   });
 
@@ -120,7 +122,7 @@ describe('viewer file workflow', () => {
     render(<App />);
     const doc = { ...minimalDocument(), state: { note: '<em>literal</em>' } };
     const target = screen.getByRole('main');
-    const transfer = { types: ['Files'], files: [new File([JSON.stringify(doc)], 'dropped.mosa')] };
+    const transfer = { types: ['Files'], files: [new File([JSON.stringify(doc)], 'dropped.glyf')] };
     fireEvent.dragEnter(target, { dataTransfer: transfer });
     expect(screen.getByText('Drop to open document')).toBeTruthy();
     expect(fireEvent.dragOver(target, { dataTransfer: transfer })).toBe(false);
@@ -137,7 +139,7 @@ describe('viewer file workflow', () => {
     render(<App />);
     await openDemo();
     fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
-    choose(new File([missingBinding], 'notes.mosa'));
+    choose(new File([missingBinding], 'notes.glyf'));
     const panel = await screen.findByRole('alert');
     expect(within(panel).getByText('State key "absent" is not declared.')).toBeTruthy();
     expect(within(panel).getByText('INVALID_BINDING')).toBeTruthy();
@@ -145,23 +147,23 @@ describe('viewer file workflow', () => {
     expect(screen.getByRole('tabpanel', { name: 'Source' }).textContent).toContain(
       '"id": "sample_overview"',
     );
-    choose(new File([JSON.stringify(minimalDocument())], 'notes.mosa'));
+    choose(new File([JSON.stringify(minimalDocument())], 'notes.glyf'));
     await screen.findByRole('heading', { name: 'Minimal document' });
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it.each([
-    ['bad JSON', new File(['{'], 'bad.mosa'), 'INVALID_JSON', '""'],
-    ['invalid encoding', new File([new Uint8Array([255])], 'bad.mosa'), 'INVALID_UTF8', '""'],
+    ['bad JSON', new File(['{'], 'bad.glyf'), 'INVALID_JSON', '""'],
+    ['invalid encoding', new File([new Uint8Array([255])], 'bad.glyf'), 'INVALID_UTF8', '""'],
     [
       'unsupported version',
-      new File(['{"mosaic":"2.0"}'], 'bad.mosa'),
+      new File(['{"glyf":"2.0"}'], 'bad.glyf'),
       'UNSUPPORTED_VERSION',
-      '/mosaic',
+      '/glyf',
     ],
     [
       'duplicate property',
-      new File(['{"mosaic":"0.1.0","a/b":1,"a/b":2}'], 'bad.mosa'),
+      new File(['{"glyf":"0.1.0","a/b":1,"a/b":2}'], 'bad.glyf'),
       'INVALID_JSON',
       '/a~1b',
     ],
@@ -179,8 +181,8 @@ describe('viewer file workflow', () => {
 
   it('blocks an oversized file before reading its bytes', async () => {
     render(<App />);
-    const file = new File([], 'large.mosa');
-    Object.defineProperty(file, 'size', { value: MOSAIC_LIMITS.fileBytes + 1 });
+    const file = new File([], 'large.glyf');
+    Object.defineProperty(file, 'size', { value: GLYF_LIMITS.fileBytes + 1 });
     const read = vi.spyOn(file, 'arrayBuffer');
     choose(file);
     expect(within(await screen.findByRole('alert')).getByText('FILE_TOO_LARGE')).toBeTruthy();
@@ -190,11 +192,11 @@ describe('viewer file workflow', () => {
   it('shows full Source for a valid compact file even when indentation exceeds the export limit', async () => {
     render(<App />);
     const doc = { ...minimalDocument(), state: { note: '' } };
-    doc.state.note = 'a'.repeat(MOSAIC_LIMITS.fileBytes - JSON.stringify(doc).length);
-    choose(new File([JSON.stringify(doc)], 'limit.mosa'));
+    doc.state.note = 'a'.repeat(GLYF_LIMITS.fileBytes - JSON.stringify(doc).length);
+    choose(new File([JSON.stringify(doc)], 'limit.glyf'));
     fireEvent.click(await screen.findByRole('tab', { name: 'Source' }));
     const formatted = screen.getByRole('tabpanel').textContent!;
-    expect(formatted.length).toBeGreaterThan(MOSAIC_LIMITS.fileBytes);
+    expect(formatted.length).toBeGreaterThan(GLYF_LIMITS.fileBytes);
     expect(JSON.parse(formatted)).toEqual(doc);
   });
 
@@ -204,10 +206,10 @@ describe('viewer file workflow', () => {
       dataTransfer: { types: ['text/plain'], files: [] },
     });
     expect(screen.queryByRole('alert')).toBeNull();
-    const file = new File([], 'unreadable.mosa');
+    const file = new File([], 'unreadable.glyf');
     const read = vi.spyOn(file, 'arrayBuffer').mockRejectedValue(new Error('read failure'));
     drop(file, file);
-    expect(screen.getByRole('alert').textContent).toContain('one Mosaic document');
+    expect(screen.getByRole('alert').textContent).toContain('one Glyf document');
     expect(read).not.toHaveBeenCalled();
     choose(file);
     await screen.findByText('The file could not be read. Choose it again to retry.');
@@ -219,7 +221,7 @@ describe('viewer file workflow', () => {
     'ignores a late file %s after a newer demo open',
     async (outcome) => {
       render(<App />);
-      const file = new File([JSON.stringify(minimalDocument())], 'slow.mosa');
+      const file = new File([JSON.stringify(minimalDocument())], 'slow.glyf');
       let release!: () => void;
       const gate = new Promise<void>((resolve) => {
         release = resolve;
@@ -231,12 +233,12 @@ describe('viewer file workflow', () => {
         return bytes;
       });
       choose(file);
-      expect(screen.getByRole('status').textContent).toContain('slow.mosa');
+      expect(screen.getByRole('status').textContent).toContain('slow.glyf');
       await openDemo();
       await act(async () => {
         release();
       });
-      expect(screen.getByRole('heading', { name: 'Mosaic Demo' })).toBeTruthy();
+      expect(screen.getByRole('heading', { name: 'Glyf Demo' })).toBeTruthy();
       expect(screen.queryByRole('alert')).toBeNull();
     },
   );

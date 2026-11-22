@@ -1,19 +1,19 @@
 import { useState, type KeyboardEvent } from 'react';
 import type { ParseResult } from '../core/errors.ts';
-import type { MosaicScalar } from '../core/types.ts';
+import type { GlyfScalar } from '../core/types.ts';
 
 // Parse the complete decimal spelling, including signs and exponents.
 const decimalNumber = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?$/u;
 
 /** Keep draft spelling and errors local while publishing only accepted values. */
-export function useValueDraft(value: MosaicScalar, update: (next: MosaicScalar) => ParseResult) {
+export function useValueDraft(value: GlyfScalar, update: (next: GlyfScalar) => ParseResult) {
   const [draft, setDraft] = useState({ committed: value, text: String(value ?? ''), error: '' });
   // Follow a change from another bound control without resetting unrelated drafts.
   if (!Object.is(draft.committed, value)) {
     setDraft({ committed: value, text: String(value ?? ''), error: '' });
   }
 
-  function commit(next: MosaicScalar, text = String(next ?? '')) {
+  function commit(next: GlyfScalar, text = String(next ?? '')) {
     const result = update(next);
     setDraft({
       committed: result.ok ? next : value,

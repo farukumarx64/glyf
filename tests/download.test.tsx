@@ -1,13 +1,13 @@
 // @vitest-environment happy-dom
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import demoSource from '../examples/mosaic-demo.mosa?raw';
+import demoSource from '../examples/glyf-demo.glyf?raw';
 import { App } from '../src/app/App.tsx';
-import { downloadMosaic } from '../src/app/download.ts';
-import { MOSAIC_LIMITS } from '../src/core/limits.ts';
-import { parseMosaic } from '../src/core/parse.ts';
-import { MosaicSerializationError } from '../src/core/serialize.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { downloadGlyf } from '../src/app/download.ts';
+import { GLYF_LIMITS } from '../src/core/limits.ts';
+import { parseGlyf } from '../src/core/parse.ts';
+import { GlyfSerializationError } from '../src/core/serialize.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { minimalDocument, nodeSamples } from './fixtures.ts';
 
 const blobs: Blob[] = [];
@@ -19,7 +19,7 @@ beforeEach(() => {
   links.length = 0;
   vi.spyOn(URL, 'createObjectURL').mockImplementation((blob) => {
     blobs.push(blob as Blob);
-    return 'blob:mosaic-test-' + blobs.length;
+    return 'blob:glyf-test-' + blobs.length;
   });
   vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
@@ -38,7 +38,7 @@ afterEach(() => {
 
 async function choose(file: File) {
   await act(async () => {
-    fireEvent.change(screen.getByLabelText('Choose a Mosaic file'), { target: { files: [file] } });
+    fireEvent.change(screen.getByLabelText('Choose a Glyf file'), { target: { files: [file] } });
   });
 }
 
@@ -64,49 +64,51 @@ function sizedDocument(bytes: number) {
   return doc;
 }
 
-describe('Mosaic download', () => {
+describe('Glyf download', () => {
   it('writes formatted UTF-8 JSON, creates a temporary local link and releases its URL after use', async () => {
     const doc = { ...minimalDocument(), state: { note: '雪 😀\nquoted "text"', empty: null } };
     const original = structuredClone(doc);
-    downloadMosaic(doc, 'report.mosa');
+    downloadGlyf(doc, 'report.glyf');
     expect(blobs).toHaveLength(1);
     expect(blobs[0]?.type).toBe('application/json');
     const text = JSON.stringify(doc, null, 2) + '\n';
     expect(new Uint8Array(await blobs[0]!.arrayBuffer())).toEqual(new TextEncoder().encode(text));
-    expect(links).toEqual([{ name: 'report.mosa', url: 'blob:mosaic-test-1', connected: true }]);
+    expect(links).toEqual([{ name: 'report.glyf', url: 'blob:glyf-test-1', connected: true }]);
     expect(document.querySelector('a[download]')).toBeNull();
     expect(URL.revokeObjectURL).not.toHaveBeenCalled();
     vi.runOnlyPendingTimers();
-    expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:mosaic-test-1');
+    expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:glyf-test-1');
     expect(doc).toEqual(original);
   });
 
   it.each([
-    ['report.MOSA', 'report.mosa'],
-    ['report', 'report.mosa'],
-    ['report.json', 'report.json.mosa'],
-    ['folder/notes.mosa', 'notes.mosa'],
-    ['folder\\notes.mosa', 'notes.mosa'],
-    ['', 'document.mosa'],
-  ])('suggests a .mosa filename for %j', (input, expected) => {
-    downloadMosaic(minimalDocument(), input);
+    ['report.glyf', 'report.glyf'],
+    ['report.GLYF', 'report.glyf'],
+    ['report.mosa', 'report.mosa.glyf'],
+    ['report', 'report.glyf'],
+    ['report.json', 'report.json.glyf'],
+    ['folder/notes.glyf', 'notes.glyf'],
+    ['folder\\notes.glyf', 'notes.glyf'],
+    ['', 'document.glyf'],
+  ])('suggests a .glyf filename for %j', (input, expected) => {
+    downloadGlyf(minimalDocument(), input);
     expect(links[0]?.name).toBe(expected);
   });
 
   it('allows exactly 5 MiB of formatted UTF-8 output', async () => {
-    const doc = sizedDocument(MOSAIC_LIMITS.fileBytes);
-    downloadMosaic(doc, 'exact.mosa');
-    expect(blobs[0]?.size).toBe(MOSAIC_LIMITS.fileBytes);
-    expect(parseMosaic(await blobs[0]!.text())).toEqual({ ok: true, document: doc });
+    const doc = sizedDocument(GLYF_LIMITS.fileBytes);
+    downloadGlyf(doc, 'exact.glyf');
+    expect(blobs[0]?.size).toBe(GLYF_LIMITS.fileBytes);
+    expect(parseGlyf(await blobs[0]!.text())).toEqual({ ok: true, document: doc });
   });
 
   it('rejects one extra UTF-8 byte before creating a URL or starting a download', () => {
-    const doc = sizedDocument(MOSAIC_LIMITS.fileBytes + 1);
-    expect(validateMosaic(doc).ok).toBe(true);
+    const doc = sizedDocument(GLYF_LIMITS.fileBytes + 1);
+    expect(validateGlyf(doc).ok).toBe(true);
     expect(new TextEncoder().encode(JSON.stringify(doc)).length).toBeLessThan(
-      MOSAIC_LIMITS.fileBytes,
+      GLYF_LIMITS.fileBytes,
     );
-    expect(() => downloadMosaic(doc, 'over.mosa')).toThrow(MosaicSerializationError);
+    expect(() => downloadGlyf(doc, 'over.glyf')).toThrow(GlyfSerializationError);
     expect(URL.createObjectURL).not.toHaveBeenCalled();
     expect(links).toEqual([]);
   });
@@ -116,16 +118,14 @@ describe('Mosaic download', () => {
       ...minimalDocument(),
       root: { ...minimalDocument().root, children: [nodeSamples.input] },
     };
-    const validation = validateMosaic(doc);
+    const validation = validateGlyf(doc);
     expect(validation.ok).toBe(false);
     try {
-      downloadMosaic(doc, 'invalid.mosa');
+      downloadGlyf(doc, 'invalid.glyf');
       throw new Error('Expected validation failure');
     } catch (error) {
-      expect(error).toBeInstanceOf(MosaicSerializationError);
-      expect((error as MosaicSerializationError).errors).toEqual(
-        !validation.ok && validation.errors,
-      );
+      expect(error).toBeInstanceOf(GlyfSerializationError);
+      expect((error as GlyfSerializationError).errors).toEqual(!validation.ok && validation.errors);
     }
     expect(URL.createObjectURL).not.toHaveBeenCalled();
     expect(links).toEqual([]);
@@ -135,10 +135,10 @@ describe('Mosaic download', () => {
     vi.mocked(HTMLAnchorElement.prototype.click).mockImplementationOnce(() => {
       throw new Error('blocked');
     });
-    expect(() => downloadMosaic(minimalDocument(), 'report.mosa')).toThrow('blocked');
+    expect(() => downloadGlyf(minimalDocument(), 'report.glyf')).toThrow('blocked');
     expect(document.querySelector('a[download]')).toBeNull();
     vi.runOnlyPendingTimers();
-    expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:mosaic-test-1');
+    expect(URL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith('blob:glyf-test-1');
   });
 });
 
@@ -152,7 +152,7 @@ describe('viewer Download action', () => {
     await openDemo();
     expect(button).toHaveProperty('disabled', false);
     const doc = minimalDocument();
-    const file = new File([JSON.stringify(doc)], 'replacement.mosa');
+    const file = new File([JSON.stringify(doc)], 'replacement.glyf');
     let release!: (value: ArrayBuffer) => void;
     vi.spyOn(file, 'arrayBuffer').mockReturnValue(
       new Promise((resolve) => {
@@ -168,7 +168,7 @@ describe('viewer Download action', () => {
     });
     expect(button).toHaveProperty('disabled', false);
     download();
-    expect(links[0]?.name).toBe('replacement.mosa');
+    expect(links[0]?.name).toBe('replacement.glyf');
     expect(JSON.parse(await blobs[0]!.text())).toEqual(doc);
   });
 
@@ -205,13 +205,13 @@ describe('viewer Download action', () => {
 
   it('shows export size errors, preserves all edits and permits a corrected retry', async () => {
     render(<App />);
-    const doc = sizedDocument(MOSAIC_LIMITS.fileBytes);
-    await choose(new File([JSON.stringify(doc)], 'limit.mosa'));
+    const doc = sizedDocument(GLYF_LIMITS.fileBytes);
+    await choose(new File([JSON.stringify(doc)], 'limit.glyf'));
     const note = screen.getByRole('textbox', { name: 'Note' });
     fireEvent.change(note, { target: { value: 'é' } });
     download();
     const alert = screen.getByRole('alert');
-    expect(within(alert).getByRole('heading').textContent).toBe('Could not download limit.mosa');
+    expect(within(alert).getByRole('heading').textContent).toBe('Could not download limit.glyf');
     expect(within(alert).getByText('FILE_TOO_LARGE')).toBeTruthy();
     expect(within(alert).getByText('""')).toBeTruthy();
     expect(alert.textContent).toContain('5242880 UTF-8 bytes');
@@ -229,14 +229,14 @@ describe('viewer Download action', () => {
     download();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.queryByText('Unsaved changes')).toBeNull();
-    expect(blobs[0]?.size).toBe(MOSAIC_LIMITS.fileBytes);
+    expect(blobs[0]?.size).toBe(GLYF_LIMITS.fileBytes);
     expect(JSON.parse(await blobs[0]!.text())).toEqual(doc);
   });
 
   it('blocks a compact import whose formatted export is too large without changing Source', async () => {
     render(<App />);
-    const doc = sizedDocument(MOSAIC_LIMITS.fileBytes + 1);
-    await choose(new File([JSON.stringify(doc)], 'compact.mosa'));
+    const doc = sizedDocument(GLYF_LIMITS.fileBytes + 1);
+    await choose(new File([JSON.stringify(doc)], 'compact.glyf'));
     fireEvent.click(screen.getByRole('tab', { name: 'Source' }));
     const source = screen.getByRole('tabpanel');
     const before = source.textContent;
@@ -250,8 +250,8 @@ describe('viewer Download action', () => {
   it('keeps the last open document downloadable after an import failure and handles browser errors separately', async () => {
     render(<App />);
     await openDemo();
-    await choose(new File(['{'], 'bad.mosa'));
-    expect(screen.getByRole('alert').textContent).toContain('Could not open bad.mosa');
+    await choose(new File(['{'], 'bad.glyf'));
+    expect(screen.getByRole('alert').textContent).toContain('Could not open bad.glyf');
     expect(screen.getByRole('button', { name: 'Download' })).toHaveProperty('disabled', false);
     vi.mocked(URL.createObjectURL).mockImplementationOnce(() => {
       throw new Error('browser failure');
@@ -267,7 +267,7 @@ describe('viewer Download action', () => {
     );
     download();
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(links[0]?.name).toBe('mosaic-demo.mosa');
+    expect(links[0]?.name).toBe('glyf-demo.glyf');
     expect(JSON.parse(await blobs[0]!.text())).toEqual(JSON.parse(demoSource));
   });
 });

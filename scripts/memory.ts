@@ -101,10 +101,10 @@ try {
       await page.goto('http://127.0.0.1:4178');
       await page.getByRole('button', { name: 'Open Demo' }).waitFor();
       for (const content of observerSources) await page.addScriptTag({ type: 'module', content });
-      await page.waitForFunction(() => !!window.installMosaicMemoryObserver);
-      await page.evaluate((values) => window.installMosaicViewerBenchmark(values), sources);
+      await page.waitForFunction(() => !!window.installGlyfMemoryObserver);
+      await page.evaluate((values) => window.installGlyfViewerBenchmark(values), sources);
       await page.evaluate(
-        (ids) => window.installMosaicMemoryObserver(ids),
+        (ids) => window.installGlyfMemoryObserver(ids),
         fixtures.map((fixture) => (JSON.parse(fixture.source) as { id: string }).id),
       );
       context.on('request', (request) => requests.push(request.url()));
@@ -116,26 +116,24 @@ try {
 
       async function cycle() {
         if (workload === 'idle') {
-          await page.evaluate(() => window.mosaicViewerBench.settle());
-          await page.evaluate(() => window.mosaicViewerBench.settle());
+          await page.evaluate(() => window.glyfViewerBench.settle());
+          await page.evaluate(() => window.glyfViewerBench.settle());
         } else {
-          await page.evaluate((name) => window.mosaicViewerBench.open(name), workload);
-          await page.evaluate(() => window.mosaicMemoryObserver.captureView());
-          await page.evaluate(() => window.mosaicViewerBench.open('baseline'));
+          await page.evaluate((name) => window.glyfViewerBench.open(name), workload);
+          await page.evaluate(() => window.glyfMemoryObserver.captureView());
+          await page.evaluate(() => window.glyfViewerBench.open('baseline'));
         }
       }
-      await page.evaluate(() => window.mosaicViewerBench.open('baseline'));
+      await page.evaluate(() => window.glyfViewerBench.open('baseline'));
       for (let i = 0; i < environment.warmups; i++) await cycle();
-      const baselineElements = await page.evaluate(
-        () => window.mosaicViewerBench.counts().elements,
-      );
+      const baselineElements = await page.evaluate(() => window.glyfViewerBench.counts().elements);
       async function checkpoint(cycle: number) {
-        await page.evaluate(() => window.mosaicViewerBench.settle());
+        await page.evaluate(() => window.glyfViewerBench.settle());
         await page.requestGC();
-        const visible = await page.evaluate(() => window.mosaicViewerBench.counts());
+        const visible = await page.evaluate(() => window.glyfViewerBench.counts());
         assert.equal(visible.elements, baselineElements);
         assert.equal(visible.tableRows + visible.barPoints + visible.linePoints, 0);
-        const weak = await page.evaluate(() => window.mosaicMemoryObserver.counts());
+        const weak = await page.evaluate(() => window.glyfMemoryObserver.counts());
         const usage = cdp ? await cdp.send('Runtime.getHeapUsage') : null;
         const dom = cdp ? await cdp.send('Memory.getDOMCounters') : null;
         const rss = processTreeMemory(

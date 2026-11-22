@@ -1,7 +1,7 @@
 import { checkChartPointLimit, isCellValue } from './dataset-rules.ts';
-import type { MosaicError, MosaicErrorCode, ParseResult } from './errors.ts';
+import type { GlyfError, GlyfErrorCode, ParseResult } from './errors.ts';
 import { appendJsonPointer, jsonPointer, type JsonPointer } from './json-pointer.ts';
-import { checkResourceLimit, MOSAIC_LIMITS } from './limits.ts';
+import { checkResourceLimit, GLYF_LIMITS } from './limits.ts';
 import type { StructuralDocument } from './schema.ts';
 import type {
   ChartNode,
@@ -9,8 +9,8 @@ import type {
   Dataset,
   DatasetRow,
   InputNode,
-  MosaicDocument,
-  MosaicNode,
+  GlyfDocument,
+  GlyfNode,
   StateValueNode,
   ToggleNode,
   WhenNode,
@@ -25,11 +25,11 @@ interface IndexedDataset {
   checkedAxes: Set<string>;
 }
 
-function issue(code: MosaicErrorCode, path: JsonPointer, message: string): MosaicError {
+function issue(code: GlyfErrorCode, path: JsonPointer, message: string): GlyfError {
   return { code, path, message };
 }
 
-function hasLayoutRoot(document: StructuralDocument): document is MosaicDocument {
+function hasLayoutRoot(document: StructuralDocument): document is GlyfDocument {
   const type = document.root.type;
   return type === 'column' || type === 'row' || type === 'grid' || type === 'card';
 }
@@ -134,7 +134,7 @@ export function stateBindingType(node: WhenNode | StateValueNode | ToggleNode | 
 
 function checkBinding(
   node: WhenNode | StateValueNode | ToggleNode | InputNode,
-  state: MosaicDocument['state'],
+  state: GlyfDocument['state'],
   path: JsonPointer,
 ) {
   const key = node.bind;
@@ -190,7 +190,7 @@ function checkChart(node: ChartNode, dataset: IndexedDataset, path: JsonPointer)
       );
     }
   }
-  if (dataset.rows.length <= MOSAIC_LIMITS.chartPoints) return;
+  if (dataset.rows.length <= GLYF_LIMITS.chartPoints) return;
   // A colon cannot occur in a v0.1 column key.
   const axes = node.x + ':' + node.y;
   if (dataset.checkedAxes.has(axes)) return;
@@ -200,15 +200,15 @@ function checkChart(node: ChartNode, dataset: IndexedDataset, path: JsonPointer)
 }
 
 function checkTree(
-  root: MosaicNode,
-  state: MosaicDocument['state'],
+  root: GlyfNode,
+  state: GlyfDocument['state'],
   datasets: ReadonlyMap<string, IndexedDataset>,
 ) {
   const ids = new Set<string>();
 
   // Preflight has bounded the call depth to 20. Visit children in document order
   // so duplicate IDs consistently identify the later occurrence.
-  function visit(node: MosaicNode, path: JsonPointer): MosaicError | undefined {
+  function visit(node: GlyfNode, path: JsonPointer): GlyfError | undefined {
     if (ids.has(node.id)) {
       return issue(
         'DUPLICATE_ID',

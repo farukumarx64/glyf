@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import type { HeadingNode, MosaicNode } from '../src/core/types.ts';
+import type { HeadingNode, GlyfNode } from '../src/core/types.ts';
 import { nodeRegistry } from '../src/render/nodeRegistry.tsx';
 import { minimalDocument, nodeSamples, typedDocument } from './fixtures.ts';
 import { renderDocument } from './render-document.tsx';
@@ -28,13 +28,13 @@ describe('NodeRenderer', () => {
 
     expect(html).toBe(
       renderToStaticMarkup(
-        <div id="mosaic-node-root" className="mosaic-column">
-          <h2 id="mosaic-node-overview">Overview</h2>
-          <section id="mosaic-node-notes" className="mosaic-card">
-            <p id="mosaic-node-z" className="mosaic-text">
+        <div id="glyf-node-root" className="glyf-column">
+          <h2 id="glyf-node-overview">Overview</h2>
+          <section id="glyf-node-notes" className="glyf-card">
+            <p id="glyf-node-z" className="glyf-text">
               First observation
             </p>
-            <p id="mosaic-node-a" className="mosaic-text">
+            <p id="glyf-node-a" className="glyf-text">
               Second observation
             </p>
           </section>
@@ -45,28 +45,28 @@ describe('NodeRenderer', () => {
 
   it('registers exactly the v0.1 node kinds and narrows component props by kind', () => {
     expect(Object.keys(nodeRegistry).sort()).toEqual(Object.keys(nodeSamples).sort());
-    expectTypeOf<keyof typeof nodeRegistry>().toEqualTypeOf<MosaicNode['type']>();
+    expectTypeOf<keyof typeof nodeRegistry>().toEqualTypeOf<GlyfNode['type']>();
     expectTypeOf<Parameters<typeof nodeRegistry.heading>[0]['node']>().toEqualTypeOf<HeadingNode>();
   });
 
   it('dispatches every node kind in the validated full-vocabulary fixture', () => {
     const html = renderDocument(typedDocument);
     for (const fragment of [
-      'class="mosaic-column"',
-      'class="mosaic-row"',
-      'class="mosaic-grid"',
-      'class="mosaic-card"',
-      '<h1 id="mosaic-node-heading">Heading</h1>',
+      'class="glyf-column"',
+      'class="glyf-row"',
+      'class="glyf-grid"',
+      'class="glyf-card"',
+      '<h1 id="glyf-node-heading">Heading</h1>',
       '<strong>Markdown</strong>',
-      'class="mosaic-text">Plain text</p>',
+      'class="glyf-text">Plain text</p>',
       '<hr',
-      'class="mosaic-chart"',
+      'class="glyf-chart"',
       '<caption>values</caption>',
       'type="checkbox"',
       'checked',
       'type="text"',
       'value="Hello"',
-      '<span id="mosaic-node-stateValue" class="mosaic-text">(Hello)</span>',
+      '<span id="glyf-node-stateValue" class="glyf-text">(Hello)</span>',
     ])
       expect(html).toContain(fragment);
   });
@@ -75,7 +75,7 @@ describe('NodeRenderer', () => {
     'starts at a $type root, including an empty layout',
     (root) => {
       const doc = { ...minimalDocument(), root };
-      expect(renderDocument(doc)).toContain(`class="mosaic-${root.type}"`);
+      expect(renderDocument(doc)).toContain(`class="glyf-${root.type}"`);
       expect(
         renderDocument({ ...doc, root: { ...root, children: [nodeSamples.divider] } }),
       ).toContain('<hr');
@@ -100,9 +100,9 @@ describe('NodeRenderer', () => {
         ],
       },
     };
-    expect(renderDocument(doc)).toContain('class="mosaic-text">Visible detail</p>');
+    expect(renderDocument(doc)).toContain('class="glyf-text">Visible detail</p>');
     expect(renderDocument({ ...doc, state: { count: '0' } })).toBe(
-      '<div id="mosaic-node-root" class="mosaic-column"></div>',
+      '<div id="glyf-node-root" class="glyf-column"></div>',
     );
   });
 
@@ -121,16 +121,16 @@ describe('NodeRenderer', () => {
     });
     expect(html).toBe(
       renderToStaticMarkup(
-        <div id="mosaic-node-root" className="mosaic-column">
-          <label id="mosaic-node-toggle">
+        <div id="glyf-node-root" className="glyf-column">
+          <label id="glyf-node-toggle">
             <input type="checkbox" checked={false} disabled />
             Enabled
           </label>
-          <label id="mosaic-node-input">
+          <label id="glyf-node-input">
             Count
             <input type="number" value={0} disabled />
           </label>
-          <span id="mosaic-node-stateValue" className="mosaic-text">
+          <span id="glyf-node-stateValue" className="glyf-text">
             (—)
           </span>
         </div>,
@@ -142,7 +142,7 @@ describe('NodeRenderer', () => {
     const doc = minimalDocument();
     const children = [{ ...nodeSamples.heading, level, text: 'A & B' }];
     expect(renderDocument({ ...doc, root: { ...doc.root, children } })).toContain(
-      `<h${level} id="mosaic-node-heading">A &amp; B</h${level}>`,
+      `<h${level} id="glyf-node-heading">A &amp; B</h${level}>`,
     );
   });
 
@@ -164,7 +164,7 @@ describe('NodeRenderer', () => {
     (gap) => {
       for (const layout of [nodeSamples.column, nodeSamples.row, nodeSamples.grid]) {
         const html = renderDocument({ ...minimalDocument(), root: { ...layout, gap } });
-        const property = layout.type === 'grid' ? '--mosaic-gap' : 'gap';
+        const property = layout.type === 'grid' ? '--glyf-gap' : 'gap';
         expect(html).toContain(`${property}:${gap * 0.25}rem`);
       }
     },
@@ -175,7 +175,7 @@ describe('NodeRenderer', () => {
     (columns) => {
       const root = { id: 'grid', type: 'grid', columns, children: [] };
       const html = renderDocument({ ...minimalDocument(), root });
-      expect(html).toContain(`style="--mosaic-columns:${columns}"`);
+      expect(html).toContain(`style="--glyf-columns:${columns}"`);
     },
   );
 });

@@ -1,16 +1,18 @@
 # Core error and resource contracts
 
+The v0.1 marker is `"glyf": "0.1.0"`; all public types and APIs use Glyf names, with no Mosaic aliases; see [name and file-extension compatibility](compatibility.md#glyf-name-and-file-extension).
+
 The core reads local sources, validates them through iterative resource preflight, the Draft 2020-12 schema, and the v0.1 semantic rules, and serializes the current document for export.
 
 ## Reading a source
 
-| Entry point               | Input                              | Return value            |
-| ------------------------- | ---------------------------------- | ----------------------- |
-| `readMosaicFile(file)`    | Browser `File` or `Blob`           | `Promise<SourceResult>` |
-| `parseMosaicBytes(bytes)` | `Uint8Array`, including a subarray | `SourceResult`          |
-| `parseMosaicText(text)`   | JavaScript string                  | `SourceResult`          |
+| Entry point             | Input                              | Return value            |
+| ----------------------- | ---------------------------------- | ----------------------- |
+| `readGlyfFile(file)`    | Browser `File` or `Blob`           | `Promise<SourceResult>` |
+| `parseGlyfBytes(bytes)` | `Uint8Array`, including a subarray | `SourceResult`          |
+| `parseGlyfText(text)`   | JavaScript string                  | `SourceResult`          |
 
-Success carries `{ ok: true, value: unknown }`. The reader has established that the source contains one JSON object with its own `mosaic` string set to `"0.1.0"`. The value still needs node-tree preflight, schema validation and semantic validation before a renderer can treat it as a `MosaicDocument`. Content failures carry the existing non-empty `errors` list. An operating-system failure reading a file rejects the promise so callers can handle I/O separately.
+Success carries `{ ok: true, value: unknown }`. The reader has established that the source contains one JSON object with its own `glyf` string set to `"0.1.0"`. The value still needs node-tree preflight, schema validation and semantic validation before a renderer can treat it as a `GlyfDocument`. Content failures carry the existing non-empty `errors` list. An operating-system failure reading a file rejects the promise so callers can handle I/O separately.
 
 The file reader checks `Blob.size` before `arrayBuffer()`. The byte parser checks the actual view length before strict UTF-8 decoding. The text parser measures UTF-8 length without allocating another full buffer and stops when the limit is exceeded. A raw unpaired UTF-16 surrogate in supplied text is an encoding error. A literal JSON escape such as `\uD800` consists of ASCII source characters and follows JSON string decoding rules.
 
@@ -18,11 +20,11 @@ The 5 MiB limit includes the optional three-byte UTF-8 BOM. The parser consumes 
 
 Before the whole-document `JSON.parse`, an iterative token scanner tracks decoded member names per open object. It skips string values and releases each object's set when the object closes. A repeated member returns `INVALID_JSON` at its escaped JSON Pointer, including any enclosing array indices. Reusing a name in sibling objects is valid.
 
-The scanner bounds its own stack at 41 open JSON containers. Every valid v0.1 path fits within one document object plus at most 20 node objects and 20 children arrays. An input beyond this ceiling returns `RESOURCE_LIMIT` before further nesting can allocate scanner frames. The validation API checks Mosaic node depth and total node count after parsing.
+The scanner bounds its own stack at 41 open JSON containers. Every valid v0.1 path fits within one document object plus at most 20 node objects and 20 children arrays. An input beyond this ceiling returns `RESOURCE_LIMIT` before further nesting can allocate scanner frames. The validation API checks Glyf node depth and total node count after parsing.
 
 ## Validating an in-memory value
 
-Call `validateMosaic(value)` from `src/core/validate.ts` with a parsed value or a JSON-shaped JavaScript object. The reference command passes the successful file reader's `source.value` to this function. Use `parseMosaic(text)` from `src/core/parse.ts` to read and validate a source string in one call. Both functions return `ParseResult`. Success includes the checked document. Direct validation returns the original object and leaves it untouched. Validation reports the first failure and attaches its JSON Pointer. Each call checks the current values, including any edits made since a prior call.
+Call `validateGlyf(value)` from `src/core/validate.ts` with a parsed value or a JSON-shaped JavaScript object. The reference command passes the successful file reader's `source.value` to this function. Use `parseGlyf(text)` from `src/core/parse.ts` to read and validate a source string in one call. Both functions return `ParseResult`. Success includes the checked document. Direct validation returns the original object and leaves it untouched. Validation reports the first failure and attaches its JSON Pointer. Each call checks the current values, including any edits made since a prior call.
 
 Preflight walks the input using an explicit stack. Only `root` and entries in a node's `children` array are candidate node positions. The root counts once at depth 1. Each child adds one node and one level below its parent, including children of hidden `when` nodes. Metadata, rows and state consume no node positions. A failure returns `RESOURCE_LIMIT` with the offending node pointer. If the length of a child list already proves that the total exceeds 2,000, the error points to that list and gives the minimum known total. A document with a root and 1,999 leaf children fits exactly.
 
@@ -45,7 +47,7 @@ For example, a string `"12"` in a numeric column named `amount` in the first row
 
 ## Serializing a document
 
-`serializeMosaic(document: MosaicDocument): string` in `src/core/serialize.ts` validates the current document on every call. Only format fields are accepted. Keep UI state such as the active selection outside the document model. A failure throws `MosaicSerializationError` from the same module. Its `errors` property holds the usual non-empty list of Mosaic diagnostics. Callers can inspect `errors[0].code` and `errors[0].path` and retain their working document for a retry.
+`serializeGlyf(document: GlyfDocument): string` in `src/core/serialize.ts` validates the current document on every call. Only format fields are accepted. Keep UI state such as the active selection outside the document model. A failure throws `GlyfSerializationError` from the same module. Its `errors` property holds the usual non-empty list of Glyf diagnostics. Callers can inspect `errors[0].code` and `errors[0].path` and retain their working document for a retry.
 
 Output matches `JSON.stringify(document, null, 2) + "\n"`. It starts with the opening brace and ends with one LF. Reopening preserves node, column, and row order, IDs, hidden content, optional fields, and committed cell and state values. JSON number spelling follows the native formatter, including writing JavaScript `-0` as `0`. A lone surrogate in a string is written as a JSON escape and recovered when parsed.
 
@@ -56,14 +58,14 @@ The inclusive limit is 5,242,880 UTF-8 bytes including indentation, escapes, and
 `src/core/errors.ts` defines the public diagnostic shape:
 
 ```ts
-interface MosaicError {
-  readonly code: MosaicErrorCode;
+interface GlyfError {
+  readonly code: GlyfErrorCode;
   readonly path: JsonPointer;
   readonly message: string;
 }
 ```
 
-- `code` is a literal union derived from the frozen ten-code `MOSAIC_ERROR_CODES` catalog. Callers branch on it, not on message text.
+- `code` is a literal union derived from the frozen ten-code `GLYF_ERROR_CODES` catalog. Callers branch on it, not on message text.
 - `path` is an RFC 6901 string-form JSON Pointer. It remains a plain string at runtime and in serialized JSON.
 - `message` is a human-readable explanation. Future validators must supply useful, non-empty messages; their wording is not an API discriminator.
 - Diagnostics contain no document copies, stack traces, or Ajv-specific objects.
@@ -72,8 +74,8 @@ The text parser and in-memory validator share this result contract.
 
 ```ts
 type ParseResult =
-  | { readonly ok: true; readonly document: MosaicDocument }
-  | { readonly ok: false; readonly errors: readonly [MosaicError, ...MosaicError[]] };
+  | { readonly ok: true; readonly document: GlyfDocument }
+  | { readonly ok: false; readonly errors: readonly [GlyfError, ...GlyfError[]] };
 ```
 
 Checking `ok` narrows the result to success or failure. The failure tuple requires at least one error at compile time. Fields and lists are readonly in TypeScript, without deep-freezing every diagnostic at runtime. The schema-only development tool must not return a successful `ParseResult`: structural validation alone does not establish semantic validity.
@@ -87,7 +89,7 @@ The following table defines the error codes used throughout the source reader an
 | `FILE_TOO_LARGE`      | Raw input, public-parser UTF-8 text size, or serialized output exceeds 5 MiB.                                                                                            | `""`                                                       |
 | `INVALID_UTF8`        | Bytes cannot be decoded as strict UTF-8.                                                                                                                                 | `""`                                                       |
 | `INVALID_JSON`        | Malformed JSON or duplicate object property names in source text.                                                                                                        | `""` for syntax errors; the duplicate property when known. |
-| `UNSUPPORTED_VERSION` | A present string `mosaic` value differs from `"0.1.0"`.                                                                                                                  | `/mosaic`                                                  |
+| `UNSUPPORTED_VERSION` | A present string `glyf` value differs from `"0.1.0"`.                                                                                                                    | `/glyf`                                                    |
 | `SCHEMA_ERROR`        | Structural violations, unknown fields/types, invalid scalar values, or non-JSON in-memory structure such as a cycle. Missing or non-string versions belong here.         | The offending property or object.                          |
 | `DUPLICATE_ID`        | Repeated node IDs globally, or repeated row IDs within one dataset.                                                                                                      | The later occurrence's `/id`.                              |
 | `INVALID_ROOT`        | A structurally valid root node is not a permitted layout node.                                                                                                           | `/root/type`                                               |
@@ -125,7 +127,7 @@ The escaping and root conventions follow [RFC 6901](https://www.rfc-editor.org/r
 
 ## Resource ceilings and counting rules
 
-`src/core/limits.ts` exports the frozen `MOSAIC_LIMITS` object, the `MosaicResource` key union, and `ROOT_NODE_DEPTH = 1`. Budgets are fixed for v0.1 and must not be overridden by document content.
+`src/core/limits.ts` exports the frozen `GLYF_LIMITS` object, the `GlyfResource` key union, and `ROOT_NODE_DEPTH = 1`. Budgets are fixed for v0.1 and must not be overridden by document content.
 
 | Key                  | Inclusive maximum | Measurement rule                                                                                                |
 | -------------------- | ----------------: | --------------------------------------------------------------------------------------------------------------- |

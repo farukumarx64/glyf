@@ -20,7 +20,7 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
   }, []);
 
   return (
-    <figure id={anchorId} ref={figure} className="mosaic-chart">
+    <figure id={anchorId} ref={figure} className="glyf-chart">
       <figcaption id={titleId}>{title}</figcaption>
       {chart.points && (
         <svg
@@ -31,10 +31,7 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
         >
           <g aria-hidden="true">
             {chart.yTicks.map((tick) => (
-              <g
-                key={tick.label}
-                className={tick.zero ? 'mosaic-chart-baseline' : 'mosaic-chart-tick'}
-              >
+              <g key={tick.label} className={tick.zero ? 'glyf-chart-baseline' : 'glyf-chart-tick'}>
                 <line x1={chart.left} x2={chart.right} y1={tick.y} y2={tick.y} />
                 <text
                   x={chart.left - 8}
@@ -49,7 +46,7 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
               </g>
             ))}
             <line
-              className="mosaic-chart-axis"
+              className="glyf-chart-axis"
               x1={chart.left}
               x2={chart.left}
               y1={chart.top}
@@ -59,7 +56,7 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
               chart.points.map((point) => (
                 <rect
                   key={point.id}
-                  className="mosaic-chart-bar"
+                  className="glyf-chart-bar"
                   x={point.x - chart.barWidth / 2}
                   y={Math.min(point.y, chart.baseline!)}
                   width={chart.barWidth}
@@ -69,13 +66,13 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
             ) : (
               <>
                 <polyline
-                  className="mosaic-chart-line"
+                  className="glyf-chart-line"
                   points={chart.points.map((point) => `${point.x},${point.y}`).join(' ')}
                 />
                 {chart.points.map((point) => (
                   <circle
                     key={point.id}
-                    className="mosaic-chart-point"
+                    className="glyf-chart-point"
                     cx={point.x}
                     cy={point.y}
                     r="3"
@@ -86,7 +83,7 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
             {chart.xTicks.map((tick, i) => (
               <text
                 key={i}
-                className="mosaic-chart-x-tick"
+                className="glyf-chart-x-tick"
                 x={tick.x}
                 y={chart.bottom + 20}
                 textAnchor={i === 0 ? 'start' : i === chart.xTicks.length - 1 ? 'end' : 'middle'}
@@ -101,7 +98,7 @@ export const ChartView: NodeView<'chart'> = ({ node, document, anchorId }) => {
               </text>
             ))}
             <text
-              className="mosaic-chart-axis-label"
+              className="glyf-chart-axis-label"
               x={(chart.left + chart.right) / 2}
               y="266"
               textAnchor="middle"

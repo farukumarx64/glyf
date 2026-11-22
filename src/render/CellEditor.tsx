@@ -1,6 +1,6 @@
 import { useId } from 'react';
 import type { DocumentStore } from '../core/store.ts';
-import type { ColumnDefinition, MosaicScalar } from '../core/types.ts';
+import type { ColumnDefinition, GlyfScalar } from '../core/types.ts';
 
 import { useValueDraft } from './useValueDraft.ts';
 
@@ -14,7 +14,7 @@ export function CellEditor({
   tableId: string;
   rowId: string;
   column: ColumnDefinition;
-  value: MosaicScalar;
+  value: GlyfScalar;
   updateCell: DocumentStore['updateCell'];
 }) {
   const errorId = useId();
@@ -38,7 +38,7 @@ export function CellEditor({
   } as const;
 
   return (
-    <div className="mosaic-cell-editor">
+    <div className="glyf-cell-editor">
       {column.kind === 'boolean' ? (
         <select
           {...accessibility}
@@ -83,7 +83,7 @@ export function CellEditor({
         </>
       )}
       {draft.error && (
-        <p id={errorId} className="mosaic-cell-error" role="alert">
+        <p id={errorId} className="glyf-cell-error" role="alert">
           {draft.error}
         </p>
       )}

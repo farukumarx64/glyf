@@ -2,17 +2,17 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/app/App.tsx';
-import { downloadMosaic } from '../src/app/download.ts';
+import { downloadGlyf } from '../src/app/download.ts';
 import { minimalDocument } from './fixtures.ts';
 
-vi.mock('../src/app/download.ts', () => ({ downloadMosaic: vi.fn() }));
+vi.mock('../src/app/download.ts', () => ({ downloadGlyf: vi.fn() }));
 
 beforeEach(() => {
   vi.stubGlobal(
     'confirm',
     vi.fn(() => false),
   );
-  vi.mocked(downloadMosaic).mockReset();
+  vi.mocked(downloadGlyf).mockReset();
 });
 afterEach(() => {
   cleanup();
@@ -21,14 +21,14 @@ afterEach(() => {
 });
 
 function file() {
-  return new File([JSON.stringify(minimalDocument())], 'replacement.mosa');
+  return new File([JSON.stringify(minimalDocument())], 'replacement.glyf');
 }
 
 async function replace(route: 'demo' | 'picker' | 'drop', incoming = file()) {
   await act(async () => {
     if (route === 'demo') fireEvent.click(screen.getByRole('button', { name: 'Open Demo' }));
     else if (route === 'picker')
-      fireEvent.change(screen.getByLabelText('Choose a Mosaic file'), {
+      fireEvent.change(screen.getByLabelText('Choose a Glyf file'), {
         target: { files: [incoming] },
       });
     else
@@ -86,7 +86,7 @@ describe('unsaved replacement protection', () => {
       expect(screen.getByRole('tabpanel')).toBe(source);
       expect(source.textContent).toBe(before);
       expect(screen.getByRole('tab', { name: 'Source', selected: true })).toBeTruthy();
-      expect(screen.getByText('mosaic-demo.mosa')).toBeTruthy();
+      expect(screen.getByText('glyf-demo.glyf')).toBeTruthy();
       expect(screen.getByText('Unsaved changes')).toBeTruthy();
       expect(viewer.getAttribute('data-accent')).toBe(theme);
       expect(screen.queryByRole('status')).toBeNull();
@@ -155,13 +155,13 @@ describe('unsaved replacement protection', () => {
   it('preserves dirty state when the picker is cancelled or a file fails to read or validate', async () => {
     await openEditedDemo();
     const note = screen.getByRole('textbox', { name: 'Document note' });
-    const picker = screen.getByLabelText('Choose a Mosaic file');
+    const picker = screen.getByLabelText('Choose a Glyf file');
     const click = vi.spyOn(picker, 'click');
     fireEvent.click(screen.getByRole('button', { name: 'Open File' }));
     expect(click).toHaveBeenCalledTimes(1);
     fireEvent.change(picker, { target: { files: [] } });
     expect(window.confirm).not.toHaveBeenCalled();
-    await replace('picker', new File(['{'], 'bad.mosa'));
+    await replace('picker', new File(['{'], 'bad.glyf'));
     expect(screen.getByRole('alert').textContent).toContain('INVALID_JSON');
     const unreadable = file();
     vi.spyOn(unreadable, 'arrayBuffer').mockRejectedValue(new Error('Read failed'));
@@ -213,7 +213,7 @@ describe('unsaved replacement protection', () => {
     await replace('demo');
     await replace('demo');
     expect(window.confirm).toHaveBeenCalledTimes(2);
-    vi.mocked(downloadMosaic).mockImplementationOnce(() => {
+    vi.mocked(downloadGlyf).mockImplementationOnce(() => {
       throw new Error('Download failed');
     });
     fireEvent.click(screen.getByRole('button', { name: 'Download' }));

@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { MOSAIC_LIMITS } from '../src/core/limits.ts';
-import { serializeMosaic } from '../src/core/serialize.ts';
-import { validateMosaic } from '../src/core/validate.ts';
+import { GLYF_LIMITS } from '../src/core/limits.ts';
+import { serializeGlyf } from '../src/core/serialize.ts';
+import { validateGlyf } from '../src/core/validate.ts';
 import { NodeRenderer } from '../src/render/NodeRenderer.tsx';
 import { MARKDOWN_RENDER_DEPTH } from '../src/render/markdown-depth.ts';
 import { minimalDocument, nodeSamples } from './fixtures.ts';
@@ -39,21 +39,21 @@ describe('Markdown renderer failure isolation', () => {
   it.each(nestedMarkdown)(
     'keeps valid deeply nested $name readable and leaves sibling nodes usable',
     ({ text }) => {
-      expect(text.length).toBe(MOSAIC_LIMITS.markdownCharacters);
+      expect(text.length).toBe(GLYF_LIMITS.markdownCharacters);
       const value = documentWithMarkdown(text);
-      const validated = validateMosaic(value);
+      const validated = validateGlyf(value);
       if (!validated.ok) throw new Error(JSON.stringify(validated.errors));
-      const before = serializeMosaic(validated.document);
+      const before = serializeGlyf(validated.document);
       const caught = vi.fn();
       const { container, rerender } = render(<NodeRenderer document={validated.document} />, {
         onCaughtError: caught,
       });
       expect(screen.getByRole('heading', { name: 'Heading' })).toBeTruthy();
       expect(screen.getByRole('note').textContent).toContain('Showing the original text');
-      expect(container.querySelector('.mosaic-markdown pre')?.textContent).toBe(text);
+      expect(container.querySelector('.glyf-markdown pre')?.textContent).toBe(text);
       expect(container.querySelector('img, script, iframe')).toBeNull();
       expect(caught).toHaveBeenCalled();
-      expect(serializeMosaic(validated.document)).toBe(before);
+      expect(serializeGlyf(validated.document)).toBe(before);
 
       // A replacement with the same node ID must get a fresh rendering attempt.
       rerender(<NodeRenderer document={documentWithMarkdown('**Recovered**')} />);

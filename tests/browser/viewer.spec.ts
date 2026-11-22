@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import type { MosaicDocument, MosaicTheme } from '../../src/core/types.ts';
+import type { GlyfDocument, GlyfTheme } from '../../src/core/types.ts';
 import { minimalDocument, nodeSamples } from '../fixtures.ts';
 
 test.beforeEach(async ({ page }) => {
@@ -7,9 +7,9 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Open Demo' })).toBeVisible();
 });
 
-async function openDocument(page: Page, doc: MosaicDocument) {
-  await page.getByLabel('Choose a Mosaic file').setInputFiles({
-    name: doc.id + '.mosa',
+async function openDocument(page: Page, doc: GlyfDocument) {
+  await page.getByLabel('Choose a Glyf file').setInputFiles({
+    name: doc.id + '.glyf',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(doc)),
   });
@@ -43,7 +43,7 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   await page.keyboard.press(tabKey);
   await expect(page.getByRole('button', { name: 'Open File' })).toBeFocused();
   await page.keyboard.press(tabKey);
-  await expect(page.getByRole('button', { name: /Drop a .mosa file/ })).toBeFocused();
+  await expect(page.getByRole('button', { name: /Drop a .glyf file/ })).toBeFocused();
   await page.keyboard.press('Shift+' + tabKey);
   await page.keyboard.press('Shift+' + tabKey);
   await page.keyboard.press('Enter');
@@ -53,7 +53,7 @@ test('opens the bundled demo offline and navigates the viewer using only the key
   await expect(preview).toBeFocused();
   await expect(preview).toHaveCSS('outline-style', 'solid');
   await expect(
-    page.getByRole('heading', { name: 'Mosaic: First Interactive Document' }),
+    page.getByRole('heading', { name: 'Glyf: First Interactive Document' }),
   ).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Document note' })).toHaveValue('First report');
   await expect(page.getByRole('checkbox', { name: 'Show revenue chart' })).toBeEnabled();
@@ -145,7 +145,7 @@ test('edits the demo offline and keeps invalid drafts out of charts and Source',
   await page.getByRole('tab', { name: 'Source' }).click();
   const source = JSON.parse(
     await page.getByRole('tabpanel', { name: 'Source' }).innerText(),
-  ) as MosaicDocument;
+  ) as GlyfDocument;
   expect(source.datasets!.revenue!.rows[0]?.amount).toBe(1500);
   await page.getByRole('tab', { name: 'Preview' }).click();
   await expect(january).toHaveValue('1500');
@@ -171,10 +171,10 @@ test('edits state offline with the keyboard and preserves it when conditional co
   await page.keyboard.insertText('Next line');
   await expect(note).toBeFocused();
   await expect(note).toHaveValue('<b>Updated</b>\nNext line');
-  await expect(page.locator('#mosaic-node-noteDisplay')).toHaveText(
+  await expect(page.locator('#glyf-node-noteDisplay')).toHaveText(
     'Current note: <b>Updated</b>\nNext line',
   );
-  await expect(page.locator('#mosaic-node-noteDisplay b')).toHaveCount(0);
+  await expect(page.locator('#glyf-node-noteDisplay b')).toHaveCount(0);
   await page.keyboard.press(tabKey);
   const toggle = page.getByRole('checkbox', { name: 'Show revenue chart' });
   await expect(toggle).toBeFocused();
@@ -192,7 +192,7 @@ test('edits state offline with the keyboard and preserves it when conditional co
   await page.getByRole('tab', { name: 'Source' }).click();
   const source = JSON.parse(
     await page.getByRole('tabpanel', { name: 'Source' }).innerText(),
-  ) as MosaicDocument;
+  ) as GlyfDocument;
   expect(source.state).toEqual({ note: '<b>Updated</b>\nNext line', showChart: true });
   await page.getByRole('tab', { name: 'Preview' }).click();
   await expect(note).toHaveValue('<b>Updated</b>\nNext line');
@@ -260,7 +260,7 @@ test('keeps invalid numeric state local with accessible feedback on a narrow scr
   await page.getByRole('tab', { name: 'Source' }).click();
   const source = JSON.parse(
     await page.getByRole('tabpanel', { name: 'Source' }).innerText(),
-  ) as MosaicDocument;
+  ) as GlyfDocument;
   expect(source.state?.amount).toBe(-0.5);
   await page.getByRole('tab', { name: 'Preview' }).click();
   await expect(amount).toHaveValue('-0.5');
@@ -398,7 +398,7 @@ test('reports malformed files offline, keeps the open Source, and recovers', asy
   page.on('pageerror', (error) => uncaught.push(error.message));
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: 'Open File' }).click();
-  await (await chooser).setFiles({ name: 'broken.mosa', mimeType: '', buffer: Buffer.from('{') });
+  await (await chooser).setFiles({ name: 'broken.glyf', mimeType: '', buffer: Buffer.from('{') });
   const alert = page.getByRole('alert');
   await expect(alert).toBeFocused();
   await expect(alert).toContainText('INVALID_JSON');
@@ -409,11 +409,11 @@ test('reports malformed files offline, keeps the open Source, and recovers', asy
   await page.getByRole('tab', { name: 'Source' }).click();
   const source = page.getByRole('tabpanel', { name: 'Source' });
   const original = await source.innerText();
-  const picker = page.getByLabel('Choose a Mosaic file');
-  await picker.setInputFiles({ name: 'encoding.mosa', mimeType: '', buffer: Buffer.from([255]) });
+  const picker = page.getByLabel('Choose a Glyf file');
+  await picker.setInputFiles({ name: 'encoding.glyf', mimeType: '', buffer: Buffer.from([255]) });
   await expect(alert).toContainText('INVALID_UTF8');
   await expect(alert).toContainText('"" (document root)');
-  await picker.setInputFiles('examples/invalid/missing-binding.mosa');
+  await picker.setInputFiles('examples/invalid/missing-binding.glyf');
   await expect(alert).toBeFocused();
   await expect(alert).toContainText('State key "absent" is not declared.');
   await expect(alert).toContainText('INVALID_BINDING');
@@ -461,8 +461,8 @@ test('reflows row and grid children and keeps wide code and Source inside their 
       ],
     },
   });
-  const grid = page.locator('#mosaic-node-grid');
-  const row = page.locator('.mosaic-row');
+  const grid = page.locator('#glyf-node-grid');
+  const row = page.locator('.glyf-row');
   for (const [width, columns] of [
     [1280, 4],
     [375, 1],
@@ -478,12 +478,12 @@ test('reflows row and grid children and keeps wide code and Source inside their 
       .locator(':scope > *')
       .evaluateAll((items) => items.map((item) => item.getBoundingClientRect().top));
     expect(new Set(rowTops).size).toBe(width === 1280 ? 1 : 2);
-    await expect(page.locator('#mosaic-node-nested')).toHaveCSS(
+    await expect(page.locator('#glyf-node-nested')).toHaveCSS(
       'grid-template-columns',
       /^[\d.]+px$/,
     );
     expect(
-      await page.locator('.mosaic-markdown pre').evaluate((el) => el.scrollWidth > el.clientWidth),
+      await page.locator('.glyf-markdown pre').evaluate((el) => el.scrollWidth > el.clientWidth),
     ).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
     await page.getByRole('tab', { name: 'Source' }).click();
@@ -505,12 +505,12 @@ test('applies mode, accent, and density, follows system changes, and resets on r
     nodeSamples.row,
     { ...nodeSamples.markdown, text: '[Notes](#card)' },
   ];
-  function themed(title: string, theme?: MosaicTheme): MosaicDocument {
+  function themed(title: string, theme?: GlyfTheme): GlyfDocument {
     return { ...doc, meta: { title }, ...(theme && { theme }), root: { ...doc.root, children } };
   }
   const sheet = page.locator('.document-sheet');
-  const card = page.locator('.mosaic-card');
-  const root = page.locator('.mosaic-column');
+  const card = page.locator('.glyf-card');
+  const root = page.locator('.glyf-column');
   const link = page.getByRole('link', { name: 'Notes' });
   await openDocument(page, themed('Default theme'));
   await expect(sheet).toHaveCSS('background-color', 'rgb(255, 255, 255)');
@@ -533,10 +533,10 @@ test('applies mode, accent, and density, follows system changes, and resets on r
   await expect(link).toHaveCSS('color', 'rgb(117, 220, 203)');
   await expect(root).toHaveCSS('gap', '8px');
   await expect(card).toHaveCSS('padding-top', '12px');
-  await expect(page.locator('.mosaic-row')).toHaveCSS('gap', '24px');
+  await expect(page.locator('.glyf-row')).toHaveCSS('gap', '24px');
   // A rejected replacement must preserve the active document's theme.
-  await page.getByLabel('Choose a Mosaic file').setInputFiles({
-    name: 'unknown-accent.mosa',
+  await page.getByLabel('Choose a Glyf file').setInputFiles({
+    name: 'unknown-accent.glyf',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify({ ...doc, theme: { accent: 'violet' } })),
   });
@@ -570,7 +570,7 @@ test('renders safe Markdown, keeps rejected labels, and opens a local anchor wit
       children: [{ ...nodeSamples.markdown, text: markdown }, nodeSamples.heading],
     },
   });
-  const content = page.locator('.mosaic-markdown');
+  const content = page.locator('.glyf-markdown');
   await expect(content.locator('strong')).toHaveText('Formatted');
   await expect(content.locator('code')).toHaveText('<b>literal code</b>');
   await expect(content).toContainText('Blocked Relative');

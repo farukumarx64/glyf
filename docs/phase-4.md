@@ -1,5 +1,7 @@
 # Phase 4 — Complete workflow verification
 
+**Historical verification record:** Names, measurements and counts below describe the builds recorded at the time. The current rc.3 format uses the `glyf` marker, `.glyf` files and Glyf APIs; see [the current contract](compatibility.md#glyf-name-and-file-extension). These results are not new rc.3 measurements.
+
 Verified on **2026-11-18**, using the production Vite build, Node **22.18.0**, and Playwright's **Chromium 159.0.8154.6** and **WebKit 27.2**.
 
 ## What the new end-to-end tests prove
